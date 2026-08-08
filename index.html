@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Slalom Skating Session Tracker</title>
+  <title>Inline Slalom Skating Session Tracker</title>
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- Google Font -->
@@ -13,9 +13,8 @@
     :root {
       --primary: #4f46e5;
       --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-      --accent: #06b6d4;
       --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
-      --glass-bg: rgba(255, 255, 255, 0.85);
+      --glass-bg: rgba(255, 255, 255, 0.88);
       --glass-border: rgba(255, 255, 255, 0.5);
       --card-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08);
       --text-main: #0f172a;
@@ -45,43 +44,33 @@
       min-height: 100vh;
     }
 
-    /* GLASSMORPHISM CARDS */
-    .glass-card {
-      background: var(--glass-bg);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius);
-      padding: 20px;
-      margin-bottom: 16px;
-      box-shadow: var(--card-shadow);
-    }
-
-    /* AUTHENTICATION OVERLAY SCREEN */
+    /* AUTHENTICATION FULLSCREEN OVERLAY */
     #authOverlay {
       position: fixed;
       inset: 0;
       background: var(--bg-gradient);
-      z-index: 9999;
+      z-index: 99999;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 20px;
     }
 
-    .auth-box {
-      background: rgba(255, 255, 255, 0.95);
+    .auth-card {
+      background: rgba(255, 255, 255, 0.92);
       backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
       border-radius: 24px;
-      padding: 32px 24px;
+      padding: 36px 28px;
       width: 100%;
       max-width: 400px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
       text-align: center;
     }
 
-    .auth-logo {
-      font-size: 2.5rem;
+    .auth-icon {
+      font-size: 2.8rem;
       margin-bottom: 8px;
     }
 
@@ -98,9 +87,38 @@
       margin-bottom: 24px;
     }
 
+    .password-wrap {
+      position: relative;
+    }
+
+    .toggle-password-btn {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      padding: 4px;
+    }
+
+    /* GLASS CARDS */
+    .glass-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--card-shadow);
+    }
+
     /* TOP HEADER */
     header {
-      background: rgba(255, 255, 255, 0.8);
+      background: rgba(255, 255, 255, 0.85);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border-color);
       position: sticky;
@@ -123,28 +141,35 @@
       gap: 8px;
     }
 
-    .user-pill {
+    .user-badge {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       background: #f8fafc;
       border: 1px solid var(--border-color);
-      padding: 6px 12px;
+      padding: 6px 14px;
       border-radius: 30px;
       font-size: 0.85rem;
       font-weight: 700;
     }
 
-    .logout-btn {
+    .btn-logout {
       border: none;
-      background: none;
+      background: #fee2e2;
       color: var(--danger);
-      font-weight: 600;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 14px;
       cursor: pointer;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
+      transition: background 0.2s;
     }
 
-    /* LAYOUT CONTAINER */
+    .btn-logout:hover {
+      background: #fca5a5;
+    }
+
+    /* MAIN CONTAINER */
     .container {
       max-width: 800px;
       margin: 0 auto;
@@ -175,7 +200,7 @@
       color: var(--text-main);
     }
 
-    /* FORM STYLING */
+    /* FORMS & INPUTS */
     .form-group {
       margin-bottom: 16px;
     }
@@ -228,15 +253,8 @@
       transition: all 0.2s ease;
     }
 
-    .btn:active {
-      transform: scale(0.98);
-    }
-
-    .btn-secondary {
-      background: #e2e8f0;
-      color: var(--text-main);
-      box-shadow: none;
-    }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
     /* BADGES */
     .badge {
@@ -252,7 +270,7 @@
     .badge-category { background: #f3e8ff; color: #6b21a8; }
     .badge-custom { background: #fef3c7; color: #92400e; }
 
-    /* DASHBOARD METRICS CARDS */
+    /* DASHBOARD METRICS */
     .metrics-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -290,7 +308,7 @@
       text-transform: uppercase;
     }
 
-    /* HISTORY LIST ITEM */
+    /* HISTORY ITEM */
     .history-item {
       background: var(--glass-bg);
       border: 1px solid var(--glass-border);
@@ -321,7 +339,7 @@
       margin-top: 8px;
     }
 
-    /* BOTTOM NAVIGATION BAR */
+    /* BOTTOM NAV */
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -350,14 +368,8 @@
       transition: color 0.2s;
     }
 
-    .nav-item.active {
-      color: var(--primary);
-    }
-
-    .nav-icon {
-      font-size: 1.35rem;
-      margin-bottom: 2px;
-    }
+    .nav-item.active { color: var(--primary); }
+    .nav-icon { font-size: 1.35rem; margin-bottom: 2px; }
 
     .chart-container {
       position: relative;
@@ -366,19 +378,14 @@
       margin-top: 8px;
     }
 
-    /* EMPTY STATE CONTAINER */
+    /* EMPTY STATES */
     .empty-state {
       text-align: center;
       padding: 40px 20px;
       color: var(--text-muted);
     }
 
-    .empty-icon {
-      font-size: 3rem;
-      margin-bottom: 12px;
-      opacity: 0.8;
-    }
-
+    .empty-icon { font-size: 3rem; margin-bottom: 12px; opacity: 0.8; }
     .empty-text {
       font-size: 0.95rem;
       font-weight: 600;
@@ -387,27 +394,7 @@
       line-height: 1.5;
     }
 
-    /* SKELETON LOADING SCREENS */
-    .skeleton {
-      background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
-      background-size: 200% 100%;
-      animation: skeleton-pulse 1.5s infinite;
-      border-radius: 8px;
-    }
-
-    @keyframes skeleton-pulse {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-
-    .skeleton-card {
-      height: 120px;
-      width: 100%;
-      margin-bottom: 16px;
-      border-radius: var(--radius);
-    }
-
-    /* IN-APP TOAST NOTIFICATIONS */
+    /* TOAST NOTIFICATIONS */
     #toastContainer {
       position: fixed;
       top: 20px;
@@ -415,7 +402,7 @@
       left: 20px;
       max-width: 400px;
       margin: 0 auto;
-      z-index: 10000;
+      z-index: 100000;
       pointer-events: none;
     }
 
@@ -427,7 +414,7 @@
       border-radius: 12px;
       font-size: 0.875rem;
       font-weight: 600;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
       margin-bottom: 10px;
       display: flex;
       align-items: center;
@@ -443,99 +430,65 @@
       from { opacity: 0; transform: translateY(-20px) scale(0.95); }
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
-
-    /* CUSTOM DIALOG MODAL */
-    #customModalOverlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(4px);
-      z-index: 10001;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .modal-box {
-      background: #fff;
-      border-radius: 20px;
-      padding: 24px;
-      width: 100%;
-      max-width: 360px;
-      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
-      text-align: center;
-    }
   </style>
 </head>
 <body>
 
   <!-- CONFIGURATION VARIABLE FOR GOOGLE APPS SCRIPT URL -->
   <script>
-    // Replace the URL below with your deployed Google Apps Script Web App URL
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzEAw0dZ0sGXi220a8H7IOgE9IGVxmUe_mkCkEYQRRzqwwuZEXiWT2-jlDXAIoYNqEa/exechttps://script.google.com/macros/s/AKfycbzEAw0dZ0sGXi220a8H7IOgE9IGVxmUe_mkCkEYQRRzqwwuZEXiWT2-jlDXAIoYNqEa/exec";
+    // Paste your Google Apps Script Web App URL below
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzEAw0dZ0sGXi220a8H7IOgE9IGVxmUe_mkCkEYQRRzqwwuZEXiWT2-jlDXAIoYNqEa/exec";
   </script>
 
   <!-- IN-APP TOAST CONTAINER -->
   <div id="toastContainer"></div>
 
-  <!-- CUSTOM MODAL DIALOG -->
-  <div id="customModalOverlay">
-    <div class="modal-box">
-      <h3 id="modalTitle" style="font-size:1.1rem; margin-bottom:8px;">Notification</h3>
-      <p id="modalBody" style="font-size:0.875rem; color:var(--text-muted); margin-bottom:20px;"></p>
-      <button class="btn" onclick="closeCustomModal()">Got It</button>
-    </div>
-  </div>
 
-  <!-- SIMPLE PROJECT AUTHENTICATION OVERLAY -->
+  <!-- 1. AUTHENTICATION OVERLAY SCREEN -->
   <div id="authOverlay">
-    <div class="auth-box">
-      <div class="auth-logo">🛼</div>
+    <div class="auth-card">
+      <div class="auth-icon">🛼</div>
       <div class="auth-title">Slalom Tracker</div>
-      <div class="auth-subtitle">Sign in to track your slalom sessions</div>
+      <div class="auth-subtitle">Sign in to access your training dashboard</div>
 
       <form id="loginForm" onsubmit="handleLoginSubmit(event)">
         <div class="form-group" style="text-align:left;">
           <label>Username</label>
-          <input type="text" id="authUsername" placeholder="Enter username" required>
-        </div>
-        <div class="form-group" style="text-align:left;">
-          <label>Password</label>
-          <input type="password" id="authPassword" placeholder="Enter password" required>
-        </div>
-        <div class="form-group" style="text-align:left;" id="skaterNameGroup">
-          <label>Skater Name (For New Users)</label>
-          <input type="text" id="authSkaterName" placeholder="e.g. Aaryesh">
+          <input type="text" id="authUsername" placeholder="e.g. aaryesh" autocomplete="username" required>
         </div>
 
-        <button type="submit" id="authSubmitBtn" class="btn">Sign In</button>
-        
-        <div style="margin-top:16px; font-size:0.8rem; color:var(--text-muted);">
-          <span id="authToggleText">Need an account?</span> 
-          <a href="#" onclick="toggleAuthMode(event)" id="authToggleLink" style="color:var(--primary); font-weight:700;">Register</a>
+        <div class="form-group" style="text-align:left;">
+          <label>Password</label>
+          <div class="password-wrap">
+            <input type="password" id="authPassword" placeholder="Enter password" autocomplete="current-password" required>
+            <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility()" title="Show/Hide Password">👁️</button>
+          </div>
         </div>
+
+        <button type="submit" id="authSubmitBtn" class="btn" style="margin-top:10px;">
+          <span>Log In</span>
+        </button>
       </form>
     </div>
   </div>
 
 
-  <!-- MAIN TOP HEADER -->
+  <!-- 2. MAIN HEADER -->
   <header>
     <div class="brand">
       <span>🛼</span> SlalomTracker
     </div>
-    <div class="user-pill">
+    <div class="user-badge">
       <span id="headerSkaterName">Skater: -</span>
-      <button class="logout-btn" onclick="logout()">Logout</button>
+      <button class="btn-logout" onclick="logout()">Logout</button>
     </div>
   </header>
 
 
-  <!-- APPLICATION CONTAINER -->
+  <!-- 3. APPLICATION CONTAINER -->
   <div class="container">
 
-    <!-- TAB 1: DASHBOARD / PROGRESS (DEFAULT AFTER LOGIN) -->
+    <!-- TAB 1: DASHBOARD / PROGRESS (FIRST SCREEN AFTER AUTH) -->
     <div id="tab-dashboard" class="tab-content active">
       
       <!-- Analytics Filters -->
@@ -579,86 +532,71 @@
         </div>
       </div>
 
-      <!-- SKELETON LOADER FOR DASHBOARD -->
-      <div id="dashboardSkeleton" style="display:none;">
-        <div class="metrics-grid">
-          <div class="skeleton" style="height:80px; border-radius:16px;"></div>
-          <div class="skeleton" style="height:80px; border-radius:16px;"></div>
-          <div class="skeleton" style="height:80px; border-radius:16px;"></div>
-          <div class="skeleton" style="height:80px; border-radius:16px;"></div>
+      <!-- Summary Metric Cards -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-label">Sessions</div>
+          <div id="mSessions" class="metric-value">0</div>
         </div>
-        <div class="skeleton skeleton-card"></div>
-        <div class="skeleton skeleton-card"></div>
+        <div class="metric-card">
+          <div class="metric-label">Avg Success</div>
+          <div id="mSuccess" class="metric-value">0%</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Completed</div>
+          <div id="mCompleted" class="metric-value">0</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Total Falls</div>
+          <div id="mFalls" class="metric-value">0</div>
+        </div>
       </div>
 
-      <!-- MAIN DASHBOARD CONTENT -->
-      <div id="dashboardBody">
-        <!-- Summary Cards -->
-        <div class="metrics-grid">
-          <div class="metric-card">
-            <div class="metric-label">Sessions</div>
-            <div id="mSessions" class="metric-value">0</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-label">Avg Success</div>
-            <div id="mSuccess" class="metric-value">0%</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-label">Completed</div>
-            <div id="mCompleted" class="metric-value">0</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-label">Total Falls</div>
-            <div id="mFalls" class="metric-value">0</div>
-          </div>
+      <!-- Graph 1: Success Rate Over Time -->
+      <div class="glass-card">
+        <div class="card-title">Success Rate % Over Time</div>
+        <div class="chart-container">
+          <canvas id="chartSuccessRate"></canvas>
         </div>
+      </div>
 
-        <!-- Graph 1: Success Rate Over Time -->
-        <div class="glass-card">
-          <div class="card-title">Success Rate % Over Time</div>
-          <div class="chart-container">
-            <canvas id="chartSuccessRate"></canvas>
-          </div>
+      <!-- Graph 2: Target vs Completed -->
+      <div class="glass-card">
+        <div class="card-title">Target vs Completed Cones</div>
+        <div class="chart-container">
+          <canvas id="chartCones"></canvas>
         </div>
+      </div>
 
-        <!-- Graph 2: Target vs Completed -->
-        <div class="glass-card">
-          <div class="card-title">Target vs Completed Cones</div>
-          <div class="chart-container">
-            <canvas id="chartCones"></canvas>
-          </div>
+      <!-- Graph 3: Progress By Trick -->
+      <div class="glass-card">
+        <div class="card-title">Avg Success Rate by Trick</div>
+        <div class="chart-container">
+          <canvas id="chartTricks"></canvas>
         </div>
+      </div>
 
-        <!-- Graph 3: Progress By Trick -->
-        <div class="glass-card">
-          <div class="card-title">Avg Success Rate by Trick</div>
-          <div class="chart-container">
-            <canvas id="chartTricks"></canvas>
-          </div>
+      <!-- Graph 4: Falls Over Time -->
+      <div class="glass-card">
+        <div class="card-title">Falls Count Over Time</div>
+        <div class="chart-container">
+          <canvas id="chartFalls"></canvas>
         </div>
+      </div>
 
-        <!-- Graph 4: Falls Over Time -->
-        <div class="glass-card">
-          <div class="card-title">Falls Count Over Time</div>
-          <div class="chart-container">
-            <canvas id="chartFalls"></canvas>
-          </div>
+      <!-- Graph 5: Progress By Family -->
+      <div class="glass-card">
+        <div class="card-title">Family A–E Performance Matrix</div>
+        <div class="chart-container">
+          <canvas id="chartFamily"></canvas>
         </div>
+      </div>
 
-        <!-- Graph 5: Progress By Family -->
-        <div class="glass-card">
-          <div class="card-title">Family A–E Performance Matrix</div>
-          <div class="chart-container">
-            <canvas id="chartFamily"></canvas>
-          </div>
-        </div>
-
-        <!-- Graph 6: Month to Month Comparison -->
-        <div class="glass-card">
-          <div class="card-title">Month-to-Month Success Trend</div>
-          <div class="chart-container">
-            <canvas id="chartMonthly"></canvas>
-          </div>
+      <!-- Graph 6: Month to Month Comparison -->
+      <div class="glass-card">
+        <div class="card-title">Month-to-Month Success Trend</div>
+        <div class="chart-container">
+          <canvas id="chartMonthly"></canvas>
         </div>
       </div>
 
@@ -674,8 +612,8 @@
           
           <div class="row-2">
             <div class="form-group">
-              <label>Skater Name</label>
-              <input type="text" id="logSkater" readonly>
+              <label>Authenticated Skater</label>
+              <input type="text" id="logSkater" readonly style="background:#f1f5f9; font-weight:700;">
             </div>
             <div class="form-group">
               <label>Date</label>
@@ -784,7 +722,7 @@
       </div>
 
       <div id="historyList">
-        <!-- History Items or Empty State Dynamic -->
+        <!-- Loaded Dynamically -->
       </div>
     </div>
 
@@ -828,7 +766,7 @@
       <div class="glass-card">
         <div class="card-title">My Custom Tricks Catalog</div>
         <div id="customTricksList">
-          <!-- Dynamic -->
+          <!-- Loaded Dynamically -->
         </div>
       </div>
     </div>
@@ -964,10 +902,9 @@
       { id: 'SPN-E3', name: 'Sun / Mabrouk', category: 'SPINNING', family: 'E' }
     ];
 
-    // APPLICATION STATE
+    // APPLICATION STATE (EPHEMERAL / SINGLE SESSION ONLY)
     let appState = {
       currentUser: null,
-      isRegisterMode: false,
       sessions: [],
       customTricks: [],
       charts: {}
@@ -977,12 +914,11 @@
       document.getElementById('logDate').value = new Date().toISOString().split('T')[0];
       document.getElementById('progMonth').value = new Date().toISOString().slice(0, 7);
       
-      // Always show auth overlay on initial load / refresh
+      // Lock UI - Show Login Overlay on every page refresh/open
       document.getElementById('authOverlay').style.display = 'flex';
-      document.getElementById('skaterNameGroup').style.display = 'none';
     });
 
-    // IN-APP NOTIFICATION TOAST SYSTEM
+    // CUSTOM TOAST MESSAGES
     function showToast(message, type = 'warning') {
       const container = document.getElementById('toastContainer');
       const toast = document.createElement('div');
@@ -996,116 +932,95 @@
         toast.style.opacity = '0';
         toast.style.transform = 'translateY(-10px)';
         setTimeout(() => toast.remove(), 300);
-      }, 3500);
+      }, 4000);
     }
 
-    function showCustomModal(title, message) {
-      document.getElementById('modalTitle').textContent = title;
-      document.getElementById('modalBody').textContent = message;
-      document.getElementById('customModalOverlay').style.display = 'flex';
+    function togglePasswordVisibility() {
+      const pwd = document.getElementById('authPassword');
+      pwd.type = pwd.type === 'password' ? 'text' : 'password';
     }
 
-    function closeCustomModal() {
-      document.getElementById('customModalOverlay').style.display = 'none';
-    }
-
-    // AUTHENTICATION LOGIC
-    function toggleAuthMode(e) {
-      if (e) e.preventDefault();
-      appState.isRegisterMode = !appState.isRegisterMode;
-
-      const title = document.querySelector('.auth-title');
-      const submitBtn = document.getElementById('authSubmitBtn');
-      const toggleText = document.getElementById('authToggleText');
-      const toggleLink = document.getElementById('authToggleLink');
-      const skaterGroup = document.getElementById('skaterNameGroup');
-
-      if (appState.isRegisterMode) {
-        title.textContent = 'Create Account';
-        submitBtn.textContent = 'Register';
-        toggleText.textContent = 'Already have an account?';
-        toggleLink.textContent = 'Sign In';
-        skaterGroup.style.display = 'block';
-      } else {
-        title.textContent = 'Slalom Tracker';
-        submitBtn.textContent = 'Sign In';
-        toggleText.textContent = 'Need an account?';
-        toggleLink.textContent = 'Register';
-        skaterGroup.style.display = 'none';
-      }
-    }
-
+    // AUTHENTICATION LOGIC WITH BACKEND VERIFICATION
     async function handleLoginSubmit(e) {
       e.preventDefault();
       const u = document.getElementById('authUsername').value.trim();
       const p = document.getElementById('authPassword').value.trim();
-      const skaterName = document.getElementById('authSkaterName').value.trim();
+      const btn = document.getElementById('authSubmitBtn');
 
       if (!u || !p) {
-        showToast('Please fill in all credentials.', 'warning');
+        showToast('Please enter both username and password.', 'warning');
         return;
       }
 
-      showToast('Authenticating...', 'info');
+      // Show Loading State
+      btn.disabled = true;
+      btn.innerHTML = '<span>Verifying credentials...</span>';
 
-      // Attempt Backend API Auth if URL configured
-      if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== "YOUR_APPS_SCRIPT_URL_HERE") {
-        try {
-          const action = appState.isRegisterMode ? 'register' : 'login';
-          const payload = { username: u, password: p, skaterName: skaterName };
-
-          const res = await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ action: action, payload: payload })
-          });
-
-          const json = await res.json();
-          if (json.status === 'success') {
-            appState.currentUser = json.user;
-            if (json.data) {
-              appState.sessions = json.data.sessions || [];
-              appState.customTricks = json.data.tricks ? json.data.tricks.filter(t => t.type === 'Custom') : [];
-            }
-            onAuthSuccess();
-            return;
-          } else {
-            showToast(json.message || 'Authentication failed.', 'error');
-            return;
-          }
-        } catch (err) {
-          console.warn('Backend Auth Error, fallback to standalone local auth mode.', err);
+      try {
+        if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "YOUR_APPS_SCRIPT_WEB_APP_URL") {
+          throw new Error('Google Apps Script URL is not configured.');
         }
-      }
 
-      // Standalone Fallback mode if URL not configured or offline
-      appState.currentUser = { username: u, skaterName: skaterName || u };
-      onAuthSuccess();
+        const response = await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({
+            action: 'login',
+            payload: { username: u, password: p }
+          })
+        });
+
+        const json = await response.json();
+
+        if (json.status === 'success') {
+          appState.currentUser = json.user;
+          appState.sessions = json.data.sessions || [];
+          appState.customTricks = json.data.customTricks || [];
+
+          showToast(`Welcome back, ${appState.currentUser.skaterName}!`, 'success');
+          onAuthSuccess();
+        } else {
+          showToast(json.message || 'Authentication failed.', 'error');
+        }
+
+      } catch (err) {
+        console.error('Authentication Error:', err);
+        showToast(err.message || 'Error connecting to Google Sheets database.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Log In</span>';
+      }
     }
 
     function onAuthSuccess() {
+      // Hide Login Overlay
       document.getElementById('authOverlay').style.display = 'none';
+
+      // Update Skater UI Elements
       document.getElementById('headerSkaterName').textContent = `Skater: ${appState.currentUser.skaterName}`;
       document.getElementById('logSkater').value = appState.currentUser.skaterName;
 
-      showToast(`Welcome back, ${appState.currentUser.skaterName}!`, 'success');
-
+      // Populate Filters
       filterTrickDropdown();
       populateProgressTrickFilter();
-      
-      // CRITICAL: ALWAYS INITIALIZE ON DASHBOARD / PROGRESS VIEW
+
+      // ALWAYS OPEN DASHBOARD FIRST AFTER AUTHENTICATION
       switchTab('dashboard');
     }
 
     function logout() {
       appState.currentUser = null;
-      document.getElementById('authOverlay').style.display = 'flex';
+      appState.sessions = [];
+      appState.customTricks = [];
+
       document.getElementById('authUsername').value = '';
       document.getElementById('authPassword').value = '';
-      showToast('Signed out successfully.', 'info');
+      document.getElementById('authOverlay').style.display = 'flex';
+
+      showToast('Logged out successfully.', 'success');
     }
 
-    // TAB NAVIGATION
+    // TAB SWITCHING LOGIC
     function switchTab(tabId, el) {
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -1115,7 +1030,6 @@
       if (el) {
         el.classList.add('active');
       } else {
-        // Find matching nav element
         const navItems = document.querySelectorAll('.nav-item');
         if (tabId === 'dashboard') navItems[0].classList.add('active');
         if (tabId === 'log') navItems[1].classList.add('active');
@@ -1128,8 +1042,9 @@
       if (tabId === 'tricks') renderCustomTricksList();
     }
 
-    // TRICKS CATALOG & METADATA AUTO-FILL
+    // TRICK CATALOG & AUTO-FILL METADATA
     function getAllTricks() {
+      if (!appState.currentUser) return PREDEFINED_TRICKS;
       const userCustom = appState.customTricks.filter(t => 
         String(t.skaterName).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
       );
@@ -1162,13 +1077,13 @@
 
       filtered.forEach(t => {
         const opt = document.createElement('option');
-        opt.value = t.id;
-        opt.textContent = `${t.name} (${t.category} - Fam ${t.family})`;
+        opt.value = t.id || ('CUST-' + t.trickid);
+        opt.textContent = `${t.name || t.trickname} (${t.category} - Fam ${t.family})`;
         opt.dataset.category = t.category;
         opt.dataset.family = t.family;
-        opt.dataset.name = t.name;
+        opt.dataset.name = t.name || t.trickname;
 
-        if (String(t.id).startsWith('CUST-')) {
+        if (String(opt.value).startsWith('CUST-') || t.type === 'Custom') {
           customGroup.appendChild(opt);
         } else {
           predefinedGroup.appendChild(opt);
@@ -1261,7 +1176,7 @@
 
       appState.sessions.unshift(session);
 
-      if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== "YOUR_APPS_SCRIPT_URL_HERE") {
+      if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== "YOUR_APPS_SCRIPT_WEB_APP_URL") {
         try {
           fetch(APPS_SCRIPT_URL, {
             method: 'POST',
@@ -1288,6 +1203,7 @@
 
       const customTrick = {
         id: 'CUST-' + Date.now(),
+        trickname: name,
         name: name,
         category: category,
         family: family,
@@ -1297,7 +1213,7 @@
 
       appState.customTricks.push(customTrick);
 
-      if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbzEAw0dZ0sGXi220a8H7IOgE9IGVxmUe_mkCkEYQRRzqwwuZEXiWT2-jlDXAIoYNqEa/exec") {
+      if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== "YOUR_APPS_SCRIPT_WEB_APP_URL") {
         try {
           fetch(APPS_SCRIPT_URL, {
             method: 'POST',
@@ -1315,24 +1231,26 @@
 
     function renderCustomTricksList() {
       const container = document.getElementById('customTricksList');
+      if (!appState.currentUser) return;
+
       const userCustom = appState.customTricks.filter(t => 
-        String(t.skaterName).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
+        String(t.skaterName || t.skatername).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
       );
 
       if (userCustom.length === 0) {
         container.innerHTML = `
           <div class="empty-state">
             <div class="empty-icon">💡</div>
-            <div class="empty-text">No custom tricks created yet. Use the form above to add your unique combos.</div>
+            <div class="empty-text">No custom tricks created yet. Use the form above to create your personal combos.</div>
           </div>
         `;
         return;
       }
 
       container.innerHTML = userCustom.map(t => `
-        <div style="padding:12px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+        <div style="padding:12px 0; border-bottom:1px solid var(--border-color); display:flex; justify-space-between; align-items:center;">
           <div>
-            <strong style="font-size:0.95rem;">${t.name}</strong>
+            <strong style="font-size:0.95rem;">${t.name || t.trickname}</strong>
             <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">${t.category} • Family ${t.family}</div>
           </div>
           <span class="badge badge-custom">Custom</span>
@@ -1342,40 +1260,46 @@
 
     function populateProgressTrickFilter() {
       const select = document.getElementById('progTrick');
+      if (!appState.currentUser) return;
+
       const skaterSessions = appState.sessions.filter(s => 
-        String(s.skaterName).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
+        String(s.skaterName || s.skatername).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
       );
-      const uniqueTricks = [...new Map(skaterSessions.map(item => [item.trickId, item])).values()];
+      const uniqueTricks = [...new Map(skaterSessions.map(item => [item.trickId || item.trickid, item])).values()];
 
       select.innerHTML = '<option value="ALL">All Tricks</option>';
       uniqueTricks.forEach(t => {
         const opt = document.createElement('option');
-        opt.value = t.trickId;
-        opt.textContent = t.trickName;
+        opt.value = t.trickId || t.trickid;
+        opt.textContent = t.trickName || t.trickname;
         select.appendChild(opt);
       });
     }
 
     // DASHBOARD & ANALYTICS RENDERER
     function renderAnalytics() {
+      if (!appState.currentUser) return;
+
       const selectedMonth = document.getElementById('progMonth').value;
       const selectedCat = document.getElementById('progCategory').value;
       const selectedFam = document.getElementById('progFamily').value;
       const selectedTrick = document.getElementById('progTrick').value;
 
       const filtered = appState.sessions.filter(s => {
-        if (String(s.skaterName).toLowerCase() !== String(appState.currentUser.skaterName).toLowerCase()) return false;
+        const skaterMatch = String(s.skaterName || s.skatername).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase();
+        if (!skaterMatch) return false;
+
         if (selectedMonth && !String(s.date).startsWith(selectedMonth)) return false;
         if (selectedCat !== 'ALL' && s.category !== selectedCat) return false;
         if (selectedFam !== 'ALL' && s.family !== selectedFam) return false;
-        if (selectedTrick !== 'ALL' && s.trickId !== selectedTrick) return false;
+        if (selectedTrick !== 'ALL' && (s.trickId || s.trickid) !== selectedTrick) return false;
         return true;
       });
 
-      // Update Summary Cards
+      // Update Metrics
       const totalSessions = filtered.length;
-      const totalTarget = filtered.reduce((acc, curr) => acc + Number(curr.targetCones), 0);
-      const totalCompleted = filtered.reduce((acc, curr) => acc + Number(curr.completedCones), 0);
+      const totalTarget = filtered.reduce((acc, curr) => acc + Number(curr.targetCones || curr.targetcones), 0);
+      const totalCompleted = filtered.reduce((acc, curr) => acc + Number(curr.completedCones || curr.completedcones), 0);
       const totalFalls = filtered.reduce((acc, curr) => acc + Number(curr.falls), 0);
       const avgSuccess = totalTarget > 0 ? ((totalCompleted / totalTarget) * 100).toFixed(1) : '0';
 
@@ -1384,7 +1308,7 @@
       document.getElementById('mCompleted').textContent = totalCompleted;
       document.getElementById('mFalls').textContent = totalFalls;
 
-      // Render Charts
+      // Render Dashboard Graphs
       renderChartSuccessRate(filtered);
       renderChartCones(filtered);
       renderChartTricks(filtered);
@@ -1393,7 +1317,7 @@
       renderChartMonthly();
     }
 
-    // CHART GENERATORS
+    // DASHBOARD CHART GENERATORS
     function renderChartSuccessRate(sessions) {
       const ctx = document.getElementById('chartSuccessRate').getContext('2d');
       if (appState.charts.successRate) appState.charts.successRate.destroy();
@@ -1401,8 +1325,8 @@
       const grouped = {};
       sessions.slice().reverse().forEach(s => {
         if (!grouped[s.date]) grouped[s.date] = { target: 0, completed: 0 };
-        grouped[s.date].target += Number(s.targetCones);
-        grouped[s.date].completed += Number(s.completedCones);
+        grouped[s.date].target += Number(s.targetCones || s.targetcones);
+        grouped[s.date].completed += Number(s.completedCones || s.completedcones);
       });
 
       const labels = Object.keys(grouped);
@@ -1433,8 +1357,8 @@
       const grouped = {};
       sessions.slice().reverse().forEach(s => {
         if (!grouped[s.date]) grouped[s.date] = { target: 0, completed: 0 };
-        grouped[s.date].target += Number(s.targetCones);
-        grouped[s.date].completed += Number(s.completedCones);
+        grouped[s.date].target += Number(s.targetCones || s.targetcones);
+        grouped[s.date].completed += Number(s.completedCones || s.completedcones);
       });
 
       const labels = Object.keys(grouped);
@@ -1458,9 +1382,10 @@
 
       const trickStats = {};
       sessions.forEach(s => {
-        if (!trickStats[s.trickName]) trickStats[s.trickName] = { target: 0, completed: 0 };
-        trickStats[s.trickName].target += Number(s.targetCones);
-        trickStats[s.trickName].completed += Number(s.completedCones);
+        const name = s.trickName || s.trickname;
+        if (!trickStats[name]) trickStats[name] = { target: 0, completed: 0 };
+        trickStats[name].target += Number(s.targetCones || s.targetcones);
+        trickStats[name].completed += Number(s.completedCones || s.completedcones);
       });
 
       const labels = Object.keys(trickStats);
@@ -1516,14 +1441,14 @@
 
       const families = ['A', 'B', 'C', 'D', 'E'];
       const skaterSessions = appState.sessions.filter(s => 
-        String(s.skaterName).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
+        String(s.skaterName || s.skatername).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
       );
 
       const familyData = families.map(fam => {
         const famSessions = skaterSessions.filter(s => s.family === fam);
-        const target = famSessions.reduce((acc, curr) => acc + Number(curr.targetCones), 0);
-        const completed = famSessions.reduce((acc, curr) => acc + Number(curr.completedCones), 0);
-        return target > 0 ? parseFloat(((completed / target) * 100).toFixed(1)) : null; // Unpracticed is null
+        const target = famSessions.reduce((acc, curr) => acc + Number(curr.targetCones || curr.targetcones), 0);
+        const completed = famSessions.reduce((acc, curr) => acc + Number(curr.completedCones || curr.completedcones), 0);
+        return target > 0 ? parseFloat(((completed / target) * 100).toFixed(1)) : null;
       });
 
       appState.charts.family = new Chart(ctx, {
@@ -1546,15 +1471,15 @@
       if (appState.charts.monthly) appState.charts.monthly.destroy();
 
       const skaterSessions = appState.sessions.filter(s => 
-        String(s.skaterName).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
+        String(s.skaterName || s.skatername).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
       );
       const monthStats = {};
 
       skaterSessions.forEach(s => {
         const monthKey = String(s.date).slice(0, 7);
         if (!monthStats[monthKey]) monthStats[monthKey] = { target: 0, completed: 0 };
-        monthStats[monthKey].target += Number(s.targetCones);
-        monthStats[monthKey].completed += Number(s.completedCones);
+        monthStats[monthKey].target += Number(s.targetCones || s.targetcones);
+        monthStats[monthKey].completed += Number(s.completedCones || s.completedcones);
       });
 
       const labels = Object.keys(monthStats).sort();
@@ -1580,11 +1505,14 @@
     // TRAINING HISTORY RENDERER WITH EMPTY STATE
     function renderHistory() {
       const container = document.getElementById('historyList');
+      if (!appState.currentUser) return;
+
       const catFilter = document.getElementById('histCat').value;
       const famFilter = document.getElementById('histFam').value;
 
       const filtered = appState.sessions.filter(s => {
-        if (String(s.skaterName).toLowerCase() !== String(appState.currentUser.skaterName).toLowerCase()) return false;
+        const skaterMatch = String(s.skaterName || s.skatername).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase();
+        if (!skaterMatch) return false;
         if (catFilter !== 'ALL' && s.category !== catFilter) return false;
         if (famFilter !== 'ALL' && s.family !== famFilter) return false;
         return true;
@@ -1601,30 +1529,37 @@
         return;
       }
 
-      container.innerHTML = filtered.map(s => `
-        <div class="history-item">
-          <div class="history-header">
-            <div>
-              <div class="history-title">${s.trickName}</div>
-              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">
-                ${s.date} • <span class="badge badge-category">${s.category}</span> <span class="badge badge-family">Fam ${s.family}</span>
+      container.innerHTML = filtered.map(s => {
+        const success = s.successRate || s.successrate;
+        const target = s.targetCones || s.targetcones;
+        const completed = s.completedCones || s.completedcones;
+        const missed = s.missedCones || s.kickedmissedcones || s.missedcones;
+
+        return `
+          <div class="history-item">
+            <div class="history-header">
+              <div>
+                <div class="history-title">${s.trickName || s.trickname}</div>
+                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">
+                  ${s.date} • <span class="badge badge-category">${s.category}</span> <span class="badge badge-family">Fam ${s.family}</span>
+                </div>
+              </div>
+              <div>
+                <span class="badge" style="background:${success >= 80 ? '#d1fae5' : '#fef3c7'}; color:${success >= 80 ? '#065f46' : '#92400e'}; font-size:0.8rem;">
+                  ${success}% Success
+                </span>
               </div>
             </div>
-            <div>
-              <span class="badge" style="background:${s.successRate >= 80 ? '#d1fae5' : '#fef3c7'}; color:${s.successRate >= 80 ? '#065f46' : '#92400e'}; font-size:0.8rem;">
-                ${s.successRate}% Success
-              </span>
+            <div class="history-stats">
+              <span>🎯 Target: ${target}</span>
+              <span>✅ Completed: ${completed}</span>
+              <span>⚠️ Missed: ${missed}</span>
+              <span>🚨 Falls: ${s.falls}</span>
             </div>
+            ${s.notes ? `<div style="font-size:0.8rem; color:var(--text-main); margin-top:10px; font-style:italic;">"${s.notes}"</div>` : ''}
           </div>
-          <div class="history-stats">
-            <span>🎯 Target: ${s.targetCones}</span>
-            <span>✅ Completed: ${s.completedCones}</span>
-            <span>⚠️ Missed: ${s.missedCones}</span>
-            <span>🚨 Falls: ${s.falls}</span>
-          </div>
-          ${s.notes ? `<div style="font-size:0.8rem; color:var(--text-main); margin-top:10px; font-style:italic;">"${s.notes}"</div>` : ''}
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
   </script>
 </body>
