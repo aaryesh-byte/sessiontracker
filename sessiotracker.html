@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Slalom Skating Session Tracker</title>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg-main: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --success: #16a34a;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      padding-bottom: 80px;
+    }
+
+    /* Top Navigation Header */
+    header {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .brand {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .skater-selector-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .skater-select {
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-main);
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--text-main);
+      outline: none;
+    }
+
+    /* Container */
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    /* Tabs Content */
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Form Inputs */
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.825rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 1rem;
+      background: #fff;
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+    }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.2s;
+    }
+
+    .btn:active {
+      background: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background: #e2e8f0;
+      color: var(--text-main);
+    }
+
+    /* Meta Badges */
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .badge-family { background: #dbeafe; color: #1e40af; }
+    .badge-category { background: #f3e8ff; color: #6b21a8; }
+    .badge-custom { background: #fef3c7; color: #92400e; }
+
+    /* Alert Banners */
+    .alert {
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      margin-bottom: 14px;
+      display: none;
+    }
+
+    .alert-warning { background: #fffbeb; border: 1px solid #fcd34d; color: #92400e; }
+    .alert-success { background: #f0fdf4; border: 1px solid #86efac; color: #166534; }
+
+    /* Dashboard Metrics Cards */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    @media (min-width: 600px) {
+      .metrics-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 12px;
+      text-align: center;
+    }
+
+    .metric-value {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-top: 4px;
+    }
+
+    .metric-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    /* History Items */
+    .history-item {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .history-title {
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    .history-stats {
+      display: flex;
+      gap: 12px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    /* Bottom Navigation Bar */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--card-bg);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      z-index: 1000;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 0.725rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-decoration: none;
+      cursor: pointer;
+      width: 25%;
+    }
+
+    .nav-item.active {
+      color: var(--primary);
+    }
+
+    .nav-icon {
+      font-size: 1.25rem;
+      margin-bottom: 2px;
+    }
+
+    .highlight-bg {
+      background-color: #fef2f2 !important;
+      border-color: #fca5a5 !important;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 240px;
+      width: 100%;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header>
+    <div class="brand">
+      <span>🛼</span> SlalomTracker
+    </div>
+    <div class="skater-selector-wrap">
+      <select id="activeSkaterSelect" class="skater-select" onchange="onSkaterChange()">
+        <option value="Aaryesh">Skater: Aaryesh</option>
+        <option value="Alex">Skater: Alex</option>
+        <option value="+New">+ Add Skater</option>
+      </select>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- TAB 1: LOG SESSION -->
+    <div id="tab-log" class="tab-content active">
+      <div class="card">
+        <div class="card-title">Log Practice Attempt</div>
+
+        <div id="validationWarning" class="alert alert-warning"></div>
+
+        <form id="sessionForm" onsubmit="handleSessionSubmit(event)">
+          
+          <div class="row-2">
+            <div class="form-group">
+              <label>Skater Name</label>
+              <input type="text" id="logSkater" readonly>
+            </div>
+            <div class="form-group">
+              <label>Date</label>
+              <input type="date" id="logDate" required>
+            </div>
+          </div>
+
+          <div class="row-2">
+            <div class="form-group">
+              <label>Category Filter</label>
+              <select id="logCategoryFilter" onchange="filterTrickDropdown()">
+                <option value="ALL">All Categories</option>
+                <option value="SITTING">Sitting</option>
+                <option value="WHEELING">Wheeling</option>
+                <option value="SPINNING">Spinning</option>
+                <option value="JUMPING">Jumping</option>
+                <option value="OTHERS">Others</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Family Filter</label>
+              <select id="logFamilyFilter" onchange="filterTrickDropdown()">
+                <option value="ALL">All Families</option>
+                <option value="A">Family A</option>
+                <option value="B">Family B</option>
+                <option value="C">Family C</option>
+                <option value="D">Family D</option>
+                <option value="E">Family E</option>
+                <option value="Custom">Custom</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Select Trick</label>
+            <select id="logTrickSelect" onchange="onTrickSelectionChange()" required>
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+
+          <!-- Metadata Badges -->
+          <div style="margin-bottom:14px; display:flex; gap:8px;">
+            <span id="badgeCategory" class="badge badge-category">Category: -</span>
+            <span id="badgeFamily" class="badge badge-family">Family: -</span>
+          </div>
+
+          <div class="row-3">
+            <div class="form-group">
+              <label>Target Cones</label>
+              <input type="number" id="logTarget" min="1" value="20" oninput="autoCalculateMissed()" required>
+            </div>
+            <div class="form-group">
+              <label>Completed</label>
+              <input type="number" id="logCompleted" min="0" value="16" oninput="autoCalculateMissed()" required>
+            </div>
+            <div class="form-group">
+              <label>Kicked/Missed</label>
+              <input type="number" id="logMissed" min="0" value="4" required>
+            </div>
+          </div>
+
+          <div id="fallsContainer" class="form-group">
+            <label id="fallsLabel">Falls Count</label>
+            <input type="number" id="logFalls" min="0" value="0" required>
+          </div>
+
+          <div class="form-group">
+            <label>Session Notes</label>
+            <input type="text" id="logNotes" placeholder="e.g. Clean entry, lost balance at cone 15">
+          </div>
+
+          <button type="submit" class="btn">Save Training Session</button>
+        </form>
+      </div>
+    </div>
+
+
+    <!-- TAB 2: PROGRESS & DASHBOARD -->
+    <div id="tab-progress" class="tab-content">
+      
+      <!-- Progress Filters -->
+      <div class="card" style="margin-bottom: 12px;">
+        <div class="card-title">Filter Analytics</div>
+        <div class="row-2">
+          <div class="form-group" style="margin-bottom:8px;">
+            <label>Select Month</label>
+            <input type="month" id="progMonth" onchange="renderAnalytics()">
+          </div>
+          <div class="form-group" style="margin-bottom:8px;">
+            <label>Category</label>
+            <select id="progCategory" onchange="renderAnalytics()">
+              <option value="ALL">All Categories</option>
+              <option value="SITTING">Sitting</option>
+              <option value="WHEELING">Wheeling</option>
+              <option value="SPINNING">Spinning</option>
+              <option value="JUMPING">Jumping</option>
+              <option value="OTHERS">Others</option>
+            </select>
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Family</label>
+            <select id="progFamily" onchange="renderAnalytics()">
+              <option value="ALL">All Families</option>
+              <option value="A">Family A</option>
+              <option value="B">Family B</option>
+              <option value="C">Family C</option>
+              <option value="D">Family D</option>
+              <option value="E">Family E</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Specific Trick</label>
+            <select id="progTrick" onchange="renderAnalytics()">
+              <option value="ALL">All Tricks</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard Metric Cards -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-label">Sessions</div>
+          <div id="mSessions" class="metric-value">0</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Avg Success</div>
+          <div id="mSuccess" class="metric-value">0%</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Completed</div>
+          <div id="mCompleted" class="metric-value">0</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Total Falls</div>
+          <div id="mFalls" class="metric-value">0</div>
+        </div>
+      </div>
+
+      <!-- Graph 1: Success Rate Over Time -->
+      <div class="card">
+        <div class="card-title">Success Rate % Over Time</div>
+        <div class="chart-container">
+          <canvas id="chartSuccessRate"></canvas>
+        </div>
+      </div>
+
+      <!-- Graph 2: Target vs Completed -->
+      <div class="card">
+        <div class="card-title">Target vs Completed Cones</div>
+        <div class="chart-container">
+          <canvas id="chartCones"></canvas>
+        </div>
+      </div>
+
+      <!-- Graph 3: Progress By Trick -->
+      <div class="card">
+        <div class="card-title">Avg Success Rate by Trick</div>
+        <div class="chart-container">
+          <canvas id="chartTricks"></canvas>
+        </div>
+      </div>
+
+      <!-- Graph 4: Falls Over Time -->
+      <div class="card">
+        <div class="card-title">Falls Count Over Time</div>
+        <div class="chart-container">
+          <canvas id="chartFalls"></canvas>
+        </div>
+      </div>
+
+      <!-- Graph 5: Progress By Family -->
+      <div class="card">
+        <div class="card-title">Family A–E Performance Matrix</div>
+        <div class="chart-container">
+          <canvas id="chartFamily"></canvas>
+        </div>
+      </div>
+
+      <!-- Graph 6: Month to Month Comparison -->
+      <div class="card">
+        <div class="card-title">Month-to-Month Success Trend</div>
+        <div class="chart-container">
+          <canvas id="chartMonthly"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- TAB 3: TRAINING HISTORY -->
+    <div id="tab-history" class="tab-content">
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-title">History Filters</div>
+        <div class="row-2">
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Category</label>
+            <select id="histCat" onchange="renderHistory()">
+              <option value="ALL">All Categories</option>
+              <option value="SITTING">Sitting</option>
+              <option value="WHEELING">Wheeling</option>
+              <option value="SPINNING">Spinning</option>
+              <option value="JUMPING">Jumping</option>
+              <option value="OTHERS">Others</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Family</label>
+            <select id="histFam" onchange="renderHistory()">
+              <option value="ALL">All Families</option>
+              <option value="A">Family A</option>
+              <option value="B">Family B</option>
+              <option value="C">Family C</option>
+              <option value="D">Family D</option>
+              <option value="E">Family E</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="historyList">
+        <!-- History Cards Loaded Dynamically -->
+      </div>
+    </div>
+
+
+    <!-- TAB 4: MY TRICKS -->
+    <div id="tab-tricks" class="tab-content">
+      <div class="card">
+        <div class="card-title">Add Custom Trick</div>
+        <form id="customTrickForm" onsubmit="handleCustomTrickSubmit(event)">
+          <div class="form-group">
+            <label>Custom Trick Name</label>
+            <input type="text" id="custName" placeholder="e.g. Double Butterfly Combo" required>
+          </div>
+          <div class="row-2">
+            <div class="form-group">
+              <label>Category</label>
+              <select id="custCat">
+                <option value="OTHERS">Others</option>
+                <option value="SITTING">Sitting</option>
+                <option value="JUMPING">Jumping</option>
+                <option value="WHEELING">Wheeling</option>
+                <option value="SPINNING">Spinning</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Family Metadata</label>
+              <select id="custFam">
+                <option value="Custom">Custom</option>
+                <option value="A">Family A</option>
+                <option value="B">Family B</option>
+                <option value="C">Family C</option>
+                <option value="D">Family D</option>
+                <option value="E">Family E</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn">Create Custom Trick</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card-title">My Custom Tricks Catalog</div>
+        <div id="customTricksList">
+          <!-- Dynamically Loaded -->
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab('log', this)">
+      <span class="nav-icon">📝</span>
+      <span>Log</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('progress', this)">
+      <span class="nav-icon">📊</span>
+      <span>Progress</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('history', this)">
+      <span class="nav-icon">📜</span>
+      <span>History</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('tricks', this)">
+      <span class="nav-icon">💡</span>
+      <span>My Tricks</span>
+    </div>
+  </nav>
+
+
+  <!-- JavaScript Logic -->
+  <script>
+    // PREDEFINED MATRIX 2026 TRICKS DATABASE
+    const PREDEFINED_TRICKS = [
+      // OTHERS
+      { id: 'OTH-A1', name: 'Butterfly Cross', category: 'OTHERS', family: 'A' },
+      { id: 'OTH-B1', name: 'Butterfly', category: 'OTHERS', family: 'B' },
+      { id: 'OTH-B2', name: 'Toe to Reverse Eagle', category: 'OTHERS', family: 'B' },
+      { id: 'OTH-C1', name: 'Back Cobra', category: 'OTHERS', family: 'C' },
+      { id: 'OTH-C2', name: 'Cobra', category: 'OTHERS', family: 'C' },
+      { id: 'OTH-C3', name: 'Reverse Eagle', category: 'OTHERS', family: 'C' },
+      { id: 'OTH-C4', name: 'Two Wheels Eagle', category: 'OTHERS', family: 'C' },
+      { id: 'OTH-D1', name: '7-Eagle', category: 'OTHERS', family: 'D' },
+      { id: 'OTH-D2', name: 'Toe Toe Special', category: 'OTHERS', family: 'D' },
+      { id: 'OTH-D3', name: 'Brush', category: 'OTHERS', family: 'D' },
+      { id: 'OTH-D4', name: 'Heel Toe Special', category: 'OTHERS', family: 'D' },
+      { id: 'OTH-D5', name: 'Eagle / Eagle Cross', category: 'OTHERS', family: 'D' },
+      { id: 'OTH-D6', name: 'Sweepers', category: 'OTHERS', family: 'D' },
+      { id: 'OTH-E1', name: 'Eight', category: 'OTHERS', family: 'E' },
+      { id: 'OTH-E2', name: 'Back Eight', category: 'OTHERS', family: 'E' },
+      { id: 'OTH-E3', name: 'Stroll / Back Stroll', category: 'OTHERS', family: 'E' },
+      { id: 'OTH-E4', name: 'Crazy / Double Crazy Series', category: 'OTHERS', family: 'E' },
+      { id: 'OTH-E5', name: 'Chapchap / X', category: 'OTHERS', family: 'E' },
+      { id: 'OTH-E6', name: 'Mega Series', category: 'OTHERS', family: 'E' },
+      { id: 'OTH-E7', name: 'Nelson / Back Nelson Series', category: 'OTHERS', family: 'E' },
+
+      // SITTING
+      { id: 'SIT-A1', name: 'Back Toe Christie', category: 'SITTING', family: 'A' },
+      { id: 'SIT-A2', name: 'Toe Christie', category: 'SITTING', family: 'A' },
+      { id: 'SIT-A3', name: 'Back Teapot / Back Superman', category: 'SITTING', family: 'A' },
+      { id: 'SIT-A4', name: 'Toe Footgun', category: 'SITTING', family: 'A' },
+      { id: 'SIT-B1', name: 'Back Toe Footgun', category: 'SITTING', family: 'B' },
+      { id: 'SIT-B2', name: 'Teapot / Superman', category: 'SITTING', family: 'B' },
+      { id: 'SIT-C1', name: 'Back Sitting Cobra', category: 'SITTING', family: 'C' },
+      { id: 'SIT-C2', name: 'Back Christie', category: 'SITTING', family: 'C' },
+      { id: 'SIT-C3', name: 'Sitting Cobra', category: 'SITTING', family: 'C' },
+      { id: 'SIT-C4', name: 'Christie', category: 'SITTING', family: 'C' },
+      { id: 'SIT-C5', name: 'Back Footgun', category: 'SITTING', family: 'C' },
+      { id: 'SIT-C6', name: 'Footgun', category: 'SITTING', family: 'C' },
+      { id: 'SIT-D1', name: 'Sitting Heel Toe Back Cross', category: 'SITTING', family: 'D' },
+      { id: 'SIT-D2', name: 'Sitting Heel Toe Cross', category: 'SITTING', family: 'D' },
+      { id: 'SIT-D3', name: 'Back Sitting Heel Toe Snake', category: 'SITTING', family: 'D' },
+      { id: 'SIT-D4', name: 'Sitting Heel Toe Snake', category: 'SITTING', family: 'D' },
+      { id: 'SIT-E1', name: 'Small Cart / 5 Wheels Sitting', category: 'SITTING', family: 'E' },
+      { id: 'SIT-E2', name: 'Sitting Fish', category: 'SITTING', family: 'E' },
+
+      // JUMPING
+      { id: 'JMP-A1', name: 'Front Toe Footgun Kazachok', category: 'JUMPING', family: 'A' },
+      { id: 'JMP-A2', name: 'Heel Wiper', category: 'JUMPING', family: 'A' },
+      { id: 'JMP-A3', name: 'Toe Wiper', category: 'JUMPING', family: 'A' },
+      { id: 'JMP-B1', name: 'Footgun Spin Jump', category: 'JUMPING', family: 'B' },
+      { id: 'JMP-B2', name: 'Back Kazachok', category: 'JUMPING', family: 'B' },
+      { id: 'JMP-C1', name: 'Kazachok Spin', category: 'JUMPING', family: 'C' },
+      { id: 'JMP-C2', name: 'Front Wiper', category: 'JUMPING', family: 'C' },
+      { id: 'JMP-C3', name: 'Wiper', category: 'JUMPING', family: 'C' },
+      { id: 'JMP-D1', name: 'Footspin Jump', category: 'JUMPING', family: 'D' },
+      { id: 'JMP-E1', name: 'X Jump', category: 'JUMPING', family: 'E' },
+      { id: 'JMP-E2', name: 'Crab Cross', category: 'JUMPING', family: 'E' },
+      { id: 'JMP-E3', name: 'Crab Series', category: 'JUMPING', family: 'E' },
+
+      // WHEELING
+      { id: 'WHL-A1', name: 'Backward Leaf Series', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A2', name: 'Side / Forward Leaf Series', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A3', name: 'Wheeling Shifts / Countershifts Series', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A4', name: 'Square Series', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-B1', name: 'Wheeling Flip / Daynight Series', category: 'WHEELING', family: 'B' },
+      { id: 'WHL-C1', name: 'Toe Sewing Machine', category: 'WHEELING', family: 'C' },
+      { id: 'WHL-C2', name: 'Back Wheeling', category: 'WHEELING', family: 'C' },
+      { id: 'WHL-C3', name: 'Flat Shifts / Countershifts Series', category: 'WHEELING', family: 'C' },
+      { id: 'WHL-C4', name: 'FWD Wheeling', category: 'WHEELING', family: 'C' },
+      { id: 'WHL-C5', name: 'Flat Flip / Daynight Series', category: 'WHEELING', family: 'C' },
+      { id: 'WHL-D1', name: 'Two Wheels Back Cross', category: 'WHEELING', family: 'D' },
+      { id: 'WHL-D2', name: 'Two Wheels Back Snake', category: 'WHEELING', family: 'D' },
+      { id: 'WHL-D3', name: 'Two Wheels Cross', category: 'WHEELING', family: 'D' },
+      { id: 'WHL-D4', name: 'Two Wheels Snake', category: 'WHEELING', family: 'D' },
+      { id: 'WHL-E1', name: 'Back One Foot', category: 'WHEELING', family: 'E' },
+      { id: 'WHL-E2', name: 'One Foot', category: 'WHEELING', family: 'E' },
+      { id: 'WHL-E3', name: 'Back Snake / Back Cross', category: 'WHEELING', family: 'E' },
+      { id: 'WHL-E4', name: 'Snake / Cross', category: 'WHEELING', family: 'E' },
+      { id: 'WHL-E5', name: 'Fish', category: 'WHEELING', family: 'E' },
+
+      // SPINNING
+      { id: 'SPN-A1', name: 'Back Toe Christie Spin', category: 'SPINNING', family: 'A' },
+      { id: 'SPN-A2', name: 'Toe Christie Spin', category: 'SPINNING', family: 'A' },
+      { id: 'SPN-A3', name: 'Back Toe Footgun Spin', category: 'SPINNING', family: 'A' },
+      { id: 'SPN-A4', name: 'Toe Footgun Spin', category: 'SPINNING', family: 'A' },
+      { id: 'SPN-A5', name: 'Back Seven int/ext', category: 'SPINNING', family: 'A' },
+      { id: 'SPN-A6', name: 'One Cone Back Seven int/ext', category: 'SPINNING', family: 'A' },
+      { id: 'SPN-B1', name: 'Seven int/ext', category: 'SPINNING', family: 'B' },
+      { id: 'SPN-B2', name: 'One Cone Seven int/ext', category: 'SPINNING', family: 'B' },
+      { id: 'SPN-B3', name: 'Flat Back Seven int/ext', category: 'SPINNING', family: 'B' },
+      { id: 'SPN-B4', name: 'Flat Seven int/ext', category: 'SPINNING', family: 'B' },
+      { id: 'SPN-C1', name: 'One Cone Back Korean Spin', category: 'SPINNING', family: 'C' },
+      { id: 'SPN-C2', name: 'Back Korean Spin', category: 'SPINNING', family: 'C' },
+      { id: 'SPN-C3', name: 'One Cone Korean Spin', category: 'SPINNING', family: 'C' },
+      { id: 'SPN-C4', name: 'Korean Spin', category: 'SPINNING', family: 'C' },
+      { id: 'SPN-C5', name: 'Back Two Wheel Spin', category: 'SPINNING', family: 'C' },
+      { id: 'SPN-C6', name: 'Two Wheels Spin', category: 'SPINNING', family: 'C' },
+      { id: 'SPN-D1', name: 'Back J-Turn', category: 'SPINNING', family: 'D' },
+      { id: 'SPN-D2', name: 'J-Turn', category: 'SPINNING', family: 'D' },
+      { id: 'SPN-D3', name: 'Two Feet Spin', category: 'SPINNING', family: 'D' },
+      { id: 'SPN-D4', name: 'Totalcross', category: 'SPINNING', family: 'D' },
+      { id: 'SPN-E1', name: 'Italian / Volt', category: 'SPINNING', family: 'E' },
+      { id: 'SPN-E2', name: 'Crazy Sun / Mexican', category: 'SPINNING', family: 'E' },
+      { id: 'SPN-E3', name: 'Sun / Mabrouk', category: 'SPINNING', family: 'E' }
+    ];
+
+    // STATE MANAGEMENT
+    let appState = {
+      apiUrl: localStorage.getItem('slalom_api_url') || '',
+      currentSkater: localStorage.getItem('slalom_active_skater') || 'Aaryesh',
+      sessions: JSON.parse(localStorage.getItem('slalom_sessions')) || [],
+      customTricks: JSON.parse(localStorage.getItem('slalom_custom_tricks')) || [],
+      charts: {}
+    };
+
+    // INITIALIZATION
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('logDate').value = new Date().toISOString().split('T')[0];
+      document.getElementById('progMonth').value = new Date().toISOString().slice(0, 7);
+      
+      // Load Initial Mock Sessions if empty
+      if (appState.sessions.length === 0) {
+        seedInitialMockData();
+      }
+
+      updateSkaterDropdowns();
+      filterTrickDropdown();
+      populateProgressTrickFilter();
+      renderAnalytics();
+      renderHistory();
+      renderCustomTricksList();
+
+      if (appState.apiUrl) {
+        syncWithGoogleSheets();
+      }
+    });
+
+    function seedInitialMockData() {
+      const today = new Date().toISOString().split('T')[0];
+      appState.sessions = [
+        {
+          sessionId: 'SESS-101', date: today, skaterName: 'Aaryesh',
+          trickId: 'SIT-A2', trickName: 'Toe Christie', category: 'SITTING', family: 'A',
+          targetCones: 20, completedCones: 17, missedCones: 3, falls: 2,
+          successRate: 85.0, missRate: 15.0, notes: 'Good balance on heel', timestamp: new Date().toISOString()
+        },
+        {
+          sessionId: 'SESS-102', date: today, skaterName: 'Aaryesh',
+          trickId: 'OTH-C1', trickName: 'Back Cobra', category: 'OTHERS', family: 'C',
+          targetCones: 20, completedCones: 14, missedCones: 6, falls: 0,
+          successRate: 70.0, missRate: 30.0, notes: 'Need more ankle strength', timestamp: new Date().toISOString()
+        }
+      ];
+      saveLocalState();
+    }
+
+    function saveLocalState() {
+      localStorage.setItem('slalom_sessions', JSON.stringify(appState.sessions));
+      localStorage.setItem('slalom_custom_tricks', JSON.stringify(appState.customTricks));
+      localStorage.setItem('slalom_active_skater', appState.currentSkater);
+    }
+
+    // SKATER MANAGEMENT
+    function onSkaterChange() {
+      const select = document.getElementById('activeSkaterSelect');
+      if (select.value === '+New') {
+        const name = prompt('Enter New Skater Name:');
+        if (name && name.trim()) {
+          appState.currentSkater = name.trim();
+          saveLocalState();
+          updateSkaterDropdowns();
+        } else {
+          select.value = appState.currentSkater;
+        }
+      } else {
+        appState.currentSkater = select.value;
+        saveLocalState();
+      }
+      
+      document.getElementById('logSkater').value = appState.currentSkater;
+      filterTrickDropdown();
+      renderAnalytics();
+      renderHistory();
+      renderCustomTricksList();
+    }
+
+    function updateSkaterDropdowns() {
+      const select = document.getElementById('activeSkaterSelect');
+      select.innerHTML = `
+        <option value="Aaryesh">Skater: Aaryesh</option>
+        <option value="Alex">Skater: Alex</option>
+        ${appState.currentSkater !== 'Aaryesh' && appState.currentSkater !== 'Alex' ? `<option value="${appState.currentSkater}">Skater: ${appState.currentSkater}</option>` : ''}
+        <option value="+New">+ Add Skater</option>
+      `;
+      select.value = appState.currentSkater;
+      document.getElementById('logSkater').value = appState.currentSkater;
+    }
+
+    // TRICK DROPDOWN & METADATA AUTO-FILL
+    function getAllTricks() {
+      const userCustom = appState.customTricks.filter(t => t.skaterName.toLowerCase() === appState.currentSkater.toLowerCase());
+      return [...PREDEFINED_TRICKS, ...userCustom];
+    }
+
+    function filterTrickDropdown() {
+      const cat = document.getElementById('logCategoryFilter').value;
+      const fam = document.getElementById('logFamilyFilter').value;
+      const select = document.getElementById('logTrickSelect');
+
+      const all = getAllTricks();
+      const filtered = all.filter(t => {
+        const matchCat = (cat === 'ALL' || t.category === cat);
+        const matchFam = (fam === 'ALL' || t.family === fam);
+        return matchCat && matchFam;
+      });
+
+      select.innerHTML = '';
+      if (filtered.length === 0) {
+        select.innerHTML = '<option value="">No tricks found</option>';
+        return;
+      }
+
+      const predefinedGroup = document.createElement('optgroup');
+      predefinedGroup.label = '--- PREDEFINED MATRIX TRICKS ---';
+
+      const customGroup = document.createElement('optgroup');
+      customGroup.label = '--- MY CUSTOM TRICKS ---';
+
+      filtered.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.id;
+        opt.textContent = `${t.name} (${t.category} - Fam ${t.family})`;
+        opt.dataset.category = t.category;
+        opt.dataset.family = t.family;
+        opt.dataset.name = t.name;
+
+        if (t.id.startsWith('CUST-')) {
+          customGroup.appendChild(opt);
+        } else {
+          predefinedGroup.appendChild(opt);
+        }
+      });
+
+      if (predefinedGroup.children.length > 0) select.appendChild(predefinedGroup);
+      if (customGroup.children.length > 0) select.appendChild(customGroup);
+
+      onTrickSelectionChange();
+    }
+
+    function onTrickSelectionChange() {
+      const select = document.getElementById('logTrickSelect');
+      const selectedOption = select.options[select.selectedIndex];
+      
+      if (!selectedOption || !selectedOption.dataset.category) {
+        document.getElementById('badgeCategory').textContent = 'Category: -';
+        document.getElementById('badgeFamily').textContent = 'Family: -';
+        return;
+      }
+
+      const category = selectedOption.dataset.category;
+      const family = selectedOption.dataset.family;
+
+      document.getElementById('badgeCategory').textContent = `Category: ${category}`;
+      document.getElementById('badgeFamily').textContent = `Family: ${family}`;
+
+      // Highlight Falls if Category is SITTING
+      const fallsContainer = document.getElementById('fallsContainer');
+      if (category === 'SITTING') {
+        fallsContainer.classList.add('highlight-bg');
+        document.getElementById('fallsLabel').textContent = '⚠️ Falls Count (Sitting Trick)';
+      } else {
+        fallsContainer.classList.remove('highlight-bg');
+        document.getElementById('fallsLabel').textContent = 'Falls Count';
+      }
+    }
+
+    function autoCalculateMissed() {
+      const target = parseInt(document.getElementById('logTarget').value) || 0;
+      const completed = parseInt(document.getElementById('logCompleted').value) || 0;
+      const missedInput = document.getElementById('logMissed');
+      
+      if (target >= completed) {
+        missedInput.value = target - completed;
+      }
+      validateFormCounts();
+    }
+
+    function validateFormCounts() {
+      const target = parseInt(document.getElementById('logTarget').value) || 0;
+      const completed = parseInt(document.getElementById('logCompleted').value) || 0;
+      const missed = parseInt(document.getElementById('logMissed').value) || 0;
+      const warning = document.getElementById('validationWarning');
+
+      if (completed + missed !== target) {
+        warning.style.display = 'block';
+        warning.textContent = `Note: Completed (${completed}) + Kicked (${missed}) equals ${completed + missed}, which differs from Target (${target}).`;
+      } else {
+        warning.style.display = 'none';
+      }
+    }
+
+    // FORM SUBMISSION: LOG SESSION
+    async function handleSessionSubmit(e) {
+      e.preventDefault();
+      const select = document.getElementById('logTrickSelect');
+      const opt = select.options[select.selectedIndex];
+
+      if (!opt || !opt.value) {
+        alert('Please select a valid trick.');
+        return;
+      }
+
+      const target = parseInt(document.getElementById('logTarget').value);
+      const completed = parseInt(document.getElementById('logCompleted').value);
+      const missed = parseInt(document.getElementById('logMissed').value);
+
+      if (target <= 0) {
+        alert('Target cones must be greater than 0.');
+        return;
+      }
+
+      const session = {
+        sessionId: 'SESS-' + Date.now(),
+        date: document.getElementById('logDate').value,
+        skaterName: appState.currentSkater,
+        trickId: opt.value,
+        trickName: opt.dataset.name,
+        category: opt.dataset.category,
+        family: opt.dataset.family,
+        targetCones: target,
+        completedCones: completed,
+        missedCones: missed,
+        falls: parseInt(document.getElementById('logFalls').value) || 0,
+        successRate: parseFloat(((completed / target) * 100).toFixed(1)),
+        missRate: parseFloat(((missed / target) * 100).toFixed(1)),
+        notes: document.getElementById('logNotes').value,
+        timestamp: new Date().toISOString()
+      };
+
+      appState.sessions.unshift(session);
+      saveLocalState();
+
+      if (appState.apiUrl) {
+        try {
+          fetch(appState.apiUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'logSession', payload: session })
+          });
+        } catch(err) { console.error('API Error:', err); }
+      }
+
+      alert('Practice session recorded successfully!');
+      document.getElementById('logNotes').value = '';
+      populateProgressTrickFilter();
+      renderAnalytics();
+      renderHistory();
+      switchTab('progress');
+    }
+
+    // CUSTOM TRICK SUBMISSION
+    async function handleCustomTrickSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('custName').value.trim();
+      const category = document.getElementById('custCat').value;
+      const family = document.getElementById('custFam').value;
+
+      if (!name) return;
+
+      const customTrick = {
+        id: 'CUST-' + Date.now(),
+        name: name,
+        category: category,
+        family: family,
+        type: 'Custom',
+        skaterName: appState.currentSkater
+      };
+
+      appState.customTricks.push(customTrick);
+      saveLocalState();
+
+      if (appState.apiUrl) {
+        try {
+          fetch(appState.apiUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'addCustomTrick', payload: customTrick })
+          });
+        } catch(err) { console.error('API Error:', err); }
+      }
+
+      alert(`Custom trick "${name}" added!`);
+      document.getElementById('custName').value = '';
+      filterTrickDropdown();
+      renderCustomTricksList();
+    }
+
+    function renderCustomTricksList() {
+      const container = document.getElementById('customTricksList');
+      const userCustom = appState.customTricks.filter(t => t.skaterName.toLowerCase() === appState.currentSkater.toLowerCase());
+
+      if (userCustom.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted); font-size:0.875rem;">No custom tricks created yet.</p>';
+        return;
+      }
+
+      container.innerHTML = userCustom.map(t => `
+        <div style="padding:10px; border-bottom:1px solid var(--border-color); display:flex; justify-space-between; align-items:center;">
+          <div>
+            <strong>${t.name}</strong>
+            <div style="font-size:0.75rem; color:var(--text-muted);">${t.category} • Family ${t.family}</div>
+          </div>
+          <span class="badge badge-custom">Custom</span>
+        </div>
+      `).join('');
+    }
+
+    // POPULATE ANALYTICS FILTER TRICKS
+    function populateProgressTrickFilter() {
+      const select = document.getElementById('progTrick');
+      const skaterSessions = appState.sessions.filter(s => s.skaterName.toLowerCase() === appState.currentSkater.toLowerCase());
+      const uniqueTricks = [...new Map(skaterSessions.map(item => [item.trickId, item])).values()];
+
+      select.innerHTML = '<option value="ALL">All Tricks</option>';
+      uniqueTricks.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.trickId;
+        opt.textContent = t.trickName;
+        select.appendChild(opt);
+      });
+    }
+
+    // ANALYTICS & DASHBOARD CALCULATIONS
+    function renderAnalytics() {
+      const selectedMonth = document.getElementById('progMonth').value; // YYYY-MM
+      const selectedCat = document.getElementById('progCategory').value;
+      const selectedFam = document.getElementById('progFamily').value;
+      const selectedTrick = document.getElementById('progTrick').value;
+
+      // Filter Sessions by Skater, Month, Category, Family, Trick
+      const filtered = appState.sessions.filter(s => {
+        if (s.skaterName.toLowerCase() !== appState.currentSkater.toLowerCase()) return false;
+        if (selectedMonth && !s.date.startsWith(selectedMonth)) return false;
+        if (selectedCat !== 'ALL' && s.category !== selectedCat) return false;
+        if (selectedFam !== 'ALL' && s.family !== selectedFam) return false;
+        if (selectedTrick !== 'ALL' && s.trickId !== selectedTrick) return false;
+        return true;
+      });
+
+      // Update Summary Cards
+      const totalSessions = filtered.length;
+      const totalTarget = filtered.reduce((acc, curr) => acc + curr.targetCones, 0);
+      const totalCompleted = filtered.reduce((acc, curr) => acc + curr.completedCones, 0);
+      const totalFalls = filtered.reduce((acc, curr) => acc + curr.falls, 0);
+      const avgSuccess = totalTarget > 0 ? ((totalCompleted / totalTarget) * 100).toFixed(1) : '0';
+
+      document.getElementById('mSessions').textContent = totalSessions;
+      document.getElementById('mSuccess').textContent = `${avgSuccess}%`;
+      document.getElementById('mCompleted').textContent = totalCompleted;
+      document.getElementById('mFalls').textContent = totalFalls;
+
+      // Prepare Dynamic Charts
+      renderChartSuccessRate(filtered);
+      renderChartCones(filtered);
+      renderChartTricks(filtered);
+      renderChartFalls(filtered);
+      renderChartFamily();
+      renderChartMonthly();
+    }
+
+    // CHART 1: SUCCESS RATE OVER TIME
+    function renderChartSuccessRate(sessions) {
+      const ctx = document.getElementById('chartSuccessRate').getContext('2d');
+      if (appState.charts.successRate) appState.charts.successRate.destroy();
+
+      // Group by Date Average
+      const grouped = {};
+      sessions.slice().reverse().forEach(s => {
+        if (!grouped[s.date]) grouped[s.date] = { target: 0, completed: 0 };
+        grouped[s.date].target += s.targetCones;
+        grouped[s.date].completed += s.completedCones;
+      });
+
+      const labels = Object.keys(grouped);
+      const data = labels.map(d => ((grouped[d].completed / grouped[d].target) * 100).toFixed(1));
+
+      appState.charts.successRate = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Success Rate %',
+            data: data,
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+            fill: true,
+            tension: 0.3
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } } }
+      });
+    }
+
+    // CHART 2: TARGET VS COMPLETED
+    function renderChartCones(sessions) {
+      const ctx = document.getElementById('chartCones').getContext('2d');
+      if (appState.charts.cones) appState.charts.cones.destroy();
+
+      const grouped = {};
+      sessions.slice().reverse().forEach(s => {
+        if (!grouped[s.date]) grouped[s.date] = { target: 0, completed: 0 };
+        grouped[s.date].target += s.targetCones;
+        grouped[s.date].completed += s.completedCones;
+      });
+
+      const labels = Object.keys(grouped);
+
+      appState.charts.cones = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'Target Cones', data: labels.map(d => grouped[d].target), backgroundColor: '#cbd5e1' },
+            { label: 'Completed Cones', data: labels.map(d => grouped[d].completed), backgroundColor: '#16a34a' }
+          ]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+    }
+
+    // CHART 3: PROGRESS BY TRICK
+    function renderChartTricks(sessions) {
+      const ctx = document.getElementById('chartTricks').getContext('2d');
+      if (appState.charts.tricks) appState.charts.tricks.destroy();
+
+      const trickStats = {};
+      sessions.forEach(s => {
+        if (!trickStats[s.trickName]) trickStats[s.trickName] = { target: 0, completed: 0 };
+        trickStats[s.trickName].target += s.targetCones;
+        trickStats[s.trickName].completed += s.completedCones;
+      });
+
+      const labels = Object.keys(trickStats);
+      const data = labels.map(l => ((trickStats[l].completed / trickStats[l].target) * 100).toFixed(1));
+
+      appState.charts.tricks = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Avg Success %',
+            data: data,
+            backgroundColor: '#8b5cf6'
+          }]
+        },
+        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { min: 0, max: 100 } } }
+      });
+    }
+
+    // CHART 4: FALLS OVER TIME
+    function renderChartFalls(sessions) {
+      const ctx = document.getElementById('chartFalls').getContext('2d');
+      if (appState.charts.falls) appState.charts.falls.destroy();
+
+      const grouped = {};
+      sessions.slice().reverse().forEach(s => {
+        if (!grouped[s.date]) grouped[s.date] = 0;
+        grouped[s.date] += s.falls;
+      });
+
+      const labels = Object.keys(grouped);
+
+      appState.charts.falls = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Falls Count',
+            data: labels.map(d => grouped[d]),
+            borderColor: '#dc2626',
+            backgroundColor: 'rgba(220, 38, 38, 0.1)',
+            fill: true
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+      });
+    }
+
+    // CHART 5: FAMILY MATRIX COMPARISON
+    function renderChartFamily() {
+      const ctx = document.getElementById('chartFamily').getContext('2d');
+      if (appState.charts.family) appState.charts.family.destroy();
+
+      const families = ['A', 'B', 'C', 'D', 'E'];
+      const skaterSessions = appState.sessions.filter(s => s.skaterName.toLowerCase() === appState.currentSkater.toLowerCase());
+
+      const familyData = families.map(fam => {
+        const famSessions = skaterSessions.filter(s => s.family === fam);
+        const target = famSessions.reduce((acc, curr) => acc + curr.targetCones, 0);
+        const completed = famSessions.reduce((acc, curr) => acc + curr.completedCones, 0);
+        return target > 0 ? parseFloat(((completed / target) * 100).toFixed(1)) : null; // null for unpracticed
+      });
+
+      appState.charts.family = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Family A', 'Family B', 'Family C', 'Family D', 'Family E'],
+          datasets: [{
+            label: 'Success Rate %',
+            data: familyData,
+            backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } } }
+      });
+    }
+
+    // CHART 6: MONTH TO MONTH
+    function renderChartMonthly() {
+      const ctx = document.getElementById('chartMonthly').getContext('2d');
+      if (appState.charts.monthly) appState.charts.monthly.destroy();
+
+      const skaterSessions = appState.sessions.filter(s => s.skaterName.toLowerCase() === appState.currentSkater.toLowerCase());
+      const monthStats = {};
+
+      skaterSessions.forEach(s => {
+        const monthKey = s.date.slice(0, 7); // YYYY-MM
+        if (!monthStats[monthKey]) monthStats[monthKey] = { target: 0, completed: 0 };
+        monthStats[monthKey].target += s.targetCones;
+        monthStats[monthKey].completed += s.completedCones;
+      });
+
+      const labels = Object.keys(monthStats).sort();
+      const data = labels.map(m => ((monthStats[m].completed / monthStats[m].target) * 100).toFixed(1));
+
+      appState.charts.monthly = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Monthly Avg Success %',
+            data: data,
+            borderColor: '#059669',
+            backgroundColor: 'rgba(5, 150, 105, 0.1)',
+            fill: true
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } } }
+      });
+    }
+
+    // HISTORY RENDERER
+    function renderHistory() {
+      const container = document.getElementById('historyList');
+      const catFilter = document.getElementById('histCat').value;
+      const famFilter = document.getElementById('histFam').value;
+
+      const filtered = appState.sessions.filter(s => {
+        if (s.skaterName.toLowerCase() !== appState.currentSkater.toLowerCase()) return false;
+        if (catFilter !== 'ALL' && s.category !== catFilter) return false;
+        if (famFilter !== 'ALL' && s.family !== famFilter) return false;
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="card"><p style="color:var(--text-muted);">No training records found matching filters.</p></div>';
+        return;
+      }
+
+      container.innerHTML = filtered.map(s => `
+        <div class="history-item">
+          <div class="history-header">
+            <div>
+              <div class="history-title">${s.trickName}</div>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
+                ${s.date} • <span class="badge badge-category">${s.category}</span> <span class="badge badge-family">Fam ${s.family}</span>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <span class="badge" style="background:${s.successRate >= 80 ? '#dcfce7' : '#fef3c7'}; color:${s.successRate >= 80 ? '#15803d' : '#b45309'}; font-size:0.85rem;">
+                ${s.successRate}% Success
+              </span>
+            </div>
+          </div>
+          <div class="history-stats">
+            <span>🎯 Target: ${s.targetCones}</span>
+            <span>✅ Completed: ${s.completedCones}</span>
+            <span>⚠️ Missed: ${s.missedCones}</span>
+            <span>🚨 Falls: ${s.falls}</span>
+          </div>
+          ${s.notes ? `<div style="font-size:0.8rem; color:var(--text-main); margin-top:8px; font-style:italic;">"${s.notes}"</div>` : ''}
+        </div>
+      `).join('');
+    }
+
+    // NAVIGATION TABS SWITCHER
+    function switchTab(tabId, el) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+      document.getElementById(`tab-${tabId}`).classList.add('active');
+      if (el) el.classList.add('active');
+
+      if (tabId === 'progress') renderAnalytics();
+      if (tabId === 'history') renderHistory();
+      if (tabId === 'tricks') renderCustomTricksList();
+    }
+
+    // SETTINGS / GOOGLE APPS SCRIPT SYNC
+    function openSettingsModal() {
+      const url = prompt('Enter Google Apps Script Web App Deployment URL:', appState.apiUrl);
+      if (url !== null) {
+        appState.apiUrl = url.trim();
+        localStorage.setItem('slalom_api_url', appState.apiUrl);
+        if (appState.apiUrl) {
+          syncWithGoogleSheets();
+        }
+      }
+    }
+
+    async function syncWithGoogleSheets() {
+      if (!appState.apiUrl) return;
+      try {
+        const res = await fetch(appState.apiUrl + '?action=getData');
+        const json = await res.json();
+        if (json.status === 'success' && json.data) {
+          if (json.data.sessions && json.data.sessions.length > 0) {
+            appState.sessions = json.data.sessions;
+          }
+          saveLocalState();
+          renderAnalytics();
+          renderHistory();
+        }
+      } catch (err) {
+        console.warn('Backend sync failed, operating in standalone offline mode.', err);
+      }
+    }
+  </script>
+</body>
+</html>
