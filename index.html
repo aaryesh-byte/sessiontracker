@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -13,17 +13,38 @@
     :root {
       --primary: #4f46e5;
       --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+      --bg-gradient: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+                        radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.12) 0px, transparent 50%);
+      --body-bg: #f8fafc;
       --glass-bg: rgba(255, 255, 255, 0.88);
-      --glass-border: rgba(255, 255, 255, 0.5);
-      --card-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.6);
+      --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
       --text-main: #0f172a;
       --text-muted: #64748b;
       --border-color: #e2e8f0;
-      --success: #10b981;
-      --warning: #f59e0b;
-      --danger: #ef4444;
+      --input-bg: #ffffff;
+      --nav-bg: rgba(255, 255, 255, 0.85);
       --radius: 16px;
+      --chart-grid: rgba(0, 0, 0, 0.05);
+      --chart-text: #64748b;
+    }
+
+    [data-theme="dark"] {
+      --primary: #6366f1;
+      --primary-gradient: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+      --bg-gradient: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.2) 0px, transparent 50%),
+                        radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.15) 0px, transparent 50%);
+      --body-bg: #090d16;
+      --glass-bg: rgba(15, 23, 42, 0.85);
+      --glass-border: rgba(255, 255, 255, 0.12);
+      --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #1e293b;
+      --input-bg: #0f172a;
+      --nav-bg: rgba(15, 23, 42, 0.85);
+      --chart-grid: rgba(255, 255, 255, 0.08);
+      --chart-text: #94a3b8;
     }
 
     * {
@@ -35,20 +56,20 @@
     }
 
     body {
-      background: #f1f5f9;
-      background-image: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
-                        radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.12) 0px, transparent 50%);
+      background-color: var(--body-bg);
+      background-image: var(--bg-gradient);
       background-attachment: fixed;
       color: var(--text-main);
-      padding-bottom: 90px;
       min-height: 100vh;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
-    /* AUTHENTICATION FULLSCREEN OVERLAY */
+    /* AUTH OVERLAY SCREEN */
     #authOverlay {
       position: fixed;
       inset: 0;
-      background: var(--bg-gradient);
+      background: var(--body-bg);
+      background-image: var(--bg-gradient);
       z-index: 99999;
       display: flex;
       align-items: center;
@@ -57,371 +78,218 @@
     }
 
     .auth-card {
-      background: rgba(255, 255, 255, 0.92);
+      background: var(--glass-bg);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.6);
+      border: 1px solid var(--glass-border);
       border-radius: 24px;
       padding: 36px 28px;
       width: 100%;
-      max-width: 400px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+      max-width: 420px;
+      box-shadow: var(--card-shadow);
       text-align: center;
     }
 
-    .auth-icon {
-      font-size: 2.8rem;
-      margin-bottom: 8px;
-    }
+    .auth-icon { font-size: 2.8rem; margin-bottom: 8px; }
+    .auth-title { font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 4px; }
+    .auth-subtitle { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 24px; }
 
-    .auth-title {
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: #0f172a;
-      margin-bottom: 4px;
-    }
-
-    .auth-subtitle {
-      font-size: 0.875rem;
-      color: var(--text-muted);
-      margin-bottom: 24px;
-    }
-
-    .password-wrap {
-      position: relative;
-    }
-
+    .password-wrap { position: relative; }
     .toggle-password-btn {
-      position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 1.1rem;
-      color: var(--text-muted);
-      padding: 4px;
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; font-size: 1.1rem; color: var(--text-muted); padding: 4px;
+    }
+
+    .auth-tabs {
+      display: flex; background: var(--border-color); padding: 4px; border-radius: 12px; margin-bottom: 20px;
+    }
+    .auth-tab-btn {
+      flex: 1; padding: 10px; border: none; background: none; font-weight: 700; font-size: 0.85rem;
+      color: var(--text-muted); border-radius: 8px; cursor: pointer; transition: all 0.2s;
+    }
+    .auth-tab-btn.active {
+      background: var(--input-bg); color: var(--text-main); box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    /* APP LAYOUT - DESKTOP SIDEBAR + MOBILE BOTTOM NAV */
+    .app-layout {
+      display: flex; min-height: 100vh;
+    }
+
+    /* DESKTOP SIDEBAR */
+    .sidebar {
+      width: 250px;
+      background: var(--nav-bg);
+      backdrop-filter: blur(16px);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; bottom: 0; left: 0;
+      z-index: 1000;
+      padding: 24px 16px;
+    }
+
+    .sidebar-brand {
+      font-size: 1.2rem; font-weight: 800; background: var(--primary-gradient);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      display: flex; align-items: center; gap: 8px; margin-bottom: 32px;
+    }
+
+    .sidebar-menu { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+    .sidebar-link {
+      display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px;
+      color: var(--text-muted); text-decoration: none; font-weight: 700; font-size: 0.9rem;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .sidebar-link:hover, .sidebar-link.active {
+      background: var(--primary); color: #fff;
+    }
+
+    /* MAIN VIEWPORT */
+    .main-viewport {
+      flex: 1; margin-left: 250px; padding: 24px; max-width: 900px;
+    }
+
+    /* MOBILE HEADER & BOTTOM NAV */
+    .mobile-header {
+      display: none; background: var(--nav-bg); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100;
+      padding: 14px 20px; justify-content: space-between; align-items: center;
+    }
+
+    .bottom-nav {
+      display: none; position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--nav-bg); backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border-color); justify-content: space-around;
+      padding: 10px 0 14px 0; z-index: 1000; box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+    }
+
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center; font-size: 0.725rem;
+      font-weight: 700; color: var(--text-muted); text-decoration: none; cursor: pointer;
+      width: 25%; transition: color 0.2s;
+    }
+    .nav-item.active { color: var(--primary); }
+    .nav-icon { font-size: 1.35rem; margin-bottom: 2px; }
+
+    /* MEDIA QUERIES FOR RESPONSIVENESS */
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main-viewport { margin-left: 0; padding: 16px; padding-bottom: 90px; }
+      .mobile-header { display: flex; }
+      .bottom-nav { display: flex; }
     }
 
     /* GLASS CARDS */
     .glass-card {
-      background: var(--glass-bg);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius);
-      padding: 20px;
-      margin-bottom: 16px;
-      box-shadow: var(--card-shadow);
-    }
-
-    /* TOP HEADER */
-    header {
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border-color);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      padding: 14px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .brand {
-      font-size: 1.15rem;
-      font-weight: 800;
-      background: var(--primary-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .user-badge {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: #f8fafc;
-      border: 1px solid var(--border-color);
-      padding: 6px 14px;
-      border-radius: 30px;
-      font-size: 0.85rem;
-      font-weight: 700;
-    }
-
-    .btn-logout {
-      border: none;
-      background: #fee2e2;
-      color: var(--danger);
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 14px;
-      cursor: pointer;
-      font-size: 0.75rem;
-      transition: background 0.2s;
-    }
-
-    .btn-logout:hover {
-      background: #fca5a5;
-    }
-
-    /* MAIN CONTAINER */
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 16px;
-    }
-
-    .tab-content {
-      display: none;
-      animation: fadeIn 0.25s ease-in-out;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(4px); }
-      to { opacity: 1; transform: translateY(0); }
+      background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 20px;
+      margin-bottom: 16px; box-shadow: var(--card-shadow); transition: background-color 0.3s;
     }
 
     .card-title {
-      font-size: 1.05rem;
-      font-weight: 700;
-      margin-bottom: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: var(--text-main);
+      font-size: 1.05rem; font-weight: 700; margin-bottom: 16px; display: flex;
+      justify-content: space-between; align-items: center; color: var(--text-main);
     }
 
     /* FORMS & INPUTS */
-    .form-group {
-      margin-bottom: 16px;
-    }
-
+    .form-group { margin-bottom: 16px; }
     label {
-      display: block;
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
+      display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted);
+      margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.6px;
     }
-
     input, select, textarea {
-      width: 100%;
-      padding: 12px 14px;
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      font-size: 0.95rem;
-      background: #fff;
-      color: var(--text-main);
-      outline: none;
-      transition: all 0.2s ease;
+      width: 100%; padding: 12px 14px; border: 1px solid var(--border-color);
+      border-radius: 10px; font-size: 0.95rem; background: var(--input-bg);
+      color: var(--text-main); outline: none; transition: all 0.2s ease;
     }
-
     input:focus, select:focus, textarea:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+      border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
     }
 
     .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
 
-    /* BUTTONS */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      padding: 14px;
-      background: var(--primary-gradient);
-      color: #fff;
-      border: none;
-      border-radius: 12px;
-      font-size: 0.95rem;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
-      transition: all 0.2s ease;
+    @media (max-width: 480px) {
+      .row-2, .row-3 { grid-template-columns: 1fr; gap: 12px; }
     }
 
+    /* BUTTONS */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; width: 100%;
+      padding: 14px; background: var(--primary-gradient); color: #fff; border: none;
+      border-radius: 12px; font-size: 0.95rem; font-weight: 700; cursor: pointer;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25); transition: all 0.2s ease; min-height: 48px;
+    }
     .btn:active { transform: scale(0.98); }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    /* BADGES */
-    .badge {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 0.725rem;
-      font-weight: 700;
-      text-transform: uppercase;
+    .theme-toggle-btn {
+      border: 1px solid var(--border-color); background: var(--glass-bg); color: var(--text-main);
+      padding: 8px 12px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px;
     }
 
+    .btn-logout {
+      border: none; background: #fee2e2; color: #dc2626; font-weight: 700;
+      padding: 6px 12px; border-radius: 14px; cursor: pointer; font-size: 0.75rem;
+    }
+
+    /* BADGES */
+    .badge {
+      display: inline-block; padding: 4px 10px; border-radius: 20px;
+      font-size: 0.725rem; font-weight: 700; text-transform: uppercase;
+    }
     .badge-family { background: #e0e7ff; color: #3730a3; }
     .badge-category { background: #f3e8ff; color: #6b21a8; }
     .badge-custom { background: #fef3c7; color: #92400e; }
 
-    /* DASHBOARD METRICS */
+    /* METRICS GRID */
     .metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      margin-bottom: 16px;
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px;
     }
-
     @media (min-width: 600px) {
       .metrics-grid { grid-template-columns: repeat(4, 1fr); }
     }
 
     .metric-card {
-      background: var(--glass-bg);
-      backdrop-filter: blur(8px);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius);
-      padding: 16px 12px;
-      text-align: center;
-      box-shadow: var(--card-shadow);
+      background: var(--glass-bg); backdrop-filter: blur(8px); border: 1px solid var(--glass-border);
+      border-radius: var(--radius); padding: 16px 12px; text-align: center; box-shadow: var(--card-shadow);
     }
-
     .metric-value {
-      font-size: 1.5rem;
-      font-weight: 800;
-      background: var(--primary-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-top: 4px;
+      font-size: 1.5rem; font-weight: 800; background: var(--primary-gradient);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-top: 4px;
     }
+    .metric-label { font-size: 0.725rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
 
-    .metric-label {
-      font-size: 0.725rem;
-      color: var(--text-muted);
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-
-    /* HISTORY ITEM */
+    /* HISTORY ITEMS */
     .history-item {
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: var(--card-shadow);
+      background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius);
+      padding: 16px; margin-bottom: 12px; box-shadow: var(--card-shadow);
     }
+    .history-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .history-title { font-weight: 700; font-size: 1rem; }
+    .history-stats { display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.825rem; color: var(--text-muted); margin-top: 8px; }
 
-    .history-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 8px;
-    }
-
-    .history-title {
-      font-weight: 700;
-      font-size: 1rem;
-    }
-
-    .history-stats {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      font-size: 0.825rem;
-      color: var(--text-muted);
-      margin-top: 8px;
-    }
-
-    /* BOTTOM NAV */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(16px);
-      border-top: 1px solid var(--border-color);
-      display: flex;
-      justify-content: space-around;
-      padding: 10px 0 14px 0;
-      z-index: 1000;
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
-    }
-
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      font-size: 0.725rem;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-decoration: none;
-      cursor: pointer;
-      width: 25%;
-      transition: color 0.2s;
-    }
-
-    .nav-item.active { color: var(--primary); }
-    .nav-icon { font-size: 1.35rem; margin-bottom: 2px; }
-
-    .chart-container {
-      position: relative;
-      height: 230px;
-      width: 100%;
-      margin-top: 8px;
-    }
+    .chart-container { position: relative; height: 230px; width: 100%; margin-top: 8px; }
 
     /* EMPTY STATES */
-    .empty-state {
-      text-align: center;
-      padding: 40px 20px;
-      color: var(--text-muted);
-    }
-
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
     .empty-icon { font-size: 3rem; margin-bottom: 12px; opacity: 0.8; }
-    .empty-text {
-      font-size: 0.95rem;
-      font-weight: 600;
-      max-width: 320px;
-      margin: 0 auto 16px auto;
-      line-height: 1.5;
-    }
+    .empty-text { font-size: 0.95rem; font-weight: 600; max-width: 320px; margin: 0 auto 16px auto; line-height: 1.5; }
 
-    /* TOAST NOTIFICATIONS */
+    /* TOASTS */
     #toastContainer {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      left: 20px;
-      max-width: 400px;
-      margin: 0 auto;
-      z-index: 100000;
-      pointer-events: none;
+      position: fixed; top: 20px; right: 20px; left: 20px; max-width: 400px;
+      margin: 0 auto; z-index: 100000; pointer-events: none;
     }
-
     .toast {
-      pointer-events: auto;
-      background: #0f172a;
-      color: #fff;
-      padding: 14px 18px;
-      border-radius: 12px;
-      font-size: 0.875rem;
-      font-weight: 600;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      pointer-events: auto; background: #0f172a; color: #fff; padding: 14px 18px;
+      border-radius: 12px; font-size: 0.875rem; font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25); margin-bottom: 10px; display: flex;
+      align-items: center; gap: 10px; animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-
     .toast-warning { background: #d97706; }
     .toast-success { background: #059669; }
     .toast-error { background: #dc2626; }
@@ -430,6 +298,10 @@
       from { opacity: 0; transform: translateY(-20px) scale(0.95); }
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
+
+    .tab-content { display: none; animation: fadeIn 0.25s ease-in-out; }
+    .tab-content.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
@@ -437,21 +309,27 @@
   <!-- CONFIGURATION VARIABLE FOR GOOGLE APPS SCRIPT URL -->
   <script>
     // Paste your Google Apps Script Web App URL below
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzEAw0dZ0sGXi220a8H7IOgE9IGVxmUe_mkCkEYQRRzqwwuZEXiWT2-jlDXAIoYNqEa/exec";
+    const APPS_SCRIPT_URL = "YOUR_APPS_SCRIPT_WEB_APP_URL";
   </script>
 
-  <!-- IN-APP TOAST CONTAINER -->
+  <!-- TOAST NOTIFICATION CONTAINER -->
   <div id="toastContainer"></div>
 
 
-  <!-- 1. AUTHENTICATION OVERLAY SCREEN -->
+  <!-- 1. AUTHENTICATION OVERLAY SCREEN (SIGN IN / REGISTER) -->
   <div id="authOverlay">
     <div class="auth-card">
       <div class="auth-icon">🛼</div>
       <div class="auth-title">Slalom Tracker</div>
-      <div class="auth-subtitle">Sign in to access your training dashboard</div>
+      <div class="auth-subtitle" id="authSubtitleText">Sign in to access your training dashboard</div>
 
-      <form id="loginForm" onsubmit="handleLoginSubmit(event)">
+      <!-- Auth Toggle Tabs -->
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab-btn active" id="btnAuthLoginTab" onclick="switchAuthMode('login')">Sign In</button>
+        <button type="button" class="auth-tab-btn" id="btnAuthRegisterTab" onclick="switchAuthMode('register')">Register</button>
+      </div>
+
+      <form id="loginForm" onsubmit="handleAuthSubmit(event)">
         <div class="form-group" style="text-align:left;">
           <label>Username</label>
           <input type="text" id="authUsername" placeholder="e.g. aaryesh" autocomplete="username" required>
@@ -465,6 +343,11 @@
           </div>
         </div>
 
+        <div class="form-group" style="text-align:left; display:none;" id="skaterNameField">
+          <label>Skater Full Name</label>
+          <input type="text" id="authSkaterName" placeholder="e.g. Aaryesh Sharma">
+        </div>
+
         <button type="submit" id="authSubmitBtn" class="btn" style="margin-top:10px;">
           <span>Log In</span>
         </button>
@@ -473,158 +356,72 @@
   </div>
 
 
-  <!-- 2. MAIN HEADER -->
-  <header>
-    <div class="brand">
-      <span>🛼</span> SlalomTracker
-    </div>
-    <div class="user-badge">
-      <span id="headerSkaterName">Skater: -</span>
-      <button class="btn-logout" onclick="logout()">Logout</button>
-    </div>
-  </header>
+  <!-- 2. MAIN APP LAYOUT (DESKTOP SIDEBAR + MOBILE BOTTOM NAV) -->
+  <div class="app-layout">
 
+    <!-- DESKTOP VERTICAL SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <span>🛼</span> SlalomTracker
+      </div>
 
-  <!-- 3. APPLICATION CONTAINER -->
-  <div class="container">
-
-    <!-- TAB 1: DASHBOARD / PROGRESS (FIRST SCREEN AFTER AUTH) -->
-    <div id="tab-dashboard" class="tab-content active">
-      
-      <!-- Analytics Filters -->
-      <div class="glass-card">
-        <div class="card-title">Progress Filters</div>
-        <div class="row-2">
-          <div class="form-group" style="margin-bottom:8px;">
-            <label>Select Month</label>
-            <input type="month" id="progMonth" onchange="renderAnalytics()">
-          </div>
-          <div class="form-group" style="margin-bottom:8px;">
-            <label>Category</label>
-            <select id="progCategory" onchange="renderAnalytics()">
-              <option value="ALL">All Categories</option>
-              <option value="SITTING">Sitting</option>
-              <option value="WHEELING">Wheeling</option>
-              <option value="SPINNING">Spinning</option>
-              <option value="JUMPING">Jumping</option>
-              <option value="OTHERS">Others</option>
-            </select>
-          </div>
+      <div class="sidebar-menu">
+        <div class="sidebar-link active" onclick="switchTab('dashboard', this)">
+          <span>📊</span> Dashboard
         </div>
-        <div class="row-2">
-          <div class="form-group" style="margin-bottom:0;">
-            <label>Family Metadata</label>
-            <select id="progFamily" onchange="renderAnalytics()">
-              <option value="ALL">All Families</option>
-              <option value="A">Family A</option>
-              <option value="B">Family B</option>
-              <option value="C">Family C</option>
-              <option value="D">Family D</option>
-              <option value="E">Family E</option>
-            </select>
-          </div>
-          <div class="form-group" style="margin-bottom:0;">
-            <label>Specific Trick</label>
-            <select id="progTrick" onchange="renderAnalytics()">
-              <option value="ALL">All Tricks</option>
-            </select>
-          </div>
+        <div class="sidebar-link" onclick="switchTab('log', this)">
+          <span>📝</span> Log Session
+        </div>
+        <div class="sidebar-link" onclick="switchTab('history', this)">
+          <span>📜</span> History
+        </div>
+        <div class="sidebar-link" onclick="switchTab('tricks', this)">
+          <span>💡</span> My Tricks
         </div>
       </div>
 
-      <!-- Summary Metric Cards -->
-      <div class="metrics-grid">
-        <div class="metric-card">
-          <div class="metric-label">Sessions</div>
-          <div id="mSessions" class="metric-value">0</div>
+      <div style="margin-top:auto; padding-top:20px; border-top:1px solid var(--border-color);">
+        <div style="font-size:0.85rem; font-weight:700; margin-bottom:12px; color:var(--text-main);" id="sidebarSkaterName">
+          Skater: -
         </div>
-        <div class="metric-card">
-          <div class="metric-label">Avg Success</div>
-          <div id="mSuccess" class="metric-value">0%</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">Completed</div>
-          <div id="mCompleted" class="metric-value">0</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">Total Falls</div>
-          <div id="mFalls" class="metric-value">0</div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Theme" style="flex:1;">
+            <span id="themeBtnIcon">🌙</span> <span id="themeBtnText">Dark</span>
+          </button>
+          <button class="btn-logout" onclick="logout()">Logout</button>
         </div>
       </div>
+    </aside>
 
-      <!-- Graph 1: Success Rate Over Time -->
-      <div class="glass-card">
-        <div class="card-title">Success Rate % Over Time</div>
-        <div class="chart-container">
-          <canvas id="chartSuccessRate"></canvas>
-        </div>
+    <!-- MOBILE TOP HEADER -->
+    <header class="mobile-header">
+      <div class="brand"><span>🛼</span> SlalomTracker</div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button class="theme-toggle-btn" onclick="toggleTheme()" style="padding:6px 10px;">
+          <span id="themeBtnIconMobile">🌙</span>
+        </button>
+        <button class="btn-logout" onclick="logout()">Logout</button>
       </div>
-
-      <!-- Graph 2: Target vs Completed -->
-      <div class="glass-card">
-        <div class="card-title">Target vs Completed Cones</div>
-        <div class="chart-container">
-          <canvas id="chartCones"></canvas>
-        </div>
-      </div>
-
-      <!-- Graph 3: Progress By Trick -->
-      <div class="glass-card">
-        <div class="card-title">Avg Success Rate by Trick</div>
-        <div class="chart-container">
-          <canvas id="chartTricks"></canvas>
-        </div>
-      </div>
-
-      <!-- Graph 4: Falls Over Time -->
-      <div class="glass-card">
-        <div class="card-title">Falls Count Over Time</div>
-        <div class="chart-container">
-          <canvas id="chartFalls"></canvas>
-        </div>
-      </div>
-
-      <!-- Graph 5: Progress By Family -->
-      <div class="glass-card">
-        <div class="card-title">Family A–E Performance Matrix</div>
-        <div class="chart-container">
-          <canvas id="chartFamily"></canvas>
-        </div>
-      </div>
-
-      <!-- Graph 6: Month to Month Comparison -->
-      <div class="glass-card">
-        <div class="card-title">Month-to-Month Success Trend</div>
-        <div class="chart-container">
-          <canvas id="chartMonthly"></canvas>
-        </div>
-      </div>
-
-    </div>
+    </header>
 
 
-    <!-- TAB 2: LOG SESSION -->
-    <div id="tab-log" class="tab-content">
-      <div class="glass-card">
-        <div class="card-title">Log Practice Attempt</div>
+    <!-- MAIN CONTENT VIEWPORT -->
+    <main class="main-viewport">
 
-        <form id="sessionForm" onsubmit="handleSessionSubmit(event)">
-          
+      <!-- TAB 1: DASHBOARD / PROGRESS -->
+      <div id="tab-dashboard" class="tab-content active">
+        
+        <!-- Filters Card -->
+        <div class="glass-card">
+          <div class="card-title">Progress Filters</div>
           <div class="row-2">
-            <div class="form-group">
-              <label>Authenticated Skater</label>
-              <input type="text" id="logSkater" readonly style="background:#f1f5f9; font-weight:700;">
+            <div class="form-group" style="margin-bottom:8px;">
+              <label>Select Month</label>
+              <input type="month" id="progMonth" onchange="renderAnalytics()">
             </div>
-            <div class="form-group">
-              <label>Date</label>
-              <input type="date" id="logDate" required>
-            </div>
-          </div>
-
-          <div class="row-2">
-            <div class="form-group">
-              <label>Category Filter</label>
-              <select id="logCategoryFilter" onchange="filterTrickDropdown()">
+            <div class="form-group" style="margin-bottom:8px;">
+              <label>Category</label>
+              <select id="progCategory" onchange="renderAnalytics()">
                 <option value="ALL">All Categories</option>
                 <option value="SITTING">Sitting</option>
                 <option value="WHEELING">Wheeling</option>
@@ -633,124 +430,206 @@
                 <option value="OTHERS">Others</option>
               </select>
             </div>
-            <div class="form-group">
-              <label>Family Filter</label>
-              <select id="logFamilyFilter" onchange="filterTrickDropdown()">
+          </div>
+          <div class="row-2">
+            <div class="form-group" style="margin-bottom:0;">
+              <label>Family Metadata</label>
+              <select id="progFamily" onchange="renderAnalytics()">
                 <option value="ALL">All Families</option>
                 <option value="A">Family A</option>
                 <option value="B">Family B</option>
                 <option value="C">Family C</option>
                 <option value="D">Family D</option>
                 <option value="E">Family E</option>
-                <option value="Custom">Custom</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label>Specific Trick</label>
+              <select id="progTrick" onchange="renderAnalytics()">
+                <option value="ALL">All Tricks</option>
               </select>
             </div>
           </div>
+        </div>
 
-          <div class="form-group">
-            <label>Select Trick</label>
-            <select id="logTrickSelect" onchange="onTrickSelectionChange()" required>
-              <!-- Populated dynamically -->
-            </select>
+        <!-- Metric Cards -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-label">Sessions</div>
+            <div id="mSessions" class="metric-value">0</div>
           </div>
-
-          <!-- Metadata Badges -->
-          <div style="margin-bottom:16px; display:flex; gap:8px;">
-            <span id="badgeCategory" class="badge badge-category">Category: -</span>
-            <span id="badgeFamily" class="badge badge-family">Family: -</span>
+          <div class="metric-card">
+            <div class="metric-label">Avg Success</div>
+            <div id="mSuccess" class="metric-value">0%</div>
           </div>
-
-          <div class="row-3">
-            <div class="form-group">
-              <label>Target Cones</label>
-              <input type="number" id="logTarget" min="1" value="20" oninput="autoCalculateMissed()" required>
-            </div>
-            <div class="form-group">
-              <label>Completed</label>
-              <input type="number" id="logCompleted" min="0" value="16" oninput="autoCalculateMissed()" required>
-            </div>
-            <div class="form-group">
-              <label>Kicked/Missed</label>
-              <input type="number" id="logMissed" min="0" value="4" required>
-            </div>
+          <div class="metric-card">
+            <div class="metric-label">Completed</div>
+            <div id="mCompleted" class="metric-value">0</div>
           </div>
-
-          <div id="fallsContainer" class="form-group">
-            <label id="fallsLabel">Falls Count</label>
-            <input type="number" id="logFalls" min="0" value="0" required>
+          <div class="metric-card">
+            <div class="metric-label">Total Falls</div>
+            <div id="mFalls" class="metric-value">0</div>
           </div>
+        </div>
 
-          <div class="form-group">
-            <label>Session Notes</label>
-            <input type="text" id="logNotes" placeholder="e.g. Clean entry, lost heel balance at cone 12">
+        <!-- Graph 1: Success Rate Over Time (LINE GRAPH) -->
+        <div class="glass-card">
+          <div class="card-title">Success Rate % Over Time</div>
+          <div class="chart-container">
+            <canvas id="chartSuccessRate"></canvas>
           </div>
+        </div>
 
-          <button type="submit" class="btn">Save Training Session</button>
-        </form>
+        <!-- Graph 2: Target vs Completed Cones (LINE GRAPH) -->
+        <div class="glass-card">
+          <div class="card-title">Target vs Completed Cones</div>
+          <div class="chart-container">
+            <canvas id="chartCones"></canvas>
+          </div>
+        </div>
+
+        <!-- Graph 3: Progress By Trick (LINE GRAPH) -->
+        <div class="glass-card">
+          <div class="card-title">Avg Success Rate by Trick</div>
+          <div class="chart-container">
+            <canvas id="chartTricks"></canvas>
+          </div>
+        </div>
+
+        <!-- Graph 4: Falls Over Time (LINE GRAPH) -->
+        <div class="glass-card">
+          <div class="card-title">Falls Count Over Time</div>
+          <div class="chart-container">
+            <canvas id="chartFalls"></canvas>
+          </div>
+        </div>
+
+        <!-- Graph 5: Progress By Family (LINE GRAPH) -->
+        <div class="glass-card">
+          <div class="card-title">Family A–E Performance Matrix</div>
+          <div class="chart-container">
+            <canvas id="chartFamily"></canvas>
+          </div>
+        </div>
+
+        <!-- Graph 6: Month to Month Comparison (LINE GRAPH) -->
+        <div class="glass-card">
+          <div class="card-title">Month-to-Month Success Trend</div>
+          <div class="chart-container">
+            <canvas id="chartMonthly"></canvas>
+          </div>
+        </div>
+
       </div>
-    </div>
 
 
-    <!-- TAB 3: TRAINING HISTORY -->
-    <div id="tab-history" class="tab-content">
-      <div class="glass-card" style="margin-bottom:12px;">
-        <div class="card-title">History Filters</div>
-        <div class="row-2">
-          <div class="form-group" style="margin-bottom:0;">
-            <label>Category</label>
-            <select id="histCat" onchange="renderHistory()">
-              <option value="ALL">All Categories</option>
-              <option value="SITTING">Sitting</option>
-              <option value="WHEELING">Wheeling</option>
-              <option value="SPINNING">Spinning</option>
-              <option value="JUMPING">Jumping</option>
-              <option value="OTHERS">Others</option>
-            </select>
-          </div>
-          <div class="form-group" style="margin-bottom:0;">
-            <label>Family</label>
-            <select id="histFam" onchange="renderHistory()">
-              <option value="ALL">All Families</option>
-              <option value="A">Family A</option>
-              <option value="B">Family B</option>
-              <option value="C">Family C</option>
-              <option value="D">Family D</option>
-              <option value="E">Family E</option>
-            </select>
-          </div>
+      <!-- TAB 2: LOG SESSION -->
+      <div id="tab-log" class="tab-content">
+        <div class="glass-card">
+          <div class="card-title">Log Practice Attempt</div>
+
+          <form id="sessionForm" onsubmit="handleSessionSubmit(event)">
+            
+            <div class="row-2">
+              <div class="form-group">
+                <label>Authenticated Skater</label>
+                <input type="text" id="logSkater" readonly style="font-weight:700;">
+              </div>
+              <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="logDate" required>
+              </div>
+            </div>
+
+            <div class="row-2">
+              <div class="form-group">
+                <label>Category Filter</label>
+                <select id="logCategoryFilter" onchange="filterTrickDropdown()">
+                  <option value="ALL">All Categories</option>
+                  <option value="SITTING">Sitting</option>
+                  <option value="WHEELING">Wheeling</option>
+                  <option value="SPINNING">Spinning</option>
+                  <option value="JUMPING">Jumping</option>
+                  <option value="OTHERS">Others</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Family Filter</label>
+                <select id="logFamilyFilter" onchange="filterTrickDropdown()">
+                  <option value="ALL">All Families</option>
+                  <option value="A">Family A</option>
+                  <option value="B">Family B</option>
+                  <option value="C">Family C</option>
+                  <option value="D">Family D</option>
+                  <option value="E">Family E</option>
+                  <option value="Custom">Custom</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Select Trick</label>
+              <select id="logTrickSelect" onchange="onTrickSelectionChange()" required>
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+
+            <div style="margin-bottom:16px; display:flex; gap:8px;">
+              <span id="badgeCategory" class="badge badge-category">Category: -</span>
+              <span id="badgeFamily" class="badge badge-family">Family: -</span>
+            </div>
+
+            <div class="row-3">
+              <div class="form-group">
+                <label>Target Cones</label>
+                <input type="number" id="logTarget" min="1" value="20" oninput="autoCalculateMissed()" required>
+              </div>
+              <div class="form-group">
+                <label>Completed</label>
+                <input type="number" id="logCompleted" min="0" value="16" oninput="autoCalculateMissed()" required>
+              </div>
+              <div class="form-group">
+                <label>Kicked/Missed</label>
+                <input type="number" id="logMissed" min="0" value="4" required>
+              </div>
+            </div>
+
+            <div id="fallsContainer" class="form-group">
+              <label id="fallsLabel">Falls Count</label>
+              <input type="number" id="logFalls" min="0" value="0" required>
+            </div>
+
+            <div class="form-group">
+              <label>Session Notes</label>
+              <input type="text" id="logNotes" placeholder="e.g. Clean entry, lost heel balance at cone 12">
+            </div>
+
+            <button type="submit" class="btn">Save Training Session</button>
+          </form>
         </div>
       </div>
 
-      <div id="historyList">
-        <!-- Loaded Dynamically -->
-      </div>
-    </div>
 
-
-    <!-- TAB 4: MY TRICKS -->
-    <div id="tab-tricks" class="tab-content">
-      <div class="glass-card">
-        <div class="card-title">Add Custom Trick</div>
-        <form id="customTrickForm" onsubmit="handleCustomTrickSubmit(event)">
-          <div class="form-group">
-            <label>Custom Trick Name</label>
-            <input type="text" id="custName" placeholder="e.g. Double Butterfly Spin Combo" required>
-          </div>
+      <!-- TAB 3: TRAINING HISTORY -->
+      <div id="tab-history" class="tab-content">
+        <div class="glass-card" style="margin-bottom:12px;">
+          <div class="card-title">History Filters</div>
           <div class="row-2">
-            <div class="form-group">
+            <div class="form-group" style="margin-bottom:0;">
               <label>Category</label>
-              <select id="custCat">
-                <option value="OTHERS">Others</option>
+              <select id="histCat" onchange="renderHistory()">
+                <option value="ALL">All Categories</option>
                 <option value="SITTING">Sitting</option>
-                <option value="JUMPING">Jumping</option>
                 <option value="WHEELING">Wheeling</option>
                 <option value="SPINNING">Spinning</option>
+                <option value="JUMPING">Jumping</option>
+                <option value="OTHERS">Others</option>
               </select>
             </div>
-            <div class="form-group">
-              <label>Family Metadata</label>
-              <select id="custFam">
-                <option value="Custom">Custom</option>
+            <div class="form-group" style="margin-bottom:0;">
+              <label>Family</label>
+              <select id="histFam" onchange="renderHistory()">
+                <option value="ALL">All Families</option>
                 <option value="A">Family A</option>
                 <option value="B">Family B</option>
                 <option value="C">Family C</option>
@@ -759,22 +638,63 @@
               </select>
             </div>
           </div>
-          <button type="submit" class="btn">Create Custom Trick</button>
-        </form>
-      </div>
+        </div>
 
-      <div class="glass-card">
-        <div class="card-title">My Custom Tricks Catalog</div>
-        <div id="customTricksList">
+        <div id="historyList">
           <!-- Loaded Dynamically -->
         </div>
       </div>
-    </div>
 
+
+      <!-- TAB 4: MY TRICKS -->
+      <div id="tab-tricks" class="tab-content">
+        <div class="glass-card">
+          <div class="card-title">Add Custom Trick</div>
+          <form id="customTrickForm" onsubmit="handleCustomTrickSubmit(event)">
+            <div class="form-group">
+              <label>Custom Trick Name</label>
+              <input type="text" id="custName" placeholder="e.g. Double Butterfly Spin Combo" required>
+            </div>
+            <div class="row-2">
+              <div class="form-group">
+                <label>Category</label>
+                <select id="custCat">
+                  <option value="OTHERS">Others</option>
+                  <option value="SITTING">Sitting</option>
+                  <option value="JUMPING">Jumping</option>
+                  <option value="WHEELING">Wheeling</option>
+                  <option value="SPINNING">Spinning</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Family Metadata</label>
+                <select id="custFam">
+                  <option value="Custom">Custom</option>
+                  <option value="A">Family A</option>
+                  <option value="B">Family B</option>
+                  <option value="C">Family C</option>
+                  <option value="D">Family D</option>
+                  <option value="E">Family E</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="btn">Create Custom Trick</button>
+          </form>
+        </div>
+
+        <div class="glass-card">
+          <div class="card-title">My Custom Tricks Catalog</div>
+          <div id="customTricksList">
+            <!-- Loaded Dynamically -->
+          </div>
+        </div>
+      </div>
+
+    </main>
   </div>
 
 
-  <!-- BOTTOM NAVIGATION BAR -->
+  <!-- MOBILE GLASSMORPHISM NAVIGATION BAR -->
   <nav class="bottom-nav">
     <div class="nav-item active" onclick="switchTab('dashboard', this)">
       <span class="nav-icon">📊</span>
@@ -902,9 +822,10 @@
       { id: 'SPN-E3', name: 'Sun / Mabrouk', category: 'SPINNING', family: 'E' }
     ];
 
-    // APPLICATION STATE (EPHEMERAL / SINGLE SESSION ONLY)
+    // STATE MANAGEMENT
     let appState = {
       currentUser: null,
+      authMode: 'login', // 'login' or 'register'
       sessions: [],
       customTricks: [],
       charts: {}
@@ -914,11 +835,39 @@
       document.getElementById('logDate').value = new Date().toISOString().split('T')[0];
       document.getElementById('progMonth').value = new Date().toISOString().slice(0, 7);
       
+      // Load Dark/Light Theme Preference
+      const savedTheme = localStorage.getItem('slalom_theme') || 'light';
+      applyTheme(savedTheme);
+
       // Lock UI - Show Login Overlay on every page refresh/open
       document.getElementById('authOverlay').style.display = 'flex';
     });
 
-    // CUSTOM TOAST MESSAGES
+    // THEME TOGGLE (DARK / LIGHT MODE)
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('slalom_theme', theme);
+
+      const isDark = theme === 'dark';
+      document.getElementById('themeBtnIcon').textContent = isDark ? '☀️' : '🌙';
+      document.getElementById('themeBtnText').textContent = isDark ? 'Light' : 'Dark';
+      document.getElementById('themeBtnIconMobile').textContent = isDark ? '☀️' : '🌙';
+
+      // Update Chart defaults for theme consistency
+      Chart.defaults.color = isDark ? '#94a3b8' : '#64748b';
+      Chart.defaults.borderColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
+
+      if (appState.currentUser) {
+        renderAnalytics();
+      }
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'light';
+      applyTheme(current === 'light' ? 'dark' : 'light');
+    }
+
+    // TOAST NOTIFICATION SYSTEM
     function showToast(message, type = 'warning') {
       const container = document.getElementById('toastContainer');
       const toast = document.createElement('div');
@@ -940,11 +889,28 @@
       pwd.type = pwd.type === 'password' ? 'text' : 'password';
     }
 
-    // AUTHENTICATION LOGIC WITH BACKEND VERIFICATION
-    async function handleLoginSubmit(e) {
+    // AUTH MODE SWITCHER (LOGIN / REGISTER)
+    function switchAuthMode(mode) {
+      appState.authMode = mode;
+      const isReg = mode === 'register';
+
+      document.getElementById('btnAuthLoginTab').classList.toggle('active', !isReg);
+      document.getElementById('btnAuthRegisterTab').classList.toggle('active', isReg);
+
+      document.getElementById('authSubtitleText').textContent = isReg 
+        ? 'Create a new skater account to begin' 
+        : 'Sign in to access your training dashboard';
+
+      document.getElementById('skaterNameField').style.display = isReg ? 'block' : 'none';
+      document.getElementById('authSubmitBtn').innerHTML = `<span>${isReg ? 'Create Account' : 'Log In'}</span>`;
+    }
+
+    // AUTH FORM SUBMISSION
+    async function handleAuthSubmit(e) {
       e.preventDefault();
       const u = document.getElementById('authUsername').value.trim();
       const p = document.getElementById('authPassword').value.trim();
+      const skaterName = document.getElementById('authSkaterName').value.trim();
       const btn = document.getElementById('authSubmitBtn');
 
       if (!u || !p) {
@@ -952,59 +918,62 @@
         return;
       }
 
-      // Show Loading State
+      if (appState.authMode === 'register' && !skaterName) {
+        showToast('Please enter your full skater name.', 'warning');
+        return;
+      }
+
       btn.disabled = true;
-      btn.innerHTML = '<span>Verifying credentials...</span>';
+      btn.innerHTML = `<span>${appState.authMode === 'register' ? 'Creating Account...' : 'Verifying...'}</span>`;
 
       try {
         if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "YOUR_APPS_SCRIPT_WEB_APP_URL") {
           throw new Error('Google Apps Script URL is not configured.');
         }
 
+        const payload = { username: u, password: p, skaterName: skaterName };
         const response = await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify({
-            action: 'login',
-            payload: { username: u, password: p }
-          })
+          body: JSON.stringify({ action: appState.authMode, payload: payload })
         });
 
         const json = await response.json();
 
         if (json.status === 'success') {
-          appState.currentUser = json.user;
-          appState.sessions = json.data.sessions || [];
-          appState.customTricks = json.data.customTricks || [];
+          if (appState.authMode === 'register') {
+            showToast('Registration successful! You can now log in.', 'success');
+            switchAuthMode('login');
+          } else {
+            appState.currentUser = json.user;
+            appState.sessions = json.data.sessions || [];
+            appState.customTricks = json.data.customTricks || [];
 
-          showToast(`Welcome back, ${appState.currentUser.skaterName}!`, 'success');
-          onAuthSuccess();
+            showToast(`Welcome back, ${appState.currentUser.skaterName}!`, 'success');
+            onAuthSuccess();
+          }
         } else {
-          showToast(json.message || 'Authentication failed.', 'error');
+          showToast(json.message || 'Action failed.', 'error');
         }
 
       } catch (err) {
-        console.error('Authentication Error:', err);
-        showToast(err.message || 'Error connecting to Google Sheets database.', 'error');
+        console.error('Auth Error:', err);
+        showToast(err.message || 'Error connecting to Google Sheets.', 'error');
       } finally {
         btn.disabled = false;
-        btn.innerHTML = '<span>Log In</span>';
+        btn.innerHTML = `<span>${appState.authMode === 'register' ? 'Create Account' : 'Log In'}</span>`;
       }
     }
 
     function onAuthSuccess() {
-      // Hide Login Overlay
       document.getElementById('authOverlay').style.display = 'none';
 
-      // Update Skater UI Elements
-      document.getElementById('headerSkaterName').textContent = `Skater: ${appState.currentUser.skaterName}`;
+      document.getElementById('sidebarSkaterName').textContent = `Skater: ${appState.currentUser.skaterName}`;
       document.getElementById('logSkater').value = appState.currentUser.skaterName;
 
-      // Populate Filters
       filterTrickDropdown();
       populateProgressTrickFilter();
 
-      // ALWAYS OPEN DASHBOARD FIRST AFTER AUTHENTICATION
       switchTab('dashboard');
     }
 
@@ -1015,6 +984,7 @@
 
       document.getElementById('authUsername').value = '';
       document.getElementById('authPassword').value = '';
+      document.getElementById('authSkaterName').value = '';
       document.getElementById('authOverlay').style.display = 'flex';
 
       showToast('Logged out successfully.', 'success');
@@ -1023,30 +993,31 @@
     // TAB SWITCHING LOGIC
     function switchTab(tabId, el) {
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.querySelectorAll('.sidebar-link').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.bottom-nav .nav-item').forEach(n => n.classList.remove('active'));
 
       document.getElementById(`tab-${tabId}`).classList.add('active');
 
-      if (el) {
-        el.classList.add('active');
-      } else {
-        const navItems = document.querySelectorAll('.nav-item');
-        if (tabId === 'dashboard') navItems[0].classList.add('active');
-        if (tabId === 'log') navItems[1].classList.add('active');
-        if (tabId === 'history') navItems[2].classList.add('active');
-        if (tabId === 'tricks') navItems[3].classList.add('active');
-      }
+      // Update sidebar & bottom nav active states
+      const indexMap = { 'dashboard': 0, 'log': 1, 'history': 2, 'tricks': 3 };
+      const idx = indexMap[tabId];
+
+      const sideLinks = document.querySelectorAll('.sidebar-link');
+      if (sideLinks[idx]) sideLinks[idx].classList.add('active');
+
+      const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+      if (navItems[idx]) navItems[idx].classList.add('active');
 
       if (tabId === 'dashboard') renderAnalytics();
       if (tabId === 'history') renderHistory();
       if (tabId === 'tricks') renderCustomTricksList();
     }
 
-    // TRICK CATALOG & AUTO-FILL METADATA
+    // TRICKS CATALOG & METADATA AUTO-FILL
     function getAllTricks() {
       if (!appState.currentUser) return PREDEFINED_TRICKS;
       const userCustom = appState.customTricks.filter(t => 
-        String(t.skaterName).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
+        String(t.skaterName || t.skatername).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
       );
       return [...PREDEFINED_TRICKS, ...userCustom];
     }
@@ -1115,7 +1086,7 @@
       const fallsLabel = document.getElementById('fallsLabel');
       if (category === 'SITTING') {
         fallsLabel.textContent = '⚠️ Falls Count (Prominent for Sitting Tricks)';
-        fallsLabel.style.color = 'var(--warning)';
+        fallsLabel.style.color = '#f59e0b';
       } else {
         fallsLabel.textContent = 'Falls Count';
         fallsLabel.style.color = 'var(--text-muted)';
@@ -1132,7 +1103,7 @@
       }
     }
 
-    // SAVE SESSION RECORD
+    // SAVE TRAINING SESSION RECORD
     async function handleSessionSubmit(e) {
       e.preventDefault();
       const select = document.getElementById('logTrickSelect');
@@ -1150,10 +1121,6 @@
       if (target <= 0) {
         showToast('Target cones must be greater than 0.', 'warning');
         return;
-      }
-
-      if (completed + missed !== target) {
-        showToast(`Note: Completed (${completed}) + Missed (${missed}) differs from Target (${target}).`, 'warning');
       }
 
       const session = {
@@ -1241,14 +1208,14 @@
         container.innerHTML = `
           <div class="empty-state">
             <div class="empty-icon">💡</div>
-            <div class="empty-text">No custom tricks created yet. Use the form above to create your personal combos.</div>
+            <div class="empty-text">No custom tricks created yet. Use the form above to add personal combos.</div>
           </div>
         `;
         return;
       }
 
       container.innerHTML = userCustom.map(t => `
-        <div style="padding:12px 0; border-bottom:1px solid var(--border-color); display:flex; justify-space-between; align-items:center;">
+        <div style="padding:12px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
           <div>
             <strong style="font-size:0.95rem;">${t.name || t.trickname}</strong>
             <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">${t.category} • Family ${t.family}</div>
@@ -1296,7 +1263,7 @@
         return true;
       });
 
-      // Update Metrics
+      // Update Dashboard Metrics
       const totalSessions = filtered.length;
       const totalTarget = filtered.reduce((acc, curr) => acc + Number(curr.targetCones || curr.targetcones), 0);
       const totalCompleted = filtered.reduce((acc, curr) => acc + Number(curr.completedCones || curr.completedcones), 0);
@@ -1308,7 +1275,7 @@
       document.getElementById('mCompleted').textContent = totalCompleted;
       document.getElementById('mFalls').textContent = totalFalls;
 
-      // Render Dashboard Graphs
+      // Render 100% LINE GRAPHS ONLY
       renderChartSuccessRate(filtered);
       renderChartCones(filtered);
       renderChartTricks(filtered);
@@ -1317,7 +1284,7 @@
       renderChartMonthly();
     }
 
-    // DASHBOARD CHART GENERATORS
+    // ALL GRAPH GENERATORS CONVERTED TO LINE GRAPHS
     function renderChartSuccessRate(sessions) {
       const ctx = document.getElementById('chartSuccessRate').getContext('2d');
       if (appState.charts.successRate) appState.charts.successRate.destroy();
@@ -1340,10 +1307,11 @@
             label: 'Success Rate %',
             data: data,
             borderColor: '#4f46e5',
-            backgroundColor: 'rgba(79, 70, 229, 0.1)',
+            backgroundColor: 'rgba(79, 70, 229, 0.12)',
             fill: true,
             tension: 0.35,
-            borderWidth: 3
+            borderWidth: 3,
+            pointRadius: 4
           }]
         },
         options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } } }
@@ -1364,12 +1332,12 @@
       const labels = Object.keys(grouped);
 
       appState.charts.cones = new Chart(ctx, {
-        type: 'bar',
+        type: 'line',
         data: {
           labels: labels,
           datasets: [
-            { label: 'Target Cones', data: labels.map(d => grouped[d].target), backgroundColor: '#cbd5e1', borderRadius: 6 },
-            { label: 'Completed Cones', data: labels.map(d => grouped[d].completed), backgroundColor: '#10b981', borderRadius: 6 }
+            { label: 'Target Cones', data: labels.map(d => grouped[d].target), borderColor: '#94a3b8', backgroundColor: 'transparent', borderWidth: 2, tension: 0.3 },
+            { label: 'Completed Cones', data: labels.map(d => grouped[d].completed), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.12)', fill: true, borderWidth: 3, tension: 0.3 }
           ]
         },
         options: { responsive: true, maintainAspectRatio: false }
@@ -1392,17 +1360,21 @@
       const data = labels.map(l => ((trickStats[l].completed / trickStats[l].target) * 100).toFixed(1));
 
       appState.charts.tricks = new Chart(ctx, {
-        type: 'bar',
+        type: 'line',
         data: {
           labels: labels,
           datasets: [{
             label: 'Avg Success %',
             data: data,
-            backgroundColor: '#06b6d4',
-            borderRadius: 6
+            borderColor: '#06b6d4',
+            backgroundColor: 'rgba(6, 182, 212, 0.12)',
+            fill: true,
+            tension: 0.35,
+            borderWidth: 3,
+            pointRadius: 5
           }]
         },
-        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { min: 0, max: 100 } } }
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } } }
       });
     }
 
@@ -1426,9 +1398,10 @@
             label: 'Falls Count',
             data: labels.map(d => grouped[d]),
             borderColor: '#ef4444',
-            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            backgroundColor: 'rgba(239, 68, 68, 0.12)',
             fill: true,
-            tension: 0.3
+            tension: 0.35,
+            borderWidth: 3
           }]
         },
         options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
@@ -1452,14 +1425,18 @@
       });
 
       appState.charts.family = new Chart(ctx, {
-        type: 'bar',
+        type: 'line',
         data: {
           labels: ['Family A', 'Family B', 'Family C', 'Family D', 'Family E'],
           datasets: [{
             label: 'Success Rate %',
             data: familyData,
-            backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'],
-            borderRadius: 8
+            borderColor: '#8b5cf6',
+            backgroundColor: 'rgba(139, 92, 246, 0.12)',
+            fill: true,
+            tension: 0.3,
+            borderWidth: 3,
+            pointRadius: 6
           }]
         },
         options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } } }
@@ -1493,16 +1470,17 @@
             label: 'Monthly Avg Success %',
             data: data,
             borderColor: '#10b981',
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            backgroundColor: 'rgba(16, 185, 129, 0.12)',
             fill: true,
-            tension: 0.35
+            tension: 0.35,
+            borderWidth: 3
           }]
         },
         options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } } }
       });
     }
 
-    // TRAINING HISTORY RENDERER WITH EMPTY STATE
+    // TRAINING HISTORY RENDERER WITH CLEAN EMPTY STATE
     function renderHistory() {
       const container = document.getElementById('historyList');
       if (!appState.currentUser) return;
