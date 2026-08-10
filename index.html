@@ -13,34 +13,42 @@
     :root {
       --primary: #4f46e5;
       --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-      --bg-gradient: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
-                        radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.12) 0px, transparent 50%);
+      --bg-gradient: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.1) 0px, transparent 50%),
+                        radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.1) 0px, transparent 50%);
       --body-bg: #f8fafc;
-      --glass-bg: rgba(255, 255, 255, 0.92);
+      --glass-bg: rgba(255, 255, 255, 0.82);
       --glass-border: rgba(255, 255, 255, 0.6);
-      --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      --card-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
       --text-main: #0f172a;
       --text-muted: #64748b;
       --border-color: #e2e8f0;
       --input-bg: #ffffff;
-      --nav-bg: rgba(255, 255, 255, 0.92);
-      --radius: 16px;
+      --radius: 14px;
+
+      /* LIQUID GLASS NAVIGATION THEME (LIGHT MODE) */
+      --liquid-glass-bg: rgba(255, 255, 255, 0.75);
+      --liquid-glass-border: rgba(255, 255, 255, 0.8);
+      --liquid-glass-shadow: 0 12px 32px rgba(31, 38, 135, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
     }
 
     [data-theme="dark"] {
       --primary: #6366f1;
       --primary-gradient: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
-      --bg-gradient: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.2) 0px, transparent 50%),
-                        radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.15) 0px, transparent 50%);
+      --bg-gradient: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.18) 0px, transparent 50%),
+                        radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.12) 0px, transparent 50%);
       --body-bg: #090d16;
-      --glass-bg: rgba(15, 23, 42, 0.88);
-      --glass-border: rgba(255, 255, 255, 0.12);
-      --card-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+      --glass-bg: rgba(15, 23, 42, 0.82);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --card-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
       --border-color: #1e293b;
       --input-bg: #0f172a;
-      --nav-bg: rgba(15, 23, 42, 0.92);
+
+      /* LIQUID GLASS NAVIGATION THEME (DARK MODE) */
+      --liquid-glass-bg: rgba(15, 23, 42, 0.78);
+      --liquid-glass-border: rgba(255, 255, 255, 0.15);
+      --liquid-glass-shadow: 0 12px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15);
     }
 
     html, body {
@@ -66,10 +74,10 @@
       color: var(--text-main);
       min-height: 100vh;
       transition: background-color 0.3s ease, color 0.3s ease;
-      padding-bottom: 95px; /* Leave room for fixed bottom navigation bar */
+      padding-bottom: 110px; /* Essential space for Liquid Glass Navigation Bar */
     }
 
-    /* AUTH OVERLAY SCREEN */
+    /* AUTHENTICATION OVERLAY SCREEN */
     #authOverlay {
       position: fixed;
       inset: 0;
@@ -81,7 +89,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 16px;
+      padding: 14px;
       overflow-y: auto;
     }
 
@@ -90,46 +98,46 @@
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border: 1px solid var(--glass-border);
-      border-radius: 24px;
-      padding: 28px 20px;
+      border-radius: 20px;
+      padding: 24px 18px;
       width: 100%;
-      max-width: 380px;
+      max-width: 360px;
       box-shadow: var(--card-shadow);
       text-align: center;
       margin: auto;
     }
 
-    .auth-icon { font-size: 2.5rem; margin-bottom: 6px; }
-    .auth-title { font-size: 1.35rem; font-weight: 800; color: var(--text-main); margin-bottom: 4px; }
-    .auth-subtitle { font-size: 0.825rem; color: var(--text-muted); margin-bottom: 20px; }
+    .auth-icon { font-size: 2.2rem; margin-bottom: 4px; }
+    .auth-title { font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin-bottom: 2px; }
+    .auth-subtitle { font-size: 0.775rem; color: var(--text-muted); margin-bottom: 16px; }
 
     .password-wrap { position: relative; width: 100%; }
     .toggle-password-btn {
-      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-      background: none; border: none; cursor: pointer; font-size: 1.1rem; color: var(--text-muted); padding: 4px;
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; font-size: 1rem; color: var(--text-muted); padding: 4px;
     }
 
     .auth-tabs {
-      display: flex; background: var(--border-color); padding: 4px; border-radius: 12px; margin-bottom: 18px;
+      display: flex; background: var(--border-color); padding: 3px; border-radius: 10px; margin-bottom: 16px;
     }
     .auth-tab-btn {
-      flex: 1; padding: 10px; border: none; background: none; font-weight: 700; font-size: 0.825rem;
+      flex: 1; padding: 8px; border: none; background: none; font-weight: 700; font-size: 0.775rem;
       color: var(--text-muted); border-radius: 8px; cursor: pointer; transition: all 0.2s;
     }
     .auth-tab-btn.active {
-      background: var(--input-bg); color: var(--text-main); box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      background: var(--input-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.06);
     }
 
-    /* TOP HEADER BAR */
+    /* HEADER BAR */
     header {
-      background: var(--nav-bg);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border-color);
       position: sticky;
       top: 0;
       z-index: 1000;
-      padding: 12px 16px;
+      padding: 10px 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -137,72 +145,83 @@
     }
 
     .brand {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: 800;
       background: var(--primary-gradient);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .user-pill {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .main-viewport {
       width: 100%;
-      max-width: 960px;
+      max-width: 900px;
       margin: 0 auto;
-      padding: 16px;
+      padding: 12px;
       overflow-x: hidden;
     }
 
-    /* UNIVERSAL GLASSMORPHISM BOTTOM NAVIGATION BAR (DESKTOP + MOBILE) */
+    /* 1. LIQUID GLASS FLOATING BOTTOM NAVIGATION BAR (APPLE/iOS TRANSLUCENT GLASS UI) */
     .bottom-nav {
       position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: var(--nav-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-top: 1px solid var(--border-color);
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 24px);
+      max-width: 580px;
+      background: var(--liquid-glass-bg);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid var(--liquid-glass-border);
+      border-radius: 30px;
+      box-shadow: var(--liquid-glass-shadow);
       display: flex;
       justify-content: space-around;
-      padding: 10px 0 14px 0;
-      z-index: 2000;
-      box-shadow: 0 -4px 16px rgba(0,0,0,0.06);
-      width: 100%;
+      align-items: center;
+      padding: 8px 6px;
+      z-index: 20000;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .nav-item {
       display: flex;
       flex-direction: column;
       align-items: center;
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       font-weight: 700;
       color: var(--text-muted);
       text-decoration: none;
       cursor: pointer;
       flex: 1;
-      transition: color 0.2s;
+      padding: 4px 0;
+      border-radius: 18px;
+      transition: all 0.2s ease;
     }
-    .nav-item.active { color: var(--primary); }
-    .nav-icon { font-size: 1.25rem; margin-bottom: 2px; }
 
-    /* GLASS CARDS */
+    .nav-item.active {
+      color: var(--primary);
+      background: rgba(99, 102, 241, 0.12);
+    }
+
+    .nav-icon { font-size: 1.2rem; margin-bottom: 2px; }
+
+    /* MOBILE CLUTTER FIXES & COMPACT UI CARDS */
     .glass-card {
       background: var(--glass-bg);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border: 1px solid var(--glass-border);
       border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 14px;
+      padding: 12px;
+      margin-bottom: 12px;
       box-shadow: var(--card-shadow);
       width: 100%;
       max-width: 100%;
@@ -210,9 +229,9 @@
     }
 
     .card-title {
-      font-size: 1rem;
+      font-size: 0.925rem;
       font-weight: 700;
-      margin-bottom: 14px;
+      margin-bottom: 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -220,35 +239,34 @@
       word-break: break-word;
     }
 
-    /* FORMS & INPUTS */
-    .form-group { margin-bottom: 14px; width: 100%; }
+    /* COMPACT FORM FIELDS & SPACING */
+    .form-group { margin-bottom: 10px; width: 100%; }
     label {
-      display: block; font-size: 0.725rem; font-weight: 700; color: var(--text-muted);
-      margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;
+      display: block; font-size: 0.675rem; font-weight: 700; color: var(--text-muted);
+      margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;
     }
     input, select, textarea {
-      width: 100%; max-width: 100%; padding: 12px 14px; border: 1px solid var(--border-color);
-      border-radius: 10px; font-size: 0.925rem; background: var(--input-bg);
+      width: 100%; max-width: 100%; padding: 10px 12px; border: 1px solid var(--border-color);
+      border-radius: 8px; font-size: 0.875rem; background: var(--input-bg);
       color: var(--text-main); outline: none; transition: all 0.2s ease;
     }
     input:focus, select:focus, textarea:focus {
       border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
     }
 
-    /* RESPONSIVE FORM GRID STACKING */
-    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
-    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; width: 100%; }
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; width: 100%; }
 
-    @media (max-width: 580px) {
-      .row-2, .row-3 { grid-template-columns: 1fr !important; gap: 12px !important; }
+    @media (max-width: 520px) {
+      .row-2, .row-3 { grid-template-columns: 1fr !important; gap: 8px !important; }
     }
 
     /* BUTTONS */
     .btn {
       display: inline-flex; align-items: center; justify-content: center; width: 100%;
-      padding: 12px 16px; background: var(--primary-gradient); color: #fff; border: none;
-      border-radius: 12px; font-size: 0.925rem; font-weight: 700; cursor: pointer;
-      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25); transition: all 0.2s ease; min-height: 46px;
+      padding: 10px 14px; background: var(--primary-gradient); color: #fff; border: none;
+      border-radius: 10px; font-size: 0.875rem; font-weight: 700; cursor: pointer;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2); transition: all 0.2s ease; min-height: 42px;
     }
     .btn:active { transform: scale(0.98); }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -257,33 +275,36 @@
       background: var(--border-color); color: var(--text-main); box-shadow: none;
     }
 
+    .btn-sm {
+      min-height: 32px; padding: 4px 10px; font-size: 0.75rem; border-radius: 6px; width: auto;
+    }
+
     .theme-toggle-btn {
       border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main);
-      padding: 6px 10px; border-radius: 20px; font-weight: 700; font-size: 0.8rem; cursor: pointer;
+      padding: 4px 8px; border-radius: 16px; font-weight: 700; font-size: 0.75rem; cursor: pointer;
       display: inline-flex; align-items: center; gap: 4px;
     }
 
     .btn-logout {
       border: none; background: #fee2e2; color: #dc2626; font-weight: 700;
-      padding: 6px 12px; border-radius: 14px; cursor: pointer; font-size: 0.75rem;
+      padding: 4px 8px; border-radius: 12px; cursor: pointer; font-size: 0.725rem;
     }
 
-    /* SUB TABS TOGGLE (Log Mode / Combo Builder) */
     .sub-tabs {
-      display: flex; background: var(--border-color); padding: 4px; border-radius: 12px; margin-bottom: 16px;
+      display: flex; background: var(--border-color); padding: 3px; border-radius: 10px; margin-bottom: 12px;
     }
     .sub-tab-btn {
-      flex: 1; padding: 10px; border: none; background: none; font-weight: 700; font-size: 0.825rem;
+      flex: 1; padding: 8px; border: none; background: none; font-weight: 700; font-size: 0.775rem;
       color: var(--text-muted); border-radius: 8px; cursor: pointer; transition: all 0.2s;
     }
     .sub-tab-btn.active {
-      background: var(--input-bg); color: var(--text-main); box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      background: var(--input-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.06);
     }
 
     /* BADGES */
     .badge {
-      display: inline-block; padding: 4px 8px; border-radius: 20px;
-      font-size: 0.7rem; font-weight: 700; text-transform: uppercase; white-space: nowrap;
+      display: inline-block; padding: 3px 8px; border-radius: 16px;
+      font-size: 0.65rem; font-weight: 700; text-transform: uppercase; white-space: nowrap;
     }
     .badge-family { background: #e0e7ff; color: #3730a3; }
     .badge-category { background: #f3e8ff; color: #6b21a8; }
@@ -292,73 +313,67 @@
 
     /* METRICS GRID */
     .metrics-grid {
-      display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px; width: 100%;
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 12px; width: 100%;
     }
     @media (min-width: 600px) {
-      .metrics-grid { grid-template-columns: repeat(5, 1fr); gap: 10px; }
+      .metrics-grid { grid-template-columns: repeat(5, 1fr); gap: 8px; }
     }
 
     .metric-card {
       background: var(--glass-bg); backdrop-filter: blur(8px); border: 1px solid var(--glass-border);
-      border-radius: var(--radius); padding: 12px 8px; text-align: center; box-shadow: var(--card-shadow);
+      border-radius: var(--radius); padding: 10px 6px; text-align: center; box-shadow: var(--card-shadow);
     }
     .metric-value {
-      font-size: 1.25rem; font-weight: 800; background: var(--primary-gradient);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-top: 2px;
+      font-size: 1.15rem; font-weight: 800; background: var(--primary-gradient);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-top: 1px;
     }
-    .metric-label { font-size: 0.65rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
+    .metric-label { font-size: 0.6rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
 
     /* HISTORY ITEMS */
     .history-item {
       background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius);
-      padding: 14px; margin-bottom: 10px; box-shadow: var(--card-shadow); width: 100%; word-break: break-word;
+      padding: 10px 12px; margin-bottom: 8px; box-shadow: var(--card-shadow); width: 100%; word-break: break-word;
     }
-    .history-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; gap: 8px; }
-    .history-title { font-weight: 700; font-size: 0.95rem; }
-    .history-stats { display: flex; flex-wrap: wrap; gap: 8px 12px; font-size: 0.8rem; color: var(--text-muted); margin-top: 8px; }
+    .history-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; gap: 6px; }
+    .history-title { font-weight: 700; font-size: 0.875rem; }
+    .history-stats { display: flex; flex-wrap: wrap; gap: 6px 10px; font-size: 0.75rem; color: var(--text-muted); margin-top: 6px; }
 
-    /* CHART CONTAINERS */
     .chart-container {
-      position: relative; height: 210px; width: 100%; max-width: 100%; margin-top: 6px; overflow: hidden;
+      position: relative; height: 190px; width: 100%; max-width: 100%; margin-top: 4px; overflow: hidden;
     }
 
-    /* EMPTY STATES & SKELETONS */
-    .empty-state { text-align: center; padding: 32px 16px; color: var(--text-muted); }
-    .empty-icon { font-size: 2.5rem; margin-bottom: 8px; opacity: 0.8; }
-    .empty-text { font-size: 0.875rem; font-weight: 600; max-width: 280px; margin: 0 auto 14px auto; line-height: 1.4; }
-
-    .skeleton {
-      background: linear-gradient(90deg, var(--border-color) 25%, var(--input-bg) 50%, var(--border-color) 75%);
-      background-size: 200% 100%;
-      animation: skeleton-pulse 1.5s infinite;
-      border-radius: 8px;
-    }
-    @keyframes skeleton-pulse { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .empty-state { text-align: center; padding: 24px 12px; color: var(--text-muted); }
+    .empty-icon { font-size: 2rem; margin-bottom: 6px; opacity: 0.8; }
+    .empty-text { font-size: 0.825rem; font-weight: 600; max-width: 260px; margin: 0 auto 10px auto; line-height: 1.35; }
 
     /* TOASTS */
     #toastContainer {
-      position: fixed; top: 16px; right: 16px; left: 16px; max-width: 380px;
+      position: fixed; top: 12px; right: 12px; left: 12px; max-width: 360px;
       margin: 0 auto; z-index: 100000; pointer-events: none;
     }
     .toast {
-      pointer-events: auto; background: #0f172a; color: #fff; padding: 12px 16px;
-      border-radius: 12px; font-size: 0.825rem; font-weight: 600;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.25); margin-bottom: 8px; display: flex;
-      align-items: center; gap: 8px; animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      pointer-events: auto; background: #0f172a; color: #fff; padding: 10px 14px;
+      border-radius: 10px; font-size: 0.8rem; font-weight: 600;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.22); margin-bottom: 6px; display: flex;
+      align-items: center; gap: 6px; animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     .toast-warning { background: #d97706; }
     .toast-success { background: #059669; }
     .toast-error { background: #dc2626; }
 
-    @keyframes toastIn { from { opacity: 0; transform: translateY(-16px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(-12px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
-    .tab-content { display: none; animation: fadeIn 0.25s ease-in-out; width: 100%; }
+    .tab-content { display: none; animation: fadeIn 0.2s ease-in-out; width: 100%; }
     .tab-content.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* COMBO SLOT ITEM BUILDER */
-    .combo-slot {
-      display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+    .combo-slot { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+
+    /* EDIT CUSTOM TRICK MODAL */
+    #editCustomModal {
+      position: fixed; inset: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+      z-index: 99999; display: none; align-items: center; justify-content: center; padding: 16px;
     }
   </style>
 </head>
@@ -373,7 +388,39 @@
   <div id="toastContainer"></div>
 
 
-  <!-- 1. AUTHENTICATION OVERLAY SCREEN -->
+  <!-- EDIT CUSTOM TRICK MODAL -->
+  <div id="editCustomModal">
+    <div class="glass-card" style="max-width:360px; margin:auto; background:var(--input-bg);">
+      <div class="card-title">
+        <span>Edit Custom Trick</span>
+        <button type="button" onclick="closeEditCustomModal()" style="border:none; background:none; font-size:1.1rem; cursor:pointer; color:var(--text-muted);">✕</button>
+      </div>
+      <form id="editCustomForm" onsubmit="handleEditCustomTrickSubmit(event)">
+        <input type="hidden" id="editTrickId">
+        <div class="form-group">
+          <label>Trick Name</label>
+          <input type="text" id="editTrickName" required>
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select id="editTrickCategory">
+            <option value="OTHERS">Others</option>
+            <option value="SITTING">Sitting</option>
+            <option value="JUMPING">Jumping</option>
+            <option value="WHEELING">Wheeling</option>
+            <option value="SPINNING">Spinning</option>
+          </select>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+          <button type="button" class="btn btn-secondary" onclick="closeEditCustomModal()">Cancel</button>
+          <button type="submit" class="btn">Update Trick</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- AUTHENTICATION OVERLAY SCREEN -->
   <div id="authOverlay">
     <div class="auth-card">
       <div class="auth-icon">🛼</div>
@@ -404,7 +451,7 @@
           <input type="text" id="authSkaterName" placeholder="e.g. Aaryesh Sharma">
         </div>
 
-        <button type="submit" id="authSubmitBtn" class="btn" style="margin-top:6px;">
+        <button type="submit" id="authSubmitBtn" class="btn" style="margin-top:4px;">
           <span>Log In</span>
         </button>
       </form>
@@ -412,12 +459,12 @@
   </div>
 
 
-  <!-- 2. TOP HEADER BAR -->
+  <!-- TOP HEADER BAR -->
   <header>
     <div class="brand"><span>🛼</span> SlalomTracker</div>
     <div class="user-pill">
-      <span style="font-size:0.8rem; font-weight:700;" id="headerSkaterName">Skater: -</span>
-      <button class="theme-toggle-btn" onclick="toggleTheme()" style="padding:4px 8px;">
+      <span style="font-size:0.75rem; font-weight:700;" id="headerSkaterName">Skater: -</span>
+      <button class="theme-toggle-btn" onclick="toggleTheme()">
         <span id="themeBtnIcon">🌙</span>
       </button>
       <button class="btn-logout" onclick="logout()">Logout</button>
@@ -425,7 +472,7 @@
   </header>
 
 
-  <!-- 3. MAIN CONTENT VIEWPORT -->
+  <!-- MAIN CONTENT VIEWPORT -->
   <main class="main-viewport">
 
     <!-- TAB 1: DASHBOARD / PROGRESS -->
@@ -435,11 +482,11 @@
       <div class="glass-card">
         <div class="card-title">Dashboard Filters</div>
         <div class="row-2">
-          <div class="form-group" style="margin-bottom:8px;">
+          <div class="form-group" style="margin-bottom:6px;">
             <label>Select Month</label>
             <input type="month" id="progMonth" onchange="renderAnalytics()">
           </div>
-          <div class="form-group" style="margin-bottom:8px;">
+          <div class="form-group" style="margin-bottom:6px;">
             <label>Category</label>
             <select id="progCategory" onchange="renderAnalytics()">
               <option value="ALL">All Categories</option>
@@ -464,25 +511,12 @@
             </select>
           </div>
           <div class="form-group" style="margin-bottom:0;">
-            <label>Specific Trick / Combo</label>
+            <label>Specific Practice Item</label>
             <select id="progTrick" onchange="renderAnalytics()">
               <option value="ALL">All Practice Items</option>
             </select>
           </div>
         </div>
-      </div>
-
-      <!-- Dashboard Skeleton Loader -->
-      <div id="dashboardSkeleton" style="display:none;">
-        <div class="metrics-grid">
-          <div class="skeleton" style="height:60px;"></div>
-          <div class="skeleton" style="height:60px;"></div>
-          <div class="skeleton" style="height:60px;"></div>
-          <div class="skeleton" style="height:60px;"></div>
-          <div class="skeleton" style="height:60px;"></div>
-        </div>
-        <div class="skeleton" style="height:180px; margin-bottom:14px;"></div>
-        <div class="skeleton" style="height:180px;"></div>
       </div>
 
       <!-- Dashboard Metrics -->
@@ -510,46 +544,46 @@
           </div>
         </div>
 
-        <!-- Graph 1: Success Rate Over Time (LINE GRAPH) -->
+        <!-- Graph 1: Success Rate Over Time -->
         <div class="glass-card">
           <div class="card-title">Cone Success Rate % Over Time</div>
           <div class="chart-container"><canvas id="chartSuccessRate"></canvas></div>
         </div>
 
-        <!-- Graph 2: Target vs Completed Cones (LINE GRAPH) -->
+        <!-- Graph 2: Target vs Completed Cones -->
         <div class="glass-card">
           <div class="card-title">Target vs Completed Cones</div>
           <div class="chart-container"><canvas id="chartCones"></canvas></div>
         </div>
 
-        <!-- Graph 3: Individual Trick & Combo Progress (LINE GRAPH) -->
+        <!-- Graph 3: Individual Trick & Combo Progress -->
         <div class="glass-card">
           <div class="card-title">Progress by Trick & Combo</div>
           <div class="chart-container"><canvas id="chartTricks"></canvas></div>
         </div>
 
-        <!-- Graph 4: Falls Over Time (LINE GRAPH) -->
+        <!-- Graph 4: Falls Over Time -->
         <div class="glass-card">
           <div class="card-title">Falls Count Over Time</div>
           <div class="chart-container"><canvas id="chartFalls"></canvas></div>
         </div>
 
-        <!-- Graph 5: Family A–E Performance Matrix (LINE GRAPH) -->
+        <!-- Graph 5: Family A–E Performance Matrix -->
         <div class="glass-card">
           <div class="card-title">Family A–E Performance Matrix</div>
           <div class="chart-container"><canvas id="chartFamily"></canvas></div>
         </div>
 
-        <!-- Graph 6: Combo Specific Progress (LINE GRAPH) -->
+        <!-- Graph 6: Combo Specific Progress -->
         <div class="glass-card">
           <div class="card-title">
             <span>Combo Specific Progress</span>
-            <select id="comboGraphSelect" style="width:auto; padding:4px 8px; font-size:0.8rem;" onchange="renderComboProgressChart()">
+            <select id="comboGraphSelect" style="width:auto; padding:2px 6px; font-size:0.75rem;" onchange="renderComboProgressChart()">
               <!-- Dynamic Combo options -->
             </select>
           </div>
-          <div class="row-2" style="margin-bottom:10px;">
-            <select id="comboDateRangeSelect" style="font-size:0.8rem; padding:6px;" onchange="renderComboProgressChart()">
+          <div class="row-2" style="margin-bottom:8px;">
+            <select id="comboDateRangeSelect" style="font-size:0.75rem; padding:4px;" onchange="renderComboProgressChart()">
               <option value="THIS_MONTH">This Month</option>
               <option value="THIS_WEEK">This Week</option>
               <option value="ALL_TIME">All Time</option>
@@ -563,12 +597,11 @@
     </div>
 
 
-    <!-- TAB 2: LOG SESSION (SINGLE TRICK & COMBO TRAINING) -->
+    <!-- TAB 2: LOG SESSION -->
     <div id="tab-log" class="tab-content">
       <div class="glass-card">
         <div class="card-title">Record Training Session</div>
 
-        <!-- Toggle: Single Trick vs Combo Training -->
         <div class="sub-tabs">
           <button type="button" class="sub-tab-btn active" id="btnLogSingleTab" onclick="switchLogSubTab('single')">Single Trick</button>
           <button type="button" class="sub-tab-btn" id="btnLogComboTab" onclick="switchLogSubTab('combo')">Combo Training</button>
@@ -618,7 +651,7 @@
             <select id="logTrickSelect" onchange="onTrickSelectionChange()" required></select>
           </div>
 
-          <div style="margin-bottom:14px; display:flex; gap:8px;">
+          <div style="margin-bottom:10px; display:flex; gap:6px;">
             <span id="badgeCategory" class="badge badge-category">Category: -</span>
             <span id="badgeFamily" class="badge badge-family">Family: -</span>
           </div>
@@ -664,13 +697,10 @@
             </div>
           </div>
 
-          <!-- Dynamic Combo Slots -->
           <div class="form-group">
             <label>Build Combo Sequence</label>
-            <div id="comboSlotsContainer">
-              <!-- Dynamically populated trick slots -->
-            </div>
-            <button type="button" class="btn btn-secondary" onclick="addComboSlot()" style="margin-top:6px; font-size:0.8rem; padding:8px;">+ Add Next Trick to Combo</button>
+            <div id="comboSlotsContainer"></div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="addComboSlot()" style="margin-top:4px;">+ Add Next Trick to Combo</button>
           </div>
 
           <div class="row-3">
@@ -696,7 +726,7 @@
             <div class="form-group">
               <label>Connected Attempts</label>
               <input type="number" id="comboConnectedAttempts" min="0" value="7" required>
-              <small style="font-size:0.68rem; color:var(--text-muted);">Completed continuously without breaking flow/standing up</small>
+              <small style="font-size:0.65rem; color:var(--text-muted);">Completed continuously without breaking flow</small>
             </div>
           </div>
 
@@ -719,18 +749,18 @@
 
     <!-- TAB 3: TRAINING HISTORY -->
     <div id="tab-history" class="tab-content">
-      <div class="glass-card" style="margin-bottom:12px;">
+      <div class="glass-card" style="margin-bottom:10px;">
         <div class="card-title">History Filters</div>
         <div class="row-2">
-          <div class="form-group" style="margin-bottom:8px;">
+          <div class="form-group" style="margin-bottom:6px;">
             <label>Session Type</label>
             <select id="histType" onchange="renderHistory()">
-              <option value="ALL">All Types (Single & Combo)</option>
+              <option value="ALL">All Types</option>
               <option value="Single">Single Trick</option>
               <option value="Combo">Combo Sequence</option>
             </select>
           </div>
-          <div class="form-group" style="margin-bottom:8px;">
+          <div class="form-group" style="margin-bottom:6px;">
             <label>Category</label>
             <select id="histCat" onchange="renderHistory()">
               <option value="ALL">All Categories</option>
@@ -812,27 +842,50 @@
     <div id="tab-calc" class="tab-content">
       <div class="glass-card">
         <div class="card-title">🧮 Combo Calculator (Matrix 2026)</div>
-        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:14px;">
-          Build a combo sequence to estimate technical difficulty point ranges. <i>This is an estimation tool and is NOT saved to training history.</i>
-        </p>
+        
+        <!-- 4. COMBO CALCULATOR EASY TRICK FILTERS -->
+        <div class="row-2" style="margin-bottom:10px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Filter Category</label>
+            <select id="calcCatFilter" onchange="renderCalcSlots()">
+              <option value="ALL">All Categories</option>
+              <option value="OTHERS">Others</option>
+              <option value="SITTING">Sitting</option>
+              <option value="JUMPING">Jumping</option>
+              <option value="WHEELING">Wheeling</option>
+              <option value="SPINNING">Spinning</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Filter Family</label>
+            <select id="calcFamFilter" onchange="renderCalcSlots()">
+              <option value="ALL">All Families</option>
+              <option value="A">Family A</option>
+              <option value="B">Family B</option>
+              <option value="C">Family C</option>
+              <option value="D">Family D</option>
+              <option value="E">Family E</option>
+            </select>
+          </div>
+        </div>
 
         <div id="calcSlotsContainer"></div>
-        <button type="button" class="btn btn-secondary" onclick="addCalcSlot()" style="margin-top:6px; font-size:0.8rem; padding:8px;">+ Add Trick to Calculator</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="addCalcSlot()" style="margin-top:4px;">+ Add Trick to Combo</button>
         
-        <div style="margin-top:16px; padding:12px; background:var(--input-bg); border-radius:12px; border:1px solid var(--border-color);">
-          <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">ESTIMATED TECHNICAL SCORE RANGE</div>
-          <div id="calcScoreRange" style="font-size:1.4rem; font-weight:800; color:var(--primary); margin-top:4px;">0 – 0 Points</div>
-          <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px; font-style:italic;">
-            Note: Actual judging score varies based on execution quality, speed, stability, and cone penalty deductions.
+        <div style="margin-top:12px; padding:10px; background:var(--input-bg); border-radius:10px; border:1px solid var(--border-color);">
+          <div style="font-size:0.7rem; font-weight:700; color:var(--text-muted);">ESTIMATED TECHNICAL SCORE RANGE</div>
+          <div id="calcScoreRange" style="font-size:1.2rem; font-weight:800; color:var(--primary); margin-top:2px;">0 – 0 Points</div>
+          <div style="font-size:0.675rem; color:var(--text-muted); margin-top:2px; font-style:italic;">
+            Estimated range based on Matrix difficulty. Actual judging depends on execution, speed, stability, and penalties.
           </div>
         </div>
       </div>
 
       <!-- AI COMBO RECOMMENDATIONS -->
       <div class="glass-card">
-        <div class="card-title">🤖 AI Combo Upgrade Recommendations</div>
+        <div class="card-title">🤖 AI Combo Recommendations</div>
         <div id="aiRecommendationsContainer">
-          <p style="font-size:0.825rem; color:var(--text-muted);">Add tricks above to receive AI-powered difficulty upgrade suggestions.</p>
+          <!-- Populated dynamically based on user selections -->
         </div>
       </div>
     </div>
@@ -840,7 +893,7 @@
   </main>
 
 
-  <!-- 4. UNIVERSAL GLASSMORPHISM BOTTOM NAVIGATION BAR -->
+  <!-- 1. LIQUID GLASS FLOATING BOTTOM NAVIGATION BAR -->
   <nav class="bottom-nav">
     <div class="nav-item active" onclick="switchTab('dashboard', this)">
       <span class="nav-icon">📊</span>
@@ -926,35 +979,80 @@
       { id: 'JMP-E3', name: 'Crab Series', category: 'JUMPING', family: 'E' },
 
       // WHEELING
-      { id: 'WHL-A1', name: 'Backward Leaf Series', category: 'WHEELING', family: 'A' },
-      { id: 'WHL-A2', name: 'Side / Forward Leaf Series', category: 'WHEELING', family: 'A' },
-      { id: 'WHL-A3', name: 'Wheeling Shifts / Countershifts Series', category: 'WHEELING', family: 'A' },
-      { id: 'WHL-A4', name: 'Square Series', category: 'WHEELING', family: 'A' },
-      { id: 'WHL-B1', name: 'Wheeling Flip / Daynight Series', category: 'WHEELING', family: 'B' },
+      { id: 'WHL-A1', name: 'Toe Backward Infinity Square', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A1', name: 'Toe Backward Infinity Traingle', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A2', name: 'Toe Side Infinity Square', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A2', name: 'Toe Side normal Square', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A2', name: 'Toe Fwd Infinity Square', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A2', name: 'Toe Fwd Infinity Triangle', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A1', name: 'Heel Backward Infinity Square', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A1', name: 'Heel Backward Infinity Traingle', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A2', name: 'Heel Side Infinity Square', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A2', name: 'Heel Side normal Square', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A2', name: 'Heel Fwd Infinity Square', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A2', name: 'Heel Fwd Infinity Triangle', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A3', name: 'Toe Noviper (Shift)', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A3', name: 'Toe Internal Shift', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A3', name: 'Toe Fake', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A3', name: 'Toe External Shift', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A3', name: 'Heel Noviper (Shift)', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A3', name: 'Heel Internal Shift', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A3', name: 'Heel Fake', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A3', name: 'Heel External Shift', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A1', name: 'Toe Backward Traingle', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A1', name: 'Toe Backward Square', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A2', name: 'Toe Fwd Triangle', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A2', name: 'Toe Fwd Square', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A1', name: 'Heel Backward Traingle', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A1', name: 'Heel Backward Square', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A2', name: 'Heel Fwd Triangle', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-A2', name: 'Heel Fwd Square', category: 'WHEELING', family: 'A' },
+      { id: 'WHL-B1', name: 'Toe Wheeling Flip', category: 'WHEELING', family: 'B' },
+      { id: 'WHL-B1', name: 'Heel Wheeling Flip', category: 'WHEELING', family: 'B' },
+      { id: 'WHL-B1', name: 'Toe Daynight Series', category: 'WHEELING', family: 'B' },
+      { id: 'WHL-B1', name: 'Heel Daynight Series', category: 'WHEELING', family: 'B' },
       { id: 'WHL-C1', name: 'Toe Sewing Machine', category: 'WHEELING', family: 'C' },
-      { id: 'WHL-C2', name: 'Back Wheeling', category: 'WHEELING', family: 'C' },
-      { id: 'WHL-C3', name: 'Flat Shifts / Countershifts Series', category: 'WHEELING', family: 'C' },
-      { id: 'WHL-C4', name: 'FWD Wheeling', category: 'WHEELING', family: 'C' },
-      { id: 'WHL-C5', name: 'Flat Flip / Daynight Series', category: 'WHEELING', family: 'C' },
-      { id: 'WHL-D1', name: 'Two Wheels Back Cross', category: 'WHEELING', family: 'D' },
-      { id: 'WHL-D2', name: 'Two Wheels Back Snake', category: 'WHEELING', family: 'D' },
-      { id: 'WHL-D3', name: 'Two Wheels Cross', category: 'WHEELING', family: 'D' },
-      { id: 'WHL-D4', name: 'Two Wheels Snake', category: 'WHEELING', family: 'D' },
+      { id: 'WHL-C2', name: 'Toe Back Wheeling', category: 'WHEELING', family: 'C' },
+      { id: 'WHL-C2', name: 'Heel Back Wheeling', category: 'WHEELING', family: 'C' },
+      { id: 'WHL-C3', name: 'Flat Noviper (shift)', category: 'WHEELING', family: 'C' },
+      { id: 'WHL-C3', name: 'Flat Internal (shift)', category: 'WHEELING', family: 'C' },
+      { id: 'WHL-C3', name: 'Flat External (shift)', category: 'WHEELING', family: 'C' },
+      { id: 'WHL-C3', name: 'Flat Fake (shift)', category: 'WHEELING', family: 'C' },
+      { id: 'WHL-C4', name: 'Toe FWD Wheeling', category: 'WHEELING', family: 'C' },
+      { id: 'WHL-C4', name: 'Heel FWD Wheeling', category: 'WHEELING', family: 'C' },
+      { id: 'WHL-C5', name: 'Flat Flip', category: 'WHEELING', family: 'C' },
+      { id: 'WHL-C5', name: 'Flat Daynight Series', category: 'WHEELING', family: 'C' },
+      { id: 'WHL-D1', name: 'Heel Toe Back Cross', category: 'WHEELING', family: 'D' },
+      { id: 'WHL-D2', name: 'Heel Toe Back Snake', category: 'WHEELING', family: 'D' },
+      { id: 'WHL-D1', name: 'Toe Toe Back Cross', category: 'WHEELING', family: 'D' },
+      { id: 'WHL-D2', name: 'Toe Toe Back Snake', category: 'WHEELING', family: 'D' },
+      { id: 'WHL-D1', name: 'Heel Toe Cross', category: 'WHEELING', family: 'D' },
+      { id: 'WHL-D2', name: 'Heel Toe Snake', category: 'WHEELING', family: 'D' },
+      { id: 'WHL-D1', name: 'Toe Toe Cross', category: 'WHEELING', family: 'D' },
+      { id: 'WHL-D2', name: 'Toe Toe Snake', category: 'WHEELING', family: 'D' },
       { id: 'WHL-E1', name: 'Back One Foot', category: 'WHEELING', family: 'E' },
       { id: 'WHL-E2', name: 'One Foot', category: 'WHEELING', family: 'E' },
-      { id: 'WHL-E3', name: 'Back Snake / Back Cross', category: 'WHEELING', family: 'E' },
-      { id: 'WHL-E4', name: 'Snake / Cross', category: 'WHEELING', family: 'E' },
+      { id: 'WHL-E3', name: 'Back Snake', category: 'WHEELING', family: 'E' },
+      { id: 'WHL-E4', name: 'Back Cross', category: 'WHEELING', family: 'E' },
+      { id: 'WHL-E5', name: 'Snake', category: 'WHEELING', family: 'E' },
+      { id: 'WHL-E6', name: 'Cross', category: 'WHEELING', family: 'E' },
       { id: 'WHL-E5', name: 'Fish', category: 'WHEELING', family: 'E' },
+      { id: 'WHL-E5', name: 'Backward Fish', category: 'WHEELING', family: 'E' },
 
       // SPINNING
       { id: 'SPN-A1', name: 'Back Toe Christie Spin', category: 'SPINNING', family: 'A' },
       { id: 'SPN-A2', name: 'Toe Christie Spin', category: 'SPINNING', family: 'A' },
       { id: 'SPN-A3', name: 'Back Toe Footgun Spin', category: 'SPINNING', family: 'A' },
       { id: 'SPN-A4', name: 'Toe Footgun Spin', category: 'SPINNING', family: 'A' },
+      
       { id: 'SPN-A5', name: 'Back Seven int/ext', category: 'SPINNING', family: 'A' },
+      
       { id: 'SPN-A6', name: 'One Cone Back Seven int/ext', category: 'SPINNING', family: 'A' },
+      
       { id: 'SPN-B1', name: 'Seven int/ext', category: 'SPINNING', family: 'B' },
+      
       { id: 'SPN-B2', name: 'One Cone Seven int/ext', category: 'SPINNING', family: 'B' },
+      
       { id: 'SPN-B3', name: 'Flat Back Seven int/ext', category: 'SPINNING', family: 'B' },
       { id: 'SPN-B4', name: 'Flat Seven int/ext', category: 'SPINNING', family: 'B' },
       { id: 'SPN-C1', name: 'One Cone Back Korean Spin', category: 'SPINNING', family: 'C' },
@@ -972,7 +1070,6 @@
       { id: 'SPN-E3', name: 'Sun / Mabrouk', category: 'SPINNING', family: 'E' }
     ];
 
-    // MATRIX POINT VALUES BY FAMILY (ESTIMATE RANGES FOR COMBO CALCULATOR)
     const FAMILY_POINTS = {
       'A': { min: 50, max: 60 },
       'B': { min: 40, max: 50 },
@@ -982,15 +1079,14 @@
       'Custom': { min: 15, max: 35 }
     };
 
-    // STATE MANAGEMENT
     let appState = {
       currentUser: null,
       authMode: 'login',
-      logMode: 'single', // 'single' or 'combo'
+      logMode: 'single',
       sessions: [],
       customTricks: [],
       comboSlots: [],
-      calcSlots: [],
+      calcSlots: [], // Starts empty (0 tricks initially)
       charts: {}
     };
 
@@ -1002,15 +1098,12 @@
       const savedTheme = localStorage.getItem('slalom_theme') || 'light';
       applyTheme(savedTheme);
 
-      // Initialize default Combo Slots
       initComboSlots();
-      initCalcSlots();
+      renderCalcSlots();
 
-      // Show Auth Lock Screen
       document.getElementById('authOverlay').style.display = 'flex';
     });
 
-    // THEME SWITCHER
     function applyTheme(theme) {
       document.documentElement.setAttribute('data-theme', theme);
       localStorage.setItem('slalom_theme', theme);
@@ -1021,7 +1114,7 @@
       Chart.defaults.color = isDark ? '#94a3b8' : '#64748b';
       Chart.defaults.borderColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
 
-      if (appState.currentUser) {
+      if (appState.currentUser && document.getElementById('tab-dashboard').classList.contains('active')) {
         renderAnalytics();
       }
     }
@@ -1031,7 +1124,6 @@
       applyTheme(current === 'light' ? 'dark' : 'light');
     }
 
-    // TOAST NOTIFICATIONS
     function showToast(message, type = 'warning') {
       const container = document.getElementById('toastContainer');
       const toast = document.createElement('div');
@@ -1050,7 +1142,6 @@
       pwd.type = pwd.type === 'password' ? 'text' : 'password';
     }
 
-    // AUTH TAB SWITCHING
     function switchAuthMode(mode) {
       appState.authMode = mode;
       const isReg = mode === 'register';
@@ -1066,7 +1157,6 @@
       document.getElementById('authSubmitBtn').innerHTML = `<span>${isReg ? 'Create Account' : 'Log In'}</span>`;
     }
 
-    // AUTH SUBMISSION
     async function handleAuthSubmit(e) {
       e.preventDefault();
       const u = document.getElementById('authUsername').value.trim();
@@ -1128,7 +1218,6 @@
 
     function onAuthSuccess() {
       document.getElementById('authOverlay').style.display = 'none';
-
       document.getElementById('headerSkaterName').textContent = `Skater: ${appState.currentUser.skaterName}`;
       document.getElementById('logSkater').value = appState.currentUser.skaterName;
       document.getElementById('logComboSkater').value = appState.currentUser.skaterName;
@@ -1153,7 +1242,6 @@
       showToast('Logged out successfully.', 'success');
     }
 
-    // MAIN NAVIGATION TAB SWITCHER
     function switchTab(tabId, el) {
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.bottom-nav .nav-item').forEach(n => n.classList.remove('active'));
@@ -1172,7 +1260,6 @@
       if (tabId === 'calc') updateComboCalculator();
     }
 
-    // SUB-TAB LOG MODE (SINGLE vs COMBO)
     function switchLogSubTab(mode) {
       appState.logMode = mode;
       const isCombo = mode === 'combo';
@@ -1184,7 +1271,6 @@
       document.getElementById('sessionFormCombo').style.display = isCombo ? 'block' : 'none';
     }
 
-    // ALL TRICKS CATALOG
     function getAllTricks() {
       if (!appState.currentUser) return PREDEFINED_TRICKS;
       const userCustom = appState.customTricks.filter(t => 
@@ -1278,7 +1364,6 @@
       if (target >= completed) missedInput.value = target - completed;
     }
 
-    // DYNAMIC COMBO BUILDER SLOTS
     function initComboSlots() {
       appState.comboSlots = ['Crazy', 'Nelson'];
       renderComboSlots();
@@ -1311,12 +1396,11 @@
               return `<option value="${name}" ${name === selectedTrick ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
             }).join('')}
           </select>
-          ${idx > 1 ? `<button type="button" onclick="removeComboSlot(${idx})" style="background:#fee2e2; border:none; color:#dc2626; padding:8px 12px; border-radius:8px; font-weight:700;">✕</button>` : ''}
+          ${idx > 1 ? `<button type="button" onclick="removeComboSlot(${idx})" style="background:#fee2e2; border:none; color:#dc2626; padding:6px 10px; border-radius:6px; font-weight:700;">✕</button>` : ''}
         </div>
       `).join('');
     }
 
-    // SAVE SINGLE SESSION RECORD
     async function handleSingleSessionSubmit(e) {
       e.preventDefault();
       const select = document.getElementById('logTrickSelect');
@@ -1375,7 +1459,6 @@
       switchTab('dashboard');
     }
 
-    // SAVE COMBO SESSION RECORD WITH CONNECTED COMPLETION METRIC
     async function handleComboSessionSubmit(e) {
       e.preventDefault();
       const comboSequenceName = appState.comboSlots.join(' → ');
@@ -1392,8 +1475,6 @@
       }
 
       const connectedCompletionRate = ((connectedAttempts / totalAttempts) * 100).toFixed(1) + '%';
-
-      // Infer combo primary category & family metadata from first trick
       const allTricks = getAllTricks();
       const firstTrick = allTricks.find(t => (t.name || t.trickname) === appState.comboSlots[0]) || { category: 'OTHERS', family: 'Combo' };
 
@@ -1436,7 +1517,7 @@
       switchTab('dashboard');
     }
 
-    // CUSTOM TRICK SUBMISSION
+    // CREATE CUSTOM TRICK
     async function handleCustomTrickSubmit(e) {
       e.preventDefault();
       const name = document.getElementById('custName').value.trim();
@@ -1447,6 +1528,7 @@
 
       const customTrick = {
         id: 'CUST-' + Date.now(),
+        trickid: 'CUST-' + Date.now(),
         trickname: name,
         name: name,
         category: category,
@@ -1473,6 +1555,63 @@
       renderCustomTricksList();
     }
 
+    // 5. EDIT CUSTOM TRICK LOGIC
+    function openEditCustomModal(trickId) {
+      const trick = appState.customTricks.find(t => (t.id === trickId || t.trickid === trickId));
+      if (!trick) return;
+
+      document.getElementById('editTrickId').value = trick.id || trick.trickid;
+      document.getElementById('editTrickName').value = trick.name || trick.trickname;
+      document.getElementById('editTrickCategory').value = trick.category || 'OTHERS';
+
+      document.getElementById('editCustomModal').style.display = 'flex';
+    }
+
+    function closeEditCustomModal() {
+      document.getElementById('editCustomModal').style.display = 'none';
+    }
+
+    async function handleEditCustomTrickSubmit(e) {
+      e.preventDefault();
+      const trickId = document.getElementById('editTrickId').value;
+      const newName = document.getElementById('editTrickName').value.trim();
+      const newCategory = document.getElementById('editTrickCategory').value;
+
+      if (!newName) return;
+
+      // Update in local state
+      const targetIndex = appState.customTricks.findIndex(t => (t.id === trickId || t.trickid === trickId));
+      if (targetIndex !== -1) {
+        appState.customTricks[targetIndex].name = newName;
+        appState.customTricks[targetIndex].trickname = newName;
+        appState.customTricks[targetIndex].category = newCategory;
+      }
+
+      // Sync backend update
+      if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== "YOUR_APPS_SCRIPT_WEB_APP_URL") {
+        try {
+          fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({
+              action: 'editCustomTrick',
+              payload: {
+                id: trickId,
+                trickName: newName,
+                category: newCategory,
+                skaterName: appState.currentUser.skaterName
+              }
+            })
+          });
+        } catch(err) { console.error('API Edit Error:', err); }
+      }
+
+      showToast(`Custom trick updated to "${newName}"`, 'success');
+      closeEditCustomModal();
+      filterTrickDropdown();
+      renderCustomTricksList();
+    }
+
     function renderCustomTricksList() {
       const container = document.getElementById('customTricksList');
       if (!appState.currentUser) return;
@@ -1486,15 +1625,21 @@
         return;
       }
 
-      container.innerHTML = userCustom.map(t => `
-        <div style="padding:12px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <strong style="font-size:0.925rem;">${t.name || t.trickname}</strong>
-            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">${t.category} • Family ${t.family}</div>
+      container.innerHTML = userCustom.map(t => {
+        const id = t.id || t.trickid;
+        return `
+          <div style="padding:10px 0; border-bottom:1px solid var(--border-color); display:flex; justify-space-between; align-items:center;">
+            <div>
+              <strong style="font-size:0.875rem;">${t.name || t.trickname}</strong>
+              <div style="font-size:0.725rem; color:var(--text-muted); margin-top:2px;">${t.category} • Family ${t.family}</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span class="badge badge-custom">Custom</span>
+              <button class="btn btn-secondary btn-sm" onclick="openEditCustomModal('${id}')">Edit</button>
+            </div>
           </div>
-          <span class="badge badge-custom">Custom</span>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     function populateProgressTrickFilter() {
@@ -1540,7 +1685,7 @@
       });
     }
 
-    // DASHBOARD & ANALYTICS RENDERER
+    // DASHBOARD ANALYTICS RENDERER
     function renderAnalytics() {
       if (!appState.currentUser) return;
 
@@ -1560,14 +1705,12 @@
         return true;
       });
 
-      // Update Dashboard Metrics
       const totalSessions = filtered.length;
       const totalTarget = filtered.reduce((acc, curr) => acc + Number(curr.targetCones || curr.targetcones), 0);
       const totalCompleted = filtered.reduce((acc, curr) => acc + Number(curr.completedCones || curr.completedcones), 0);
       const totalFalls = filtered.reduce((acc, curr) => acc + Number(curr.falls), 0);
       const avgSuccess = totalTarget > 0 ? ((totalCompleted / totalTarget) * 100).toFixed(1) : '0';
 
-      // Connected Combo Completion Rate
       const comboSessions = filtered.filter(s => (s.sessionType === 'Combo' || s.sessiontype === 'Combo') && s.connectedCompletion && s.connectedCompletion !== 'N/A');
       let avgConnected = '0';
       if (comboSessions.length > 0) {
@@ -1581,20 +1724,40 @@
       document.getElementById('mFalls').textContent = totalFalls;
       document.getElementById('mConnected').textContent = `${avgConnected}%`;
 
-      // Render 100% LINE GRAPHS ONLY
+      // SAFE CHART INITIALIZATION AND RENDERING
       renderChartSuccessRate(filtered);
       renderChartCones(filtered);
       renderChartTricks(filtered);
       renderChartFalls(filtered);
       renderChartFamily();
       renderComboProgressChart();
-      renderChartMonthly();
     }
 
-    // LINE GRAPH GENERATORS
+    // 6. SAFE CANVAS CONTEXT GETTER (FIXES "Cannot read properties of null (reading 'getContext')")
+    function getSafeCanvasContext(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return null;
+      try {
+        return canvas.getContext('2d');
+      } catch(e) {
+        console.warn('Canvas Context Error:', canvasId, e);
+        return null;
+      }
+    }
+
+    function destroyChartInstance(key) {
+      if (appState.charts[key]) {
+        try {
+          appState.charts[key].destroy();
+        } catch(e) {}
+        appState.charts[key] = null;
+      }
+    }
+
     function renderChartSuccessRate(sessions) {
-      const ctx = document.getElementById('chartSuccessRate').getContext('2d');
-      if (appState.charts.successRate) appState.charts.successRate.destroy();
+      const ctx = getSafeCanvasContext('chartSuccessRate');
+      if (!ctx) return;
+      destroyChartInstance('successRate');
 
       const grouped = {};
       sessions.slice().reverse().forEach(s => {
@@ -1626,8 +1789,9 @@
     }
 
     function renderChartCones(sessions) {
-      const ctx = document.getElementById('chartCones').getContext('2d');
-      if (appState.charts.cones) appState.charts.cones.destroy();
+      const ctx = getSafeCanvasContext('chartCones');
+      if (!ctx) return;
+      destroyChartInstance('cones');
 
       const grouped = {};
       sessions.slice().reverse().forEach(s => {
@@ -1652,8 +1816,9 @@
     }
 
     function renderChartTricks(sessions) {
-      const ctx = document.getElementById('chartTricks').getContext('2d');
-      if (appState.charts.tricks) appState.charts.tricks.destroy();
+      const ctx = getSafeCanvasContext('chartTricks');
+      if (!ctx) return;
+      destroyChartInstance('tricks');
 
       const trickStats = {};
       sessions.forEach(s => {
@@ -1686,8 +1851,9 @@
     }
 
     function renderChartFalls(sessions) {
-      const ctx = document.getElementById('chartFalls').getContext('2d');
-      if (appState.charts.falls) appState.charts.falls.destroy();
+      const ctx = getSafeCanvasContext('chartFalls');
+      if (!ctx) return;
+      destroyChartInstance('falls');
 
       const grouped = {};
       sessions.slice().reverse().forEach(s => {
@@ -1716,15 +1882,15 @@
     }
 
     function renderChartFamily() {
-      const ctx = document.getElementById('chartFamily').getContext('2d');
-      if (appState.charts.family) appState.charts.family.destroy();
+      const ctx = getSafeCanvasContext('chartFamily');
+      if (!ctx) return;
+      destroyChartInstance('family');
 
       const families = ['A', 'B', 'C', 'D', 'E'];
       const skaterSessions = appState.sessions.filter(s => 
         String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
       );
 
-      // IMPORTANT: Unpracticed tricks must NOT count as 0%
       const familyData = families.map(fam => {
         const famSessions = skaterSessions.filter(s => s.family === fam);
         const target = famSessions.reduce((acc, curr) => acc + Number(curr.targetCones || curr.targetcones), 0);
@@ -1752,8 +1918,9 @@
     }
 
     function renderComboProgressChart() {
-      const ctx = document.getElementById('chartComboProgress').getContext('2d');
-      if (appState.charts.combo) appState.charts.combo.destroy();
+      const ctx = getSafeCanvasContext('chartComboProgress');
+      if (!ctx) return;
+      destroyChartInstance('combo');
 
       const selectedCombo = document.getElementById('comboGraphSelect').value;
       const range = document.getElementById('comboDateRangeSelect').value;
@@ -1796,44 +1963,6 @@
       });
     }
 
-    function renderChartMonthly() {
-      const ctx = document.getElementById('chartMonthly').getContext('2d');
-      if (appState.charts.monthly) appState.charts.monthly.destroy();
-
-      const skaterSessions = appState.sessions.filter(s => 
-        String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
-      );
-      const monthStats = {};
-
-      skaterSessions.forEach(s => {
-        const monthKey = String(s.date).slice(0, 7);
-        if (!monthStats[monthKey]) monthStats[monthKey] = { target: 0, completed: 0 };
-        monthStats[monthKey].target += Number(s.targetCones || s.targetcones);
-        monthStats[monthKey].completed += Number(s.completedCones || s.completedcones);
-      });
-
-      const labels = Object.keys(monthStats).sort();
-      const data = labels.map(m => ((monthStats[m].completed / monthStats[m].target) * 100).toFixed(1));
-
-      appState.charts.monthly = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Monthly Avg Success %',
-            data: data,
-            borderColor: '#10b981',
-            backgroundColor: 'rgba(16, 185, 129, 0.12)',
-            fill: true,
-            tension: 0.35,
-            borderWidth: 3
-          }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } } }
-      });
-    }
-
-    // TRAINING HISTORY RENDERER
     function renderHistory() {
       const container = document.getElementById('historyList');
       if (!appState.currentUser) return;
@@ -1856,7 +1985,7 @@
       });
 
       if (filtered.length === 0) {
-        container.innerHTML = `<div class="glass-card empty-state"><div class="empty-icon">🛹</div><div class="empty-text">No practice sessions yet. Start your first session to track your progress.</div><button class="btn" style="max-width:200px; margin:0 auto;" onclick="switchTab('log')">Log First Session</button></div>`;
+        container.innerHTML = `<div class="glass-card empty-state"><div class="empty-icon">🛹</div><div class="empty-text">No practice sessions yet. Start your first session to track your progress.</div><button class="btn" style="max-width:180px; margin:0 auto;" onclick="switchTab('log')">Log First Session</button></div>`;
         return;
       }
 
@@ -1873,12 +2002,12 @@
             <div class="history-header">
               <div>
                 <div class="history-title">${s.trickName || s.trickname}</div>
-                <div style="font-size:0.725rem; color:var(--text-muted); margin-top:4px;">
+                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">
                   ${s.date} • <span class="badge ${isCombo ? 'badge-combo' : 'badge-category'}">${isCombo ? 'Combo' : s.category}</span> <span class="badge badge-family">Fam ${s.family}</span>
                 </div>
               </div>
               <div>
-                <span class="badge" style="background:${success >= 80 ? '#d1fae5' : '#fef3c7'}; color:${success >= 80 ? '#065f46' : '#92400e'}; font-size:0.75rem;">
+                <span class="badge" style="background:${success >= 80 ? '#d1fae5' : '#fef3c7'}; color:${success >= 80 ? '#065f46' : '#92400e'}; font-size:0.7rem;">
                   ${success}% Success
                 </span>
               </div>
@@ -1890,55 +2019,77 @@
               <span>🚨 Falls: ${s.falls}</span>
               ${isCombo ? `<span style="font-weight:700; color:var(--primary);">🔗 Connected: ${connected}</span>` : ''}
             </div>
-            ${s.notes ? `<div style="font-size:0.8rem; color:var(--text-main); margin-top:8px; font-style:italic;">"${s.notes}"</div>` : ''}
+            ${s.notes ? `<div style="font-size:0.775rem; color:var(--text-main); margin-top:6px; font-style:italic;">"${s.notes}"</div>` : ''}
           </div>
         `;
       }).join('');
     }
 
-    // COMBO CALCULATOR & AI RECOMMENDATIONS
-    function initCalcSlots() {
-      appState.calcSlots = ['Crazy', 'Nelson', 'Mabrouk'];
-      renderCalcSlots();
-    }
-
+    // 4. COMBO CALCULATOR WITH CATEGORY & FAMILY FILTERS
     function addCalcSlot() {
-      appState.calcSlots.push('Italian / Volt');
+      appState.calcSlots.push('');
       renderCalcSlots();
     }
 
     function removeCalcSlot(idx) {
-      if (appState.calcSlots.length <= 1) return;
       appState.calcSlots.splice(idx, 1);
       renderCalcSlots();
     }
 
     function renderCalcSlots() {
       const container = document.getElementById('calcSlotsContainer');
+      const catFilter = document.getElementById('calcCatFilter') ? document.getElementById('calcCatFilter').value : 'ALL';
+      const famFilter = document.getElementById('calcFamFilter') ? document.getElementById('calcFamFilter').value : 'ALL';
+
       const allTricks = getAllTricks();
+      const filteredTricks = allTricks.filter(t => {
+        const matchCat = (catFilter === 'ALL' || t.category === catFilter);
+        const matchFam = (famFilter === 'ALL' || t.family === famFilter);
+        return matchCat && matchFam;
+      });
+
+      if (appState.calcSlots.length === 0) {
+        container.innerHTML = `<div class="empty-state" style="padding:16px 0;"><div class="empty-text">No tricks added yet. Click "+ Add Trick to Combo" below to start.</div></div>`;
+        updateComboCalculator();
+        return;
+      }
 
       container.innerHTML = appState.calcSlots.map((selectedTrick, idx) => `
         <div class="combo-slot">
-          <span style="font-size:0.75rem; font-weight:800; color:var(--text-muted); min-width:55px;">Trick ${idx + 1}:</span>
+          <span style="font-size:0.725rem; font-weight:800; color:var(--text-muted); min-width:50px;">Slot ${idx + 1}:</span>
           <select style="flex:1;" onchange="appState.calcSlots[${idx}] = this.value; updateComboCalculator();">
-            ${allTricks.map(t => {
+            <option value="">-- Choose Trick --</option>
+            ${filteredTricks.map(t => {
               const name = t.name || t.trickname;
               return `<option value="${name}" ${name === selectedTrick ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
             }).join('')}
           </select>
-          ${idx > 0 ? `<button type="button" onclick="removeCalcSlot(${idx}); updateComboCalculator();" style="background:#fee2e2; border:none; color:#dc2626; padding:8px 12px; border-radius:8px; font-weight:700;">✕</button>` : ''}
+          <button type="button" onclick="removeCalcSlot(${idx});" style="background:#fee2e2; border:none; color:#dc2626; padding:6px 10px; border-radius:6px; font-weight:700;">✕</button>
         </div>
       `).join('');
 
       updateComboCalculator();
     }
 
+    // 3. COMBO CALCULATOR & RECOMMENDATIONS LOGIC
     function updateComboCalculator() {
       const allTricks = getAllTricks();
+      const validSlots = appState.calcSlots.filter(s => s && s.trim() !== '');
+
+      if (validSlots.length === 0) {
+        document.getElementById('calcScoreRange').textContent = '0 – 0 Points';
+        document.getElementById('aiRecommendationsContainer').innerHTML = `
+          <div class="empty-state" style="padding:16px 0;">
+            <div class="empty-text">Select a trick to build your combo.</div>
+          </div>
+        `;
+        return;
+      }
+
       let minScore = 0;
       let maxScore = 0;
 
-      const selectedObjects = appState.calcSlots.map(trickName => {
+      const selectedObjects = validSlots.map(trickName => {
         return allTricks.find(t => (t.name || t.trickname) === trickName) || { name: trickName, family: 'E', category: 'OTHERS' };
       });
 
@@ -1950,7 +2101,6 @@
 
       document.getElementById('calcScoreRange').textContent = `${minScore} – ${maxScore} Potential Difficulty Points`;
 
-      // AI Recommendation Generator
       generateAIRecommendations(selectedObjects, minScore, maxScore);
     }
 
@@ -1958,11 +2108,17 @@
       const container = document.getElementById('aiRecommendationsContainer');
       const allTricks = getAllTricks();
 
-      // Find an upgradable trick (Family D/E trick that can be upgraded to C/B/A in same category)
       const targetUpgradeIdx = tricks.findIndex(t => t.family === 'E' || t.family === 'D');
 
       if (targetUpgradeIdx === -1) {
-        container.innerHTML = `<p style="font-size:0.825rem; color:var(--success); font-weight:700;">⚡ Excellent sequence! Your combo already incorporates high-tier Family A/B/C tricks.</p>`;
+        container.innerHTML = `
+          <div style="padding:10px; background:var(--input-bg); border-radius:10px; border:1px solid var(--border-color);">
+            <div style="font-size:0.825rem; font-weight:800; color:var(--primary);">This is a good combo.</div>
+            <div style="font-size:0.725rem; color:var(--text-muted); margin-top:2px;">
+              Your sequence incorporates high-tier matrix difficulty (Family A/B/C) with strong technical progression.
+            </div>
+          </div>
+        `;
         return;
       }
 
@@ -1970,7 +2126,11 @@
       const upgradeCandidates = allTricks.filter(t => t.category === targetTrick.category && (t.family === 'C' || t.family === 'B' || t.family === 'A'));
 
       if (upgradeCandidates.length === 0) {
-        container.innerHTML = `<p style="font-size:0.825rem; color:var(--text-muted);">Current sequence is balanced.</p>`;
+        container.innerHTML = `
+          <div style="padding:10px; background:var(--input-bg); border-radius:10px; border:1px solid var(--border-color);">
+            <div style="font-size:0.825rem; font-weight:800; color:var(--primary);">This is a good combo.</div>
+          </div>
+        `;
         return;
       }
 
@@ -1982,16 +2142,13 @@
       const newMax = currentMax - origPts.max + recPts.max;
 
       container.innerHTML = `
-        <div style="padding:12px; background:var(--input-bg); border-radius:12px; border:1px solid var(--border-color);">
-          <div style="font-size:0.8rem; font-weight:700; color:var(--primary);">Suggested Transition Upgrade:</div>
-          <div style="font-size:0.875rem; margin-top:4px;">
+        <div style="padding:10px; background:var(--input-bg); border-radius:10px; border:1px solid var(--border-color);">
+          <div style="font-size:0.775rem; font-weight:700; color:var(--primary);">Suggested Progression Upgrade:</div>
+          <div style="font-size:0.825rem; margin-top:2px;">
             Replace <span style="text-decoration:line-through; color:var(--text-muted);">${targetTrick.name || targetTrick.trickname}</span> (Fam ${targetTrick.family}) with <strong>${recommendedUpgrade.name || recommendedUpgrade.trickname}</strong> (Fam ${recommendedUpgrade.family})
           </div>
-          <div style="font-size:0.8rem; font-weight:700; color:var(--success); margin-top:8px;">
-            Potential Upgraded Score Range: ${newMin} – ${newMax} Points (+${recPts.min - origPts.min} pts gain)
-          </div>
-          <div style="font-size:0.725rem; color:var(--text-muted); margin-top:4px;">
-            Reasoning: Maintains logical ${targetTrick.category} flow while elevating technical matrix difficulty.
+          <div style="font-size:0.775rem; font-weight:700; color:#10b981; margin-top:6px;">
+            Potential Upgraded Range: ${newMin} – ${newMax} Points (+${recPts.min - origPts.min} pts)
           </div>
         </div>
       `;
