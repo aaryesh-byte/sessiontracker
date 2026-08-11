@@ -16,7 +16,7 @@
       --bg-gradient: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.1) 0px, transparent 50%),
                         radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.1) 0px, transparent 50%);
       --body-bg: #f8fafc;
-      --glass-bg: rgba(255, 255, 255, 0.82);
+      --glass-bg: rgba(255, 255, 255, 0.85);
       --glass-border: rgba(255, 255, 255, 0.6);
       --card-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
       --text-main: #0f172a;
@@ -25,7 +25,7 @@
       --input-bg: #ffffff;
       --radius: 14px;
 
-      /* LIQUID GLASS NAVIGATION THEME (LIGHT MODE) */
+      /* LIQUID GLASS NAVIGATION THEME */
       --liquid-glass-bg: rgba(255, 255, 255, 0.75);
       --liquid-glass-border: rgba(255, 255, 255, 0.8);
       --liquid-glass-shadow: 0 12px 32px rgba(31, 38, 135, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
@@ -45,7 +45,6 @@
       --border-color: #1e293b;
       --input-bg: #0f172a;
 
-      /* LIQUID GLASS NAVIGATION THEME (DARK MODE) */
       --liquid-glass-bg: rgba(15, 23, 42, 0.78);
       --liquid-glass-border: rgba(255, 255, 255, 0.15);
       --liquid-glass-shadow: 0 12px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15);
@@ -74,10 +73,10 @@
       color: var(--text-main);
       min-height: 100vh;
       transition: background-color 0.3s ease, color 0.3s ease;
-      padding-bottom: 110px; /* Essential space for Liquid Glass Navigation Bar */
+      padding-bottom: 110px;
     }
 
-    /* AUTHENTICATION OVERLAY SCREEN */
+    /* AUTH OVERLAY */
     #authOverlay {
       position: fixed;
       inset: 0;
@@ -128,7 +127,7 @@
       background: var(--input-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.06);
     }
 
-    /* HEADER BAR */
+    /* HEADER */
     header {
       background: var(--glass-bg);
       backdrop-filter: blur(16px);
@@ -155,11 +154,7 @@
       gap: 6px;
     }
 
-    .user-pill {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
+    .user-pill { display: flex; align-items: center; gap: 6px; }
 
     .main-viewport {
       width: 100%;
@@ -169,7 +164,7 @@
       overflow-x: hidden;
     }
 
-    /* 1. LIQUID GLASS FLOATING BOTTOM NAVIGATION BAR (APPLE/iOS TRANSLUCENT GLASS UI) */
+    /* LIQUID GLASS BOTTOM NAVIGATION BAR */
     .bottom-nav {
       position: fixed;
       bottom: 12px;
@@ -213,7 +208,6 @@
 
     .nav-icon { font-size: 1.2rem; margin-bottom: 2px; }
 
-    /* MOBILE CLUTTER FIXES & COMPACT UI CARDS */
     .glass-card {
       background: var(--glass-bg);
       backdrop-filter: blur(12px);
@@ -239,7 +233,6 @@
       word-break: break-word;
     }
 
-    /* COMPACT FORM FIELDS & SPACING */
     .form-group { margin-bottom: 10px; width: 100%; }
     label {
       display: block; font-size: 0.675rem; font-weight: 700; color: var(--text-muted);
@@ -261,7 +254,6 @@
       .row-2, .row-3 { grid-template-columns: 1fr !important; gap: 8px !important; }
     }
 
-    /* BUTTONS */
     .btn {
       display: inline-flex; align-items: center; justify-content: center; width: 100%;
       padding: 10px 14px; background: var(--primary-gradient); color: #fff; border: none;
@@ -273,6 +265,10 @@
 
     .btn-secondary {
       background: var(--border-color); color: var(--text-main); box-shadow: none;
+    }
+
+    .btn-danger {
+      background: #fee2e2; color: #dc2626; box-shadow: none;
     }
 
     .btn-sm {
@@ -288,17 +284,6 @@
     .btn-logout {
       border: none; background: #fee2e2; color: #dc2626; font-weight: 700;
       padding: 4px 8px; border-radius: 12px; cursor: pointer; font-size: 0.725rem;
-    }
-
-    .sub-tabs {
-      display: flex; background: var(--border-color); padding: 3px; border-radius: 10px; margin-bottom: 12px;
-    }
-    .sub-tab-btn {
-      flex: 1; padding: 8px; border: none; background: none; font-weight: 700; font-size: 0.775rem;
-      color: var(--text-muted); border-radius: 8px; cursor: pointer; transition: all 0.2s;
-    }
-    .sub-tab-btn.active {
-      background: var(--input-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.06);
     }
 
     /* BADGES */
@@ -329,7 +314,6 @@
     }
     .metric-label { font-size: 0.6rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
 
-    /* HISTORY ITEMS */
     .history-item {
       background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius);
       padding: 10px 12px; margin-bottom: 8px; box-shadow: var(--card-shadow); width: 100%; word-break: break-word;
@@ -346,7 +330,6 @@
     .empty-icon { font-size: 2rem; margin-bottom: 6px; opacity: 0.8; }
     .empty-text { font-size: 0.825rem; font-weight: 600; max-width: 260px; margin: 0 auto 10px auto; line-height: 1.35; }
 
-    /* TOASTS */
     #toastContainer {
       position: fixed; top: 12px; right: 12px; left: 12px; max-width: 360px;
       margin: 0 auto; z-index: 100000; pointer-events: none;
@@ -367,10 +350,12 @@
     .tab-content.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
 
-    .combo-slot { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+    .session-item-card {
+      background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 10px;
+      padding: 10px; margin-bottom: 8px; position: relative;
+    }
 
-    /* EDIT CUSTOM TRICK MODAL */
-    #editCustomModal {
+    .modal-overlay {
       position: fixed; inset: 0; width: 100vw; height: 100vh;
       background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
       z-index: 99999; display: none; align-items: center; justify-content: center; padding: 16px;
@@ -389,7 +374,7 @@
 
 
   <!-- EDIT CUSTOM TRICK MODAL -->
-  <div id="editCustomModal">
+  <div id="editCustomModal" class="modal-overlay">
     <div class="glass-card" style="max-width:360px; margin:auto; background:var(--input-bg);">
       <div class="card-title">
         <span>Edit Custom Trick</span>
@@ -416,6 +401,21 @@
           <button type="submit" class="btn">Update Trick</button>
         </div>
       </form>
+    </div>
+  </div>
+
+
+  <!-- 3. CUSTOM IN-APP CONFIRMATION DELETE MODAL -->
+  <div id="confirmDeleteModal" class="modal-overlay">
+    <div class="glass-card" style="max-width:340px; margin:auto; background:var(--input-bg); text-align:center;">
+      <div class="card-title" style="justify-content:center; color:#dc2626;">Delete Custom Trick</div>
+      <p id="deleteModalMessage" style="font-size:0.825rem; color:var(--text-muted); margin-bottom:16px;">
+        Are you sure you want to delete this custom trick?
+      </p>
+      <div style="display:flex; gap:8px;">
+        <button type="button" class="btn btn-secondary" onclick="closeDeleteConfirmModal()">Cancel</button>
+        <button type="button" class="btn btn-danger" id="btnConfirmDelete">Delete Trick</button>
+      </div>
     </div>
   </div>
 
@@ -478,16 +478,49 @@
     <!-- TAB 1: DASHBOARD / PROGRESS -->
     <div id="tab-dashboard" class="tab-content active">
       
-      <!-- Filters Card -->
+      <!-- 4. ADVANCED GRAPH & DASHBOARD FILTERS -->
       <div class="glass-card">
         <div class="card-title">Dashboard Filters</div>
+        
         <div class="row-2">
           <div class="form-group" style="margin-bottom:6px;">
-            <label>Select Month</label>
+            <label>Time Range Filter</label>
+            <select id="progTimeRange" onchange="onTimeRangeFilterChange()">
+              <option value="THIS_MONTH">This Month</option>
+              <option value="TODAY">Today</option>
+              <option value="THIS_WEEK">This Week</option>
+              <option value="SPECIFIC_MONTH">Select Specific Month</option>
+              <option value="CUSTOM_RANGE">Custom Date Range</option>
+              <option value="ALL_TIME">All Time</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="groupSpecificMonth" style="margin-bottom:6px;">
+            <label>Specific Month</label>
             <input type="month" id="progMonth" onchange="renderAnalytics()">
           </div>
-          <div class="form-group" style="margin-bottom:6px;">
-            <label>Category</label>
+        </div>
+
+        <div class="row-2" id="groupCustomRange" style="display:none; margin-bottom:6px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Start Date</label>
+            <input type="date" id="progStartDate" onchange="renderAnalytics()">
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label>End Date</label>
+            <input type="date" id="progEndDate" onchange="renderAnalytics()">
+          </div>
+        </div>
+
+        <div class="row-2">
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Practice Item / Combo Filter</label>
+            <select id="progTrick" onchange="renderAnalytics()">
+              <option value="ALL">All Items & Combos</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Category Filter</label>
             <select id="progCategory" onchange="renderAnalytics()">
               <option value="ALL">All Categories</option>
               <option value="SITTING">Sitting</option>
@@ -495,25 +528,6 @@
               <option value="SPINNING">Spinning</option>
               <option value="JUMPING">Jumping</option>
               <option value="OTHERS">Others</option>
-            </select>
-          </div>
-        </div>
-        <div class="row-2">
-          <div class="form-group" style="margin-bottom:0;">
-            <label>Family Metadata</label>
-            <select id="progFamily" onchange="renderAnalytics()">
-              <option value="ALL">All Families</option>
-              <option value="A">Family A</option>
-              <option value="B">Family B</option>
-              <option value="C">Family C</option>
-              <option value="D">Family D</option>
-              <option value="E">Family E</option>
-            </select>
-          </div>
-          <div class="form-group" style="margin-bottom:0;">
-            <label>Specific Practice Item</label>
-            <select id="progTrick" onchange="renderAnalytics()">
-              <option value="ALL">All Practice Items</option>
             </select>
           </div>
         </div>
@@ -558,7 +572,7 @@
 
         <!-- Graph 3: Individual Trick & Combo Progress -->
         <div class="glass-card">
-          <div class="card-title">Progress by Trick & Combo</div>
+          <div class="card-title">Progress by Practice Item / Combo</div>
           <div class="chart-container"><canvas id="chartTricks"></canvas></div>
         </div>
 
@@ -574,41 +588,17 @@
           <div class="chart-container"><canvas id="chartFamily"></canvas></div>
         </div>
 
-        <!-- Graph 6: Combo Specific Progress -->
-        <div class="glass-card">
-          <div class="card-title">
-            <span>Combo Specific Progress</span>
-            <select id="comboGraphSelect" style="width:auto; padding:2px 6px; font-size:0.75rem;" onchange="renderComboProgressChart()">
-              <!-- Dynamic Combo options -->
-            </select>
-          </div>
-          <div class="row-2" style="margin-bottom:8px;">
-            <select id="comboDateRangeSelect" style="font-size:0.75rem; padding:4px;" onchange="renderComboProgressChart()">
-              <option value="THIS_MONTH">This Month</option>
-              <option value="THIS_WEEK">This Week</option>
-              <option value="ALL_TIME">All Time</option>
-            </select>
-          </div>
-          <div class="chart-container"><canvas id="chartComboProgress"></canvas></div>
-        </div>
-
       </div>
 
     </div>
 
 
-    <!-- TAB 2: LOG SESSION -->
+    <!-- TAB 2: LOG TRAINING SESSION (1 SESSION = MULTIPLE TRICKS/COMBOS) -->
     <div id="tab-log" class="tab-content">
       <div class="glass-card">
-        <div class="card-title">Record Training Session</div>
+        <div class="card-title">Log Training Session</div>
 
-        <div class="sub-tabs">
-          <button type="button" class="sub-tab-btn active" id="btnLogSingleTab" onclick="switchLogSubTab('single')">Single Trick</button>
-          <button type="button" class="sub-tab-btn" id="btnLogComboTab" onclick="switchLogSubTab('combo')">Combo Training</button>
-        </div>
-
-        <!-- FORM 2A: SINGLE TRICK FORM -->
-        <form id="sessionFormSingle" onsubmit="handleSingleSessionSubmit(event)">
+        <form id="multiSessionForm" onsubmit="handleMultiSessionSubmit(event)">
           <div class="row-2">
             <div class="form-group">
               <label>Skater</label>
@@ -620,127 +610,21 @@
             </div>
           </div>
 
-          <div class="row-2">
-            <div class="form-group">
-              <label>Category Filter</label>
-              <select id="logCategoryFilter" onchange="filterTrickDropdown()">
-                <option value="ALL">All Categories</option>
-                <option value="SITTING">Sitting</option>
-                <option value="WHEELING">Wheeling</option>
-                <option value="SPINNING">Spinning</option>
-                <option value="JUMPING">Jumping</option>
-                <option value="OTHERS">Others</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Family Filter</label>
-              <select id="logFamilyFilter" onchange="filterTrickDropdown()">
-                <option value="ALL">All Families</option>
-                <option value="A">Family A</option>
-                <option value="B">Family B</option>
-                <option value="C">Family C</option>
-                <option value="D">Family D</option>
-                <option value="E">Family E</option>
-                <option value="Custom">Custom</option>
-              </select>
-            </div>
-          </div>
-
+          <!-- DYNAMIC SESSION PRACTICE ITEMS LIST -->
           <div class="form-group">
-            <label>Select Trick</label>
-            <select id="logTrickSelect" onchange="onTrickSelectionChange()" required></select>
+            <label style="margin-bottom:8px;">Session Practiced Items (Individual Drills & Combos)</label>
+            <div id="sessionItemsContainer"></div>
+            
+            <button type="button" class="btn btn-secondary btn-sm" onclick="addSessionItem('single')" style="margin-top:6px; margin-right:6px;">+ Add Individual Trick</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="addSessionItem('combo')" style="margin-top:6px;">+ Add Combo Sequence</button>
           </div>
 
-          <div style="margin-bottom:10px; display:flex; gap:6px;">
-            <span id="badgeCategory" class="badge badge-category">Category: -</span>
-            <span id="badgeFamily" class="badge badge-family">Family: -</span>
+          <div class="form-group" style="margin-top:12px;">
+            <label>Overall Session Notes</label>
+            <input type="text" id="logSessionGlobalNotes" placeholder="e.g. Great 2-hour workout at the park">
           </div>
 
-          <div class="row-3">
-            <div class="form-group">
-              <label>Target Cones</label>
-              <input type="number" id="logTarget" min="1" value="20" oninput="autoCalculateMissed()" required>
-            </div>
-            <div class="form-group">
-              <label>Completed</label>
-              <input type="number" id="logCompleted" min="0" value="16" oninput="autoCalculateMissed()" required>
-            </div>
-            <div class="form-group">
-              <label>Kicked/Missed</label>
-              <input type="number" id="logMissed" min="0" value="4" required>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label id="fallsLabel">Falls Count</label>
-            <input type="number" id="logFalls" min="0" value="0" required>
-          </div>
-
-          <div class="form-group">
-            <label>Session Notes</label>
-            <input type="text" id="logNotes" placeholder="e.g. Clean entry, lost heel balance at cone 12">
-          </div>
-
-          <button type="submit" class="btn">Save Single Practice Session</button>
-        </form>
-
-        <!-- FORM 2B: COMBO TRAINING FORM -->
-        <form id="sessionFormCombo" onsubmit="handleComboSessionSubmit(event)" style="display:none;">
-          <div class="row-2">
-            <div class="form-group">
-              <label>Skater</label>
-              <input type="text" id="logComboSkater" readonly style="font-weight:700;">
-            </div>
-            <div class="form-group">
-              <label>Date</label>
-              <input type="date" id="logComboDate" required>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>Build Combo Sequence</label>
-            <div id="comboSlotsContainer"></div>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="addComboSlot()" style="margin-top:4px;">+ Add Next Trick to Combo</button>
-          </div>
-
-          <div class="row-3">
-            <div class="form-group">
-              <label>Target Cones</label>
-              <input type="number" id="comboTarget" min="1" value="20" oninput="autoCalculateComboMissed()" required>
-            </div>
-            <div class="form-group">
-              <label>Completed</label>
-              <input type="number" id="comboCompleted" min="0" value="15" oninput="autoCalculateComboMissed()" required>
-            </div>
-            <div class="form-group">
-              <label>Kicked/Missed</label>
-              <input type="number" id="comboMissed" min="0" value="5" required>
-            </div>
-          </div>
-
-          <div class="row-2">
-            <div class="form-group">
-              <label>Total Attempts</label>
-              <input type="number" id="comboTotalAttempts" min="1" value="10" required>
-            </div>
-            <div class="form-group">
-              <label>Connected Attempts</label>
-              <input type="number" id="comboConnectedAttempts" min="0" value="7" required>
-              <small style="font-size:0.65rem; color:var(--text-muted);">Completed continuously without breaking flow</small>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>Falls Count</label>
-            <input type="number" id="comboFalls" min="0" value="0" required>
-          </div>
-
-          <div class="form-group">
-            <label>Notes</label>
-            <input type="text" id="comboNotes" placeholder="e.g. Connected Crazy into Nelson smoothly">
-          </div>
-
-          <button type="submit" class="btn">Save Combo Session</button>
+          <button type="submit" class="btn" style="margin-top:8px;">Save Full Session</button>
         </form>
 
       </div>
@@ -838,45 +722,23 @@
     </div>
 
 
-    <!-- TAB 5: COMBO CALCULATOR & AI RECOMMENDATIONS -->
+    <!-- TAB 5: COMBO CALCULATOR (INDIVIDUAL SLOT FILTERS) -->
     <div id="tab-calc" class="tab-content">
       <div class="glass-card">
         <div class="card-title">🧮 Combo Calculator (Matrix 2026)</div>
-        
-        <!-- 4. COMBO CALCULATOR EASY TRICK FILTERS -->
-        <div class="row-2" style="margin-bottom:10px;">
-          <div class="form-group" style="margin-bottom:0;">
-            <label>Filter Category</label>
-            <select id="calcCatFilter" onchange="renderCalcSlots()">
-              <option value="ALL">All Categories</option>
-              <option value="OTHERS">Others</option>
-              <option value="SITTING">Sitting</option>
-              <option value="JUMPING">Jumping</option>
-              <option value="WHEELING">Wheeling</option>
-              <option value="SPINNING">Spinning</option>
-            </select>
-          </div>
-          <div class="form-group" style="margin-bottom:0;">
-            <label>Filter Family</label>
-            <select id="calcFamFilter" onchange="renderCalcSlots()">
-              <option value="ALL">All Families</option>
-              <option value="A">Family A</option>
-              <option value="B">Family B</option>
-              <option value="C">Family C</option>
-              <option value="D">Family D</option>
-              <option value="E">Family E</option>
-            </select>
-          </div>
-        </div>
+        <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">
+          Build a combo sequence using independent filters per slot to calculate difficulty ranges.
+        </p>
 
+        <!-- DYNAMIC CALCULATOR SLOTS -->
         <div id="calcSlotsContainer"></div>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="addCalcSlot()" style="margin-top:4px;">+ Add Trick to Combo</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="addCalcSlot()" style="margin-top:4px;">+ Add Trick Slot</button>
         
         <div style="margin-top:12px; padding:10px; background:var(--input-bg); border-radius:10px; border:1px solid var(--border-color);">
           <div style="font-size:0.7rem; font-weight:700; color:var(--text-muted);">ESTIMATED TECHNICAL SCORE RANGE</div>
           <div id="calcScoreRange" style="font-size:1.2rem; font-weight:800; color:var(--primary); margin-top:2px;">0 – 0 Points</div>
-          <div style="font-size:0.675rem; color:var(--text-muted); margin-top:2px; font-style:italic;">
-            Estimated range based on Matrix difficulty. Actual judging depends on execution, speed, stability, and penalties.
+          <div style="font-size:0.65rem; color:var(--text-muted); margin-top:2px; font-style:italic;">
+            Estimation based on Matrix 2026 difficulty. Actual judging depends on execution quality, speed, and deductions.
           </div>
         </div>
       </div>
@@ -884,16 +746,14 @@
       <!-- AI COMBO RECOMMENDATIONS -->
       <div class="glass-card">
         <div class="card-title">🤖 AI Combo Recommendations</div>
-        <div id="aiRecommendationsContainer">
-          <!-- Populated dynamically based on user selections -->
-        </div>
+        <div id="aiRecommendationsContainer"></div>
       </div>
     </div>
 
   </main>
 
 
-  <!-- 1. LIQUID GLASS FLOATING BOTTOM NAVIGATION BAR -->
+  <!-- LIQUID GLASS FLOATING BOTTOM NAVIGATION BAR -->
   <nav class="bottom-nav">
     <div class="nav-item active" onclick="switchTab('dashboard', this)">
       <span class="nav-icon">📊</span>
@@ -1113,24 +973,23 @@
     let appState = {
       currentUser: null,
       authMode: 'login',
-      logMode: 'single',
       sessions: [],
       customTricks: [],
-      comboSlots: [],
-      calcSlots: [], // Starts empty (0 tricks initially)
+      sessionItems: [], // Dynamic list of items for 1 training session date
+      calcSlots: [], // Independent trick slots for Combo Calculator
+      deletingTrickId: null,
       charts: {}
     };
 
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('logDate').value = new Date().toISOString().split('T')[0];
-      document.getElementById('logComboDate').value = new Date().toISOString().split('T')[0];
       document.getElementById('progMonth').value = new Date().toISOString().slice(0, 7);
       
       const savedTheme = localStorage.getItem('slalom_theme') || 'light';
       applyTheme(savedTheme);
 
-      initComboSlots();
-      renderCalcSlots();
+      // Initialize default Multi-Item Session
+      initSessionItems();
 
       document.getElementById('authOverlay').style.display = 'flex';
     });
@@ -1251,11 +1110,10 @@
       document.getElementById('authOverlay').style.display = 'none';
       document.getElementById('headerSkaterName').textContent = `Skater: ${appState.currentUser.skaterName}`;
       document.getElementById('logSkater').value = appState.currentUser.skaterName;
-      document.getElementById('logComboSkater').value = appState.currentUser.skaterName;
 
-      filterTrickDropdown();
       populateProgressTrickFilter();
       populateComboGraphSelect();
+      renderSessionItems();
 
       switchTab('dashboard');
     }
@@ -1291,17 +1149,6 @@
       if (tabId === 'calc') updateComboCalculator();
     }
 
-    function switchLogSubTab(mode) {
-      appState.logMode = mode;
-      const isCombo = mode === 'combo';
-
-      document.getElementById('btnLogSingleTab').classList.toggle('active', !isCombo);
-      document.getElementById('btnLogComboTab').classList.toggle('active', isCombo);
-
-      document.getElementById('sessionFormSingle').style.display = isCombo ? 'none' : 'block';
-      document.getElementById('sessionFormCombo').style.display = isCombo ? 'block' : 'none';
-    }
-
     function getAllTricks() {
       if (!appState.currentUser) return PREDEFINED_TRICKS;
       const userCustom = appState.customTricks.filter(t => 
@@ -1310,283 +1157,209 @@
       return [...PREDEFINED_TRICKS, ...userCustom];
     }
 
-    function filterTrickDropdown() {
-      const cat = document.getElementById('logCategoryFilter').value;
-      const fam = document.getElementById('logFamilyFilter').value;
-      const select = document.getElementById('logTrickSelect');
-
-      const all = getAllTricks();
-      const filtered = all.filter(t => {
-        const matchCat = (cat === 'ALL' || t.category === cat);
-        const matchFam = (fam === 'ALL' || t.family === fam);
-        return matchCat && matchFam;
-      });
-
-      select.innerHTML = '';
-      if (filtered.length === 0) {
-        select.innerHTML = '<option value="">No matching tricks found</option>';
-        return;
-      }
-
-      const predefinedGroup = document.createElement('optgroup');
-      predefinedGroup.label = '--- PREDEFINED MATRIX TRICKS ---';
-
-      const customGroup = document.createElement('optgroup');
-      customGroup.label = '--- MY CUSTOM TRICKS ---';
-
-      filtered.forEach(t => {
-        const opt = document.createElement('option');
-        opt.value = t.id || ('CUST-' + t.trickid);
-        opt.textContent = `${t.name || t.trickname} (${t.category} - Fam ${t.family})`;
-        opt.dataset.category = t.category;
-        opt.dataset.family = t.family;
-        opt.dataset.name = t.name || t.trickname;
-
-        if (String(opt.value).startsWith('CUST-') || t.type === 'Custom') {
-          customGroup.appendChild(opt);
-        } else {
-          predefinedGroup.appendChild(opt);
-        }
-      });
-
-      if (predefinedGroup.children.length > 0) select.appendChild(predefinedGroup);
-      if (customGroup.children.length > 0) select.appendChild(customGroup);
-
-      onTrickSelectionChange();
+    // 1. MULTI-ITEM TRAINING SESSION BUILDER (1 Session = Multiple Tricks/Combos)
+    function initSessionItems() {
+      appState.sessionItems = [
+        { id: Date.now(), type: 'single', trickName: 'Crazy', category: 'OTHERS', family: 'E', target: 20, completed: 16, missed: 4, falls: 0, notes: '' }
+      ];
+      renderSessionItems();
     }
 
-    function onTrickSelectionChange() {
-      const select = document.getElementById('logTrickSelect');
-      const opt = select.options[select.selectedIndex];
-      
-      if (!opt || !opt.dataset.category) {
-        document.getElementById('badgeCategory').textContent = 'Category: -';
-        document.getElementById('badgeFamily').textContent = 'Family: -';
-        return;
-      }
-
-      const category = opt.dataset.category;
-      const family = opt.dataset.family;
-
-      document.getElementById('badgeCategory').textContent = `Category: ${category}`;
-      document.getElementById('badgeFamily').textContent = `Family: ${family}`;
-
-      const fallsLabel = document.getElementById('fallsLabel');
-      if (category === 'SITTING') {
-        fallsLabel.textContent = '⚠️ Falls Count (Prominent for Sitting Tricks)';
-        fallsLabel.style.color = '#f59e0b';
+    function addSessionItem(type) {
+      const id = Date.now() + Math.random();
+      if (type === 'single') {
+        appState.sessionItems.push({ id, type: 'single', trickName: 'Toe Christie', category: 'SITTING', family: 'A', target: 20, completed: 15, missed: 5, falls: 1, notes: '' });
       } else {
-        fallsLabel.textContent = 'Falls Count';
-        fallsLabel.style.color = 'var(--text-muted)';
+        appState.sessionItems.push({ id, type: 'combo', trickName: 'Crazy → Nelson → Mabrouk', category: 'OTHERS', family: 'E', target: 20, completed: 14, missed: 6, totalAttempts: 10, connectedAttempts: 7, falls: 1, notes: '' });
       }
+      renderSessionItems();
     }
 
-    function autoCalculateMissed() {
-      const target = parseInt(document.getElementById('logTarget').value) || 0;
-      const completed = parseInt(document.getElementById('logCompleted').value) || 0;
-      const missedInput = document.getElementById('logMissed');
-      if (target >= completed) missedInput.value = target - completed;
-    }
-
-    function autoCalculateComboMissed() {
-      const target = parseInt(document.getElementById('comboTarget').value) || 0;
-      const completed = parseInt(document.getElementById('comboCompleted').value) || 0;
-      const missedInput = document.getElementById('comboMissed');
-      if (target >= completed) missedInput.value = target - completed;
-    }
-
-    function initComboSlots() {
-      appState.comboSlots = ['Crazy', 'Nelson'];
-      renderComboSlots();
-    }
-
-    function addComboSlot() {
-      appState.comboSlots.push('Mabrouk');
-      renderComboSlots();
-    }
-
-    function removeComboSlot(index) {
-      if (appState.comboSlots.length <= 2) {
-        showToast('A combo sequence requires at least 2 tricks.', 'warning');
+    function removeSessionItem(index) {
+      if (appState.sessionItems.length <= 1) {
+        showToast('A training session requires at least one practice item.', 'warning');
         return;
       }
-      appState.comboSlots.splice(index, 1);
-      renderComboSlots();
+      appState.sessionItems.splice(index, 1);
+      renderSessionItems();
     }
 
-    function renderComboSlots() {
-      const container = document.getElementById('comboSlotsContainer');
+    function renderSessionItems() {
+      const container = document.getElementById('sessionItemsContainer');
       const allTricks = getAllTricks();
 
-      container.innerHTML = appState.comboSlots.map((selectedTrick, idx) => `
-        <div class="combo-slot">
-          <span style="font-size:0.75rem; font-weight:800; color:var(--text-muted); min-width:55px;">Trick ${idx + 1}:</span>
-          <select style="flex:1;" onchange="appState.comboSlots[${idx}] = this.value">
-            ${allTricks.map(t => {
-              const name = t.name || t.trickname;
-              return `<option value="${name}" ${name === selectedTrick ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
-            }).join('')}
-          </select>
-          ${idx > 1 ? `<button type="button" onclick="removeComboSlot(${idx})" style="background:#fee2e2; border:none; color:#dc2626; padding:6px 10px; border-radius:6px; font-weight:700;">✕</button>` : ''}
-        </div>
-      `).join('');
+      container.innerHTML = appState.sessionItems.map((item, idx) => {
+        const isCombo = item.type === 'combo';
+        return `
+          <div class="session-item-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <span style="font-size:0.8rem; font-weight:800; color:var(--primary);">Item #${idx + 1}: ${isCombo ? 'Combo Sequence' : 'Individual Drill'}</span>
+              ${appState.sessionItems.length > 1 ? `<button type="button" onclick="removeSessionItem(${idx})" style="background:#fee2e2; border:none; color:#dc2626; padding:2px 8px; border-radius:6px; font-weight:700; font-size:0.75rem;">✕ Remove</button>` : ''}
+            </div>
+
+            ${!isCombo ? `
+              <div class="row-2">
+                <div class="form-group">
+                  <label>Trick</label>
+                  <select onchange="onSessionItemTrickChange(${idx}, this.value)">
+                    ${allTricks.map(t => {
+                      const name = t.name || t.trickname;
+                      return `<option value="${name}" ${name === item.trickName ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
+                    }).join('')}
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Category / Family</label>
+                  <input type="text" value="${item.category} (Fam ${item.family})" readonly style="background:var(--body-bg); font-weight:700;">
+                </div>
+              </div>
+            ` : `
+              <div class="form-group">
+                <label>Combo Sequence Name</label>
+                <input type="text" value="${item.trickName}" oninput="appState.sessionItems[${idx}].trickName = this.value" placeholder="e.g. Crazy → Nelson → Mabrouk">
+              </div>
+            `}
+
+            <div class="row-3">
+              <div class="form-group">
+                <label>Target Cones</label>
+                <input type="number" min="1" value="${item.target}" oninput="appState.sessionItems[${idx}].target = parseInt(this.value)||0; autoCalcItemMissed(${idx});">
+              </div>
+              <div class="form-group">
+                <label>Completed</label>
+                <input type="number" min="0" value="${item.completed}" oninput="appState.sessionItems[${idx}].completed = parseInt(this.value)||0; autoCalcItemMissed(${idx});">
+              </div>
+              <div class="form-group">
+                <label>Kicked/Missed</label>
+                <input type="number" id="itemMissed_${idx}" min="0" value="${item.missed}" oninput="appState.sessionItems[${idx}].missed = parseInt(this.value)||0;">
+              </div>
+            </div>
+
+            ${isCombo ? `
+              <div class="row-2">
+                <div class="form-group">
+                  <label>Total Attempts</label>
+                  <input type="number" min="1" value="${item.totalAttempts || 10}" oninput="appState.sessionItems[${idx}].totalAttempts = parseInt(this.value)||1;">
+                </div>
+                <div class="form-group">
+                  <label>Connected Attempts</label>
+                  <input type="number" min="0" value="${item.connectedAttempts || 7}" oninput="appState.sessionItems[${idx}].connectedAttempts = parseInt(this.value)||0;">
+                </div>
+              </div>
+            ` : ''}
+
+            <div class="row-2">
+              <div class="form-group" style="margin-bottom:0;">
+                <label>Falls Count</label>
+                <input type="number" min="0" value="${item.falls}" oninput="appState.sessionItems[${idx}].falls = parseInt(this.value)||0;">
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label>Item Notes</label>
+                <input type="text" value="${item.notes || ''}" oninput="appState.sessionItems[${idx}].notes = this.value;" placeholder="Specific notes for this item">
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
-    async function handleSingleSessionSubmit(e) {
+    function onSessionItemTrickChange(idx, selectedTrickName) {
+      const allTricks = getAllTricks();
+      const trickObj = allTricks.find(t => (t.name || t.trickname) === selectedTrickName);
+      if (trickObj) {
+        appState.sessionItems[idx].trickName = selectedTrickName;
+        appState.sessionItems[idx].category = trickObj.category;
+        appState.sessionItems[idx].family = trickObj.family;
+        renderSessionItems();
+      }
+    }
+
+    function autoCalcItemMissed(idx) {
+      const item = appState.sessionItems[idx];
+      if (item.target >= item.completed) {
+        item.missed = item.target - item.completed;
+        const el = document.getElementById(`itemMissed_${idx}`);
+        if (el) el.value = item.missed;
+      }
+    }
+
+    // SAVE MULTI-ITEM TRAINING SESSION
+    async function handleMultiSessionSubmit(e) {
       e.preventDefault();
-      const select = document.getElementById('logTrickSelect');
-      const opt = select.options[select.selectedIndex];
+      const date = document.getElementById('logDate').value;
+      const globalNotes = document.getElementById('logSessionGlobalNotes').value.trim();
+      const sessionId = 'SESS-' + Date.now();
 
-      if (!opt || !opt.value) {
-        showToast('Please select a valid trick.', 'warning');
+      if (!appState.sessionItems || appState.sessionItems.length === 0) {
+        showToast('Please add at least one practice item to the session.', 'warning');
         return;
       }
 
-      const target = parseInt(document.getElementById('logTarget').value);
-      const completed = parseInt(document.getElementById('logCompleted').value);
-      const missed = parseInt(document.getElementById('logMissed').value);
+      const formattedPayloadItems = appState.sessionItems.map(item => {
+        const target = item.target || 20;
+        const completed = item.completed || 0;
+        const missed = item.missed || 0;
+        const isCombo = item.type === 'combo';
+        
+        let connRate = 'N/A';
+        if (isCombo) {
+          const tot = item.totalAttempts || 1;
+          const conn = item.connectedAttempts || 0;
+          connRate = ((conn / tot) * 100).toFixed(1) + '%';
+        }
 
-      if (target <= 0) {
-        showToast('Target cones must be greater than 0.', 'warning');
-        return;
-      }
+        return {
+          sessionId: sessionId,
+          date: date,
+          sessionType: isCombo ? 'Combo' : 'Single',
+          skaterName: appState.currentUser.skaterName,
+          userId: appState.currentUser.skaterName,
+          trickName: item.trickName,
+          category: item.category || 'OTHERS',
+          family: item.family || 'Custom',
+          targetCones: target,
+          completedCones: completed,
+          missedCones: missed,
+          falls: item.falls || 0,
+          successRate: parseFloat(((completed / target) * 100).toFixed(1)),
+          connectedCompletion: connRate,
+          notes: item.notes || globalNotes
+        };
+      });
 
-      const session = {
-        sessionId: 'SESS-' + Date.now(),
-        userId: appState.currentUser.skaterName,
-        date: document.getElementById('logDate').value,
-        sessionType: 'Single',
-        skaterName: appState.currentUser.skaterName,
-        trickId: opt.value,
-        trickName: opt.dataset.name,
-        category: opt.dataset.category,
-        family: opt.dataset.family,
-        targetCones: target,
-        completedCones: completed,
-        missedCones: missed,
-        falls: parseInt(document.getElementById('logFalls').value) || 0,
-        successRate: parseFloat(((completed / target) * 100).toFixed(1)),
-        connectedCompletion: 'N/A',
-        notes: document.getElementById('logNotes').value,
-        timestamp: new Date().toISOString()
-      };
+      // Add to local state array
+      formattedPayloadItems.forEach(rec => appState.sessions.unshift(rec));
 
-      appState.sessions.unshift(session);
-
+      // Sync backend
       if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== "YOUR_APPS_SCRIPT_WEB_APP_URL") {
         try {
           fetch(APPS_SCRIPT_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ action: 'logSession', payload: session })
+            body: JSON.stringify({
+              action: 'logSession',
+              payload: {
+                sessionId: sessionId,
+                date: date,
+                skaterName: appState.currentUser.skaterName,
+                userId: appState.currentUser.skaterName,
+                sessionNotes: globalNotes,
+                items: formattedPayloadItems
+              }
+            })
           });
         } catch(err) { console.error('API Error:', err); }
       }
 
-      showToast('Single practice session recorded!', 'success');
-      document.getElementById('logNotes').value = '';
+      showToast(`Training session saved with ${formattedPayloadItems.length} practice item(s)!`, 'success');
+      document.getElementById('logSessionGlobalNotes').value = '';
+      initSessionItems();
       populateProgressTrickFilter();
       populateComboGraphSelect();
       switchTab('dashboard');
     }
 
-    async function handleComboSessionSubmit(e) {
-      e.preventDefault();
-      const comboSequenceName = appState.comboSlots.join(' → ');
-      const target = parseInt(document.getElementById('comboTarget').value);
-      const completed = parseInt(document.getElementById('comboCompleted').value);
-      const missed = parseInt(document.getElementById('comboMissed').value);
-
-      const totalAttempts = parseInt(document.getElementById('comboTotalAttempts').value) || 1;
-      const connectedAttempts = parseInt(document.getElementById('comboConnectedAttempts').value) || 0;
-
-      if (connectedAttempts > totalAttempts) {
-        showToast('Connected attempts cannot exceed total attempts.', 'warning');
-        return;
-      }
-
-      const connectedCompletionRate = ((connectedAttempts / totalAttempts) * 100).toFixed(1) + '%';
-      const allTricks = getAllTricks();
-      const firstTrick = allTricks.find(t => (t.name || t.trickname) === appState.comboSlots[0]) || { category: 'OTHERS', family: 'Combo' };
-
-      const session = {
-        sessionId: 'SESS-' + Date.now(),
-        userId: appState.currentUser.skaterName,
-        date: document.getElementById('logComboDate').value,
-        sessionType: 'Combo',
-        skaterName: appState.currentUser.skaterName,
-        trickId: 'COMBO-' + Date.now(),
-        trickName: comboSequenceName,
-        category: firstTrick.category,
-        family: firstTrick.family,
-        targetCones: target,
-        completedCones: completed,
-        missedCones: missed,
-        falls: parseInt(document.getElementById('comboFalls').value) || 0,
-        successRate: parseFloat(((completed / target) * 100).toFixed(1)),
-        connectedCompletion: connectedCompletionRate,
-        notes: document.getElementById('comboNotes').value,
-        timestamp: new Date().toISOString()
-      };
-
-      appState.sessions.unshift(session);
-
-      if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== "YOUR_APPS_SCRIPT_WEB_APP_URL") {
-        try {
-          fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ action: 'logSession', payload: session })
-          });
-        } catch(err) { console.error('API Error:', err); }
-      }
-
-      showToast(`Combo session saved! Connected Completion: ${connectedCompletionRate}`, 'success');
-      document.getElementById('comboNotes').value = '';
-      populateProgressTrickFilter();
-      populateComboGraphSelect();
-      switchTab('dashboard');
-    }
-
-    // CREATE CUSTOM TRICK
-    async function handleCustomTrickSubmit(e) {
-      e.preventDefault();
-      const name = document.getElementById('custName').value.trim();
-      const category = document.getElementById('custCat').value;
-      const family = document.getElementById('custFam').value;
-
-      if (!name) return;
-
-      const customTrick = {
-        id: 'CUST-' + Date.now(),
-        trickid: 'CUST-' + Date.now(),
-        trickname: name,
-        name: name,
-        category: category,
-        family: family,
-        type: 'Custom',
-        skaterName: appState.currentUser.skaterName
-      };
-
-      appState.customTricks.push(customTrick);
-
-      if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== "YOUR_APPS_SCRIPT_WEB_APP_URL") {
-        try {
-          fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ action: 'addCustomTrick', payload: customTrick })
-          });
-        } catch(err) { console.error('API Error:', err); }
-      }
-
-      showToast(`Custom trick "${name}" created!`, 'success');
-      document.getElementById('custName').value = '';
-      filterTrickDropdown();
-      renderCustomTricksList();
-    }
-
-    // 5. EDIT CUSTOM TRICK LOGIC
+    // 3. CUSTOM TRICK MANAGEMENT (EDIT & DELETE)
     function openEditCustomModal(trickId) {
       const trick = appState.customTricks.find(t => (t.id === trickId || t.trickid === trickId));
       if (!trick) return;
@@ -1610,7 +1383,6 @@
 
       if (!newName) return;
 
-      // Update in local state
       const targetIndex = appState.customTricks.findIndex(t => (t.id === trickId || t.trickid === trickId));
       if (targetIndex !== -1) {
         appState.customTricks[targetIndex].name = newName;
@@ -1618,7 +1390,6 @@
         appState.customTricks[targetIndex].category = newCategory;
       }
 
-      // Sync backend update
       if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== "YOUR_APPS_SCRIPT_WEB_APP_URL") {
         try {
           fetch(APPS_SCRIPT_URL, {
@@ -1626,12 +1397,7 @@
             headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({
               action: 'editCustomTrick',
-              payload: {
-                id: trickId,
-                trickName: newName,
-                category: newCategory,
-                skaterName: appState.currentUser.skaterName
-              }
+              payload: { id: trickId, trickName: newName, category: newCategory, skaterName: appState.currentUser.skaterName }
             })
           });
         } catch(err) { console.error('API Edit Error:', err); }
@@ -1639,7 +1405,44 @@
 
       showToast(`Custom trick updated to "${newName}"`, 'success');
       closeEditCustomModal();
-      filterTrickDropdown();
+      renderCustomTricksList();
+    }
+
+    function openDeleteConfirmModal(trickId) {
+      const trick = appState.customTricks.find(t => (t.id === trickId || t.trickid === trickId));
+      if (!trick) return;
+
+      appState.deletingTrickId = trickId;
+      document.getElementById('deleteModalMessage').textContent = `Are you sure you want to delete "${trick.name || trick.trickname}"? This action cannot be undone.`;
+      
+      document.getElementById('btnConfirmDelete').onclick = () => executeDeleteCustomTrick(trickId);
+      document.getElementById('confirmDeleteModal').style.display = 'flex';
+    }
+
+    function closeDeleteConfirmModal() {
+      appState.deletingTrickId = null;
+      document.getElementById('confirmDeleteModal').style.display = 'none';
+    }
+
+    async function executeDeleteCustomTrick(trickId) {
+      closeDeleteConfirmModal();
+
+      appState.customTricks = appState.customTricks.filter(t => (t.id !== trickId && t.trickid !== trickId));
+
+      if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== "YOUR_APPS_SCRIPT_WEB_APP_URL") {
+        try {
+          fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({
+              action: 'deleteCustomTrick',
+              payload: { id: trickId, skaterName: appState.currentUser.skaterName }
+            })
+          });
+        } catch(err) { console.error('API Delete Error:', err); }
+      }
+
+      showToast('Custom trick deleted permanently.', 'success');
       renderCustomTricksList();
     }
 
@@ -1667,6 +1470,7 @@
             <div style="display:flex; align-items:center; gap:6px;">
               <span class="badge badge-custom">Custom</span>
               <button class="btn btn-secondary btn-sm" onclick="openEditCustomModal('${id}')">Edit</button>
+              <button class="btn btn-danger btn-sm" onclick="openDeleteConfirmModal('${id}')">Delete</button>
             </div>
           </div>
         `;
@@ -1680,12 +1484,12 @@
       const skaterSessions = appState.sessions.filter(s => 
         String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
       );
-      const uniqueTricks = [...new Map(skaterSessions.map(item => [item.trickId || item.trickid, item])).values()];
+      const uniqueTricks = [...new Map(skaterSessions.map(item => [item.trickName || item.trickname, item])).values()];
 
-      select.innerHTML = '<option value="ALL">All Practice Items</option>';
+      select.innerHTML = '<option value="ALL">All Items & Combos</option>';
       uniqueTricks.forEach(t => {
         const opt = document.createElement('option');
-        opt.value = t.trickId || t.trickid;
+        opt.value = t.trickName || t.trickname;
         opt.textContent = t.trickName || t.trickname;
         select.appendChild(opt);
       });
@@ -1716,23 +1520,51 @@
       });
     }
 
-    // DASHBOARD ANALYTICS RENDERER
+    // 4. ADVANCED GRAPH & TIME RANGE FILTERS
+    function onTimeRangeFilterChange() {
+      const val = document.getElementById('progTimeRange').value;
+      document.getElementById('groupSpecificMonth').style.display = val === 'SPECIFIC_MONTH' ? 'block' : 'none';
+      document.getElementById('groupCustomRange').style.display = val === 'CUSTOM_RANGE' ? 'grid' : 'none';
+      renderAnalytics();
+    }
+
     function renderAnalytics() {
       if (!appState.currentUser) return;
 
+      const timeRange = document.getElementById('progTimeRange').value;
       const selectedMonth = document.getElementById('progMonth').value;
+      const startDate = document.getElementById('progStartDate').value;
+      const endDate = document.getElementById('progEndDate').value;
+
       const selectedCat = document.getElementById('progCategory').value;
-      const selectedFam = document.getElementById('progFamily').value;
       const selectedTrick = document.getElementById('progTrick').value;
+
+      const now = new Date();
 
       const filtered = appState.sessions.filter(s => {
         const skaterMatch = String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase();
         if (!skaterMatch) return false;
 
-        if (selectedMonth && !String(s.date).startsWith(selectedMonth)) return false;
+        // Time Range Filtering
+        const sessionDate = new Date(s.date);
+        if (timeRange === 'TODAY') {
+          const todayStr = new Date().toISOString().split('T')[0];
+          if (s.date !== todayStr) return false;
+        } else if (timeRange === 'THIS_WEEK') {
+          const diffDays = Math.ceil(Math.abs(now - sessionDate) / (1000 * 60 * 60 * 24));
+          if (diffDays > 7) return false;
+        } else if (timeRange === 'THIS_MONTH') {
+          if (sessionDate.getMonth() !== now.getMonth() || sessionDate.getFullYear() !== now.getFullYear()) return false;
+        } else if (timeRange === 'SPECIFIC_MONTH') {
+          if (selectedMonth && !String(s.date).startsWith(selectedMonth)) return false;
+        } else if (timeRange === 'CUSTOM_RANGE') {
+          if (startDate && s.date < startDate) return false;
+          if (endDate && s.date > endDate) return false;
+        }
+
         if (selectedCat !== 'ALL' && s.category !== selectedCat) return false;
-        if (selectedFam !== 'ALL' && s.family !== selectedFam) return false;
-        if (selectedTrick !== 'ALL' && (s.trickId || s.trickid) !== selectedTrick) return false;
+        if (selectedTrick !== 'ALL' && (s.trickName || s.trickname) !== selectedTrick) return false;
+
         return true;
       });
 
@@ -1755,7 +1587,7 @@
       document.getElementById('mFalls').textContent = totalFalls;
       document.getElementById('mConnected').textContent = `${avgConnected}%`;
 
-      // SAFE CHART INITIALIZATION AND RENDERING
+      // SAFE CHART INITIALIZATION
       renderChartSuccessRate(filtered);
       renderChartCones(filtered);
       renderChartTricks(filtered);
@@ -1764,23 +1596,18 @@
       renderComboProgressChart();
     }
 
-    // 6. SAFE CANVAS CONTEXT GETTER (FIXES "Cannot read properties of null (reading 'getContext')")
+    // SAFE CANVAS CONTEXT GETTER
     function getSafeCanvasContext(canvasId) {
       const canvas = document.getElementById(canvasId);
       if (!canvas) return null;
       try {
         return canvas.getContext('2d');
-      } catch(e) {
-        console.warn('Canvas Context Error:', canvasId, e);
-        return null;
-      }
+      } catch(e) { return null; }
     }
 
     function destroyChartInstance(key) {
       if (appState.charts[key]) {
-        try {
-          appState.charts[key].destroy();
-        } catch(e) {}
+        try { appState.charts[key].destroy(); } catch(e) {}
         appState.charts[key] = null;
       }
     }
@@ -2056,9 +1883,9 @@
       }).join('');
     }
 
-    // 4. COMBO CALCULATOR WITH CATEGORY & FAMILY FILTERS
+    // 2. COMBO CALCULATOR — INDIVIDUAL CATEGORY & FAMILY FILTERS PER SLOT
     function addCalcSlot() {
-      appState.calcSlots.push('');
+      appState.calcSlots.push({ categoryFilter: 'ALL', familyFilter: 'ALL', selectedTrick: '' });
       renderCalcSlots();
     }
 
@@ -2069,43 +1896,73 @@
 
     function renderCalcSlots() {
       const container = document.getElementById('calcSlotsContainer');
-      const catFilter = document.getElementById('calcCatFilter') ? document.getElementById('calcCatFilter').value : 'ALL';
-      const famFilter = document.getElementById('calcFamFilter') ? document.getElementById('calcFamFilter').value : 'ALL';
-
       const allTricks = getAllTricks();
-      const filteredTricks = allTricks.filter(t => {
-        const matchCat = (catFilter === 'ALL' || t.category === catFilter);
-        const matchFam = (famFilter === 'ALL' || t.family === famFilter);
-        return matchCat && matchFam;
-      });
 
       if (appState.calcSlots.length === 0) {
-        container.innerHTML = `<div class="empty-state" style="padding:16px 0;"><div class="empty-text">No tricks added yet. Click "+ Add Trick to Combo" below to start.</div></div>`;
+        container.innerHTML = `<div class="empty-state" style="padding:16px 0;"><div class="empty-text">Select a trick to build your combo.</div></div>`;
         updateComboCalculator();
         return;
       }
 
-      container.innerHTML = appState.calcSlots.map((selectedTrick, idx) => `
-        <div class="combo-slot">
-          <span style="font-size:0.725rem; font-weight:800; color:var(--text-muted); min-width:50px;">Slot ${idx + 1}:</span>
-          <select style="flex:1;" onchange="appState.calcSlots[${idx}] = this.value; updateComboCalculator();">
-            <option value="">-- Choose Trick --</option>
-            ${filteredTricks.map(t => {
-              const name = t.name || t.trickname;
-              return `<option value="${name}" ${name === selectedTrick ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
-            }).join('')}
-          </select>
-          <button type="button" onclick="removeCalcSlot(${idx});" style="background:#fee2e2; border:none; color:#dc2626; padding:6px 10px; border-radius:6px; font-weight:700;">✕</button>
-        </div>
-      `).join('');
+      container.innerHTML = appState.calcSlots.map((slot, idx) => {
+        const filteredTricks = allTricks.filter(t => {
+          const matchCat = (slot.categoryFilter === 'ALL' || t.category === slot.categoryFilter);
+          const matchFam = (slot.familyFilter === 'ALL' || t.family === slot.familyFilter);
+          return matchCat && matchFam;
+        });
+
+        return `
+          <div class="session-item-card">
+            <div style="display:flex; justify-space-between; align-items:center; margin-bottom:6px;">
+              <span style="font-size:0.75rem; font-weight:800; color:var(--primary);">Trick Slot #${idx + 1}</span>
+              <button type="button" onclick="removeCalcSlot(${idx})" style="background:#fee2e2; border:none; color:#dc2626; padding:2px 8px; border-radius:6px; font-weight:700; font-size:0.725rem;">✕ Remove</button>
+            </div>
+
+            <div class="row-2" style="margin-bottom:6px;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label>Category Filter</label>
+                <select style="font-size:0.8rem; padding:6px;" onchange="appState.calcSlots[${idx}].categoryFilter = this.value; renderCalcSlots();">
+                  <option value="ALL" ${slot.categoryFilter === 'ALL' ? 'selected' : ''}>All Categories</option>
+                  <option value="OTHERS" ${slot.categoryFilter === 'OTHERS' ? 'selected' : ''}>Others</option>
+                  <option value="SITTING" ${slot.categoryFilter === 'SITTING' ? 'selected' : ''}>Sitting</option>
+                  <option value="JUMPING" ${slot.categoryFilter === 'JUMPING' ? 'selected' : ''}>Jumping</option>
+                  <option value="WHEELING" ${slot.categoryFilter === 'WHEELING' ? 'selected' : ''}>Wheeling</option>
+                  <option value="SPINNING" ${slot.categoryFilter === 'SPINNING' ? 'selected' : ''}>Spinning</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label>Family Filter</label>
+                <select style="font-size:0.8rem; padding:6px;" onchange="appState.calcSlots[${idx}].familyFilter = this.value; renderCalcSlots();">
+                  <option value="ALL" ${slot.familyFilter === 'ALL' ? 'selected' : ''}>All Families</option>
+                  <option value="A" ${slot.familyFilter === 'A' ? 'selected' : ''}>Family A</option>
+                  <option value="B" ${slot.familyFilter === 'B' ? 'selected' : ''}>Family B</option>
+                  <option value="C" ${slot.familyFilter === 'C' ? 'selected' : ''}>Family C</option>
+                  <option value="D" ${slot.familyFilter === 'D' ? 'selected' : ''}>Family D</option>
+                  <option value="E" ${slot.familyFilter === 'E' ? 'selected' : ''}>Family E</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom:0;">
+              <label>Select Trick for Slot #${idx + 1}</label>
+              <select onchange="appState.calcSlots[${idx}].selectedTrick = this.value; updateComboCalculator();">
+                <option value="">-- Choose Trick --</option>
+                ${filteredTricks.map(t => {
+                  const name = t.name || t.trickname;
+                  return `<option value="${name}" ${name === slot.selectedTrick ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
+                }).join('')}
+              </select>
+            </div>
+          </div>
+        `;
+      }).join('');
 
       updateComboCalculator();
     }
 
-    // 3. COMBO CALCULATOR & RECOMMENDATIONS LOGIC
     function updateComboCalculator() {
       const allTricks = getAllTricks();
-      const validSlots = appState.calcSlots.filter(s => s && s.trim() !== '');
+      const validSlots = appState.calcSlots.filter(s => s && s.selectedTrick && s.selectedTrick.trim() !== '');
 
       if (validSlots.length === 0) {
         document.getElementById('calcScoreRange').textContent = '0 – 0 Points';
@@ -2120,8 +1977,8 @@
       let minScore = 0;
       let maxScore = 0;
 
-      const selectedObjects = validSlots.map(trickName => {
-        return allTricks.find(t => (t.name || t.trickname) === trickName) || { name: trickName, family: 'E', category: 'OTHERS' };
+      const selectedObjects = validSlots.map(slot => {
+        return allTricks.find(t => (t.name || t.trickname) === slot.selectedTrick) || { name: slot.selectedTrick, family: 'E', category: 'OTHERS' };
       });
 
       selectedObjects.forEach(t => {
