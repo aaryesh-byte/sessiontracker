@@ -164,40 +164,40 @@
       overflow-x: hidden;
     }
 
-    /* LIQUID GLASS BOTTOM NAVIGATION BAR */
+    /* 3. MOBILE COMPACT LIQUID GLASS FLOATING BOTTOM NAVIGATION BAR */
     .bottom-nav {
       position: fixed;
-      bottom: 12px;
+      bottom: 10px;
       left: 50%;
       transform: translateX(-50%);
-      width: calc(100% - 24px);
-      max-width: 580px;
+      width: calc(100% - 20px);
+      max-width: 560px;
       background: var(--liquid-glass-bg);
       backdrop-filter: blur(20px) saturate(180%);
       -webkit-backdrop-filter: blur(20px) saturate(180%);
       border: 1px solid var(--liquid-glass-border);
-      border-radius: 30px;
+      border-radius: 28px;
       box-shadow: var(--liquid-glass-shadow);
       display: flex;
       justify-content: space-around;
       align-items: center;
-      padding: 8px 6px;
+      padding: 5px 4px;
       z-index: 20000;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.25s ease;
     }
 
     .nav-item {
       display: flex;
       flex-direction: column;
       align-items: center;
-      font-size: 0.65rem;
+      font-size: 0.625rem;
       font-weight: 700;
       color: var(--text-muted);
       text-decoration: none;
       cursor: pointer;
       flex: 1;
-      padding: 4px 0;
-      border-radius: 18px;
+      padding: 3px 0;
+      border-radius: 16px;
       transition: all 0.2s ease;
     }
 
@@ -206,8 +206,9 @@
       background: rgba(99, 102, 241, 0.12);
     }
 
-    .nav-icon { font-size: 1.2rem; margin-bottom: 2px; }
+    .nav-icon { font-size: 1.1rem; margin-bottom: 1px; }
 
+    /* 2. UI POLISH & TYPOGRAPHY */
     .glass-card {
       background: var(--glass-bg);
       backdrop-filter: blur(12px);
@@ -223,19 +224,20 @@
     }
 
     .card-title {
-      font-size: 0.925rem;
-      font-weight: 700;
+      font-size: 0.95rem;
+      font-weight: 800;
       margin-bottom: 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       color: var(--text-main);
+      letter-spacing: -0.2px;
       word-break: break-word;
     }
 
     .form-group { margin-bottom: 10px; width: 100%; }
     label {
-      display: block; font-size: 0.675rem; font-weight: 700; color: var(--text-muted);
+      display: block; font-size: 0.675rem; font-weight: 800; color: var(--text-muted);
       margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;
     }
     input, select, textarea {
@@ -286,7 +288,17 @@
       padding: 4px 8px; border-radius: 12px; cursor: pointer; font-size: 0.725rem;
     }
 
-    /* BADGES */
+    /* 1. TRICK SEARCH BAR STYLING */
+    .search-bar-wrap {
+      position: relative; margin-bottom: 6px; width: 100%;
+    }
+    .search-input {
+      padding-left: 30px; font-size: 0.8rem;
+    }
+    .search-icon {
+      position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 0.8rem; color: var(--text-muted);
+    }
+
     .badge {
       display: inline-block; padding: 3px 8px; border-radius: 16px;
       font-size: 0.65rem; font-weight: 700; text-transform: uppercase; white-space: nowrap;
@@ -296,7 +308,6 @@
     .badge-custom { background: #fef3c7; color: #92400e; }
     .badge-combo { background: #dcfce7; color: #166534; }
 
-    /* METRICS GRID */
     .metrics-grid {
       display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 12px; width: 100%;
     }
@@ -312,14 +323,14 @@
       font-size: 1.15rem; font-weight: 800; background: var(--primary-gradient);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-top: 1px;
     }
-    .metric-label { font-size: 0.6rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
+    .metric-label { font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; }
 
     .history-item {
       background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius);
       padding: 10px 12px; margin-bottom: 8px; box-shadow: var(--card-shadow); width: 100%; word-break: break-word;
     }
     .history-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; gap: 6px; }
-    .history-title { font-weight: 700; font-size: 0.875rem; }
+    .history-title { font-weight: 800; font-size: 0.875rem; }
     .history-stats { display: flex; flex-wrap: wrap; gap: 6px 10px; font-size: 0.75rem; color: var(--text-muted); margin-top: 6px; }
 
     .chart-container {
@@ -405,7 +416,7 @@
   </div>
 
 
-  <!-- 3. CUSTOM IN-APP CONFIRMATION DELETE MODAL -->
+  <!-- CONFIRM DELETE MODAL -->
   <div id="confirmDeleteModal" class="modal-overlay">
     <div class="glass-card" style="max-width:340px; margin:auto; background:var(--input-bg); text-align:center;">
       <div class="card-title" style="justify-content:center; color:#dc2626;">Delete Custom Trick</div>
@@ -478,7 +489,18 @@
     <!-- TAB 1: DASHBOARD / PROGRESS -->
     <div id="tab-dashboard" class="tab-content active">
       
-      <!-- 4. ADVANCED GRAPH & DASHBOARD FILTERS -->
+      <!-- 6. DASHBOARD HEADER & SYNC BUTTON -->
+      <div class="glass-card" style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px;">
+        <div>
+          <h2 style="font-size:1.1rem; font-weight:800; color:var(--text-main);">Training Analytics</h2>
+          <div style="font-size:0.7rem; color:var(--text-muted);">Real-time performance metrics</div>
+        </div>
+        <button type="button" id="btnSyncDashboard" class="btn btn-secondary btn-sm" onclick="syncUserDataFromSheets()">
+          🔄 Sync Data
+        </button>
+      </div>
+
+      <!-- Filters Card -->
       <div class="glass-card">
         <div class="card-title">Dashboard Filters</div>
         
@@ -515,10 +537,17 @@
         <div class="row-2">
           <div class="form-group" style="margin-bottom:0;">
             <label>Practice Item / Combo Filter</label>
+            
+            <!-- 1. SEARCH BAR FOR DASHBOARD FILTER -->
+            <div class="search-bar-wrap">
+              <span class="search-icon">🔍</span>
+              <input type="text" class="search-input" id="progTrickSearch" placeholder="Search item..." oninput="populateProgressTrickFilter()">
+            </div>
             <select id="progTrick" onchange="renderAnalytics()">
               <option value="ALL">All Items & Combos</option>
             </select>
           </div>
+
           <div class="form-group" style="margin-bottom:0;">
             <label>Category Filter</label>
             <select id="progCategory" onchange="renderAnalytics()">
@@ -593,7 +622,7 @@
     </div>
 
 
-    <!-- TAB 2: LOG TRAINING SESSION (1 SESSION = MULTIPLE TRICKS/COMBOS) -->
+    <!-- TAB 2: LOG TRAINING SESSION -->
     <div id="tab-log" class="tab-content">
       <div class="glass-card">
         <div class="card-title">Log Training Session</div>
@@ -683,6 +712,7 @@
     <div id="tab-tricks" class="tab-content">
       <div class="glass-card">
         <div class="card-title">Add Custom Trick</div>
+        <!-- 4. CUSTOM TRICK FORM WITH EVENT PREVENT DEFAULT -->
         <form id="customTrickForm" onsubmit="handleCustomTrickSubmit(event)">
           <div class="form-group">
             <label>Custom Trick Name</label>
@@ -722,7 +752,7 @@
     </div>
 
 
-    <!-- TAB 5: COMBO CALCULATOR (INDIVIDUAL SLOT FILTERS) -->
+    <!-- TAB 5: COMBO CALCULATOR -->
     <div id="tab-calc" class="tab-content">
       <div class="glass-card">
         <div class="card-title">🧮 Combo Calculator (Matrix 2026)</div>
@@ -975,23 +1005,38 @@
       authMode: 'login',
       sessions: [],
       customTricks: [],
-      sessionItems: [], // Dynamic list of items for 1 training session date
-      calcSlots: [], // Independent trick slots for Combo Calculator
+      sessionItems: [],
+      calcSlots: [],
       deletingTrickId: null,
       charts: {}
     };
 
+    // SAFE DOM INNER HTML UTILITY (8. FIXES "Cannot set properties of null (setting 'innerHTML')")
+    function safeSetInnerHTML(id, html) {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = html;
+    }
+
+    function safeSetTextContent(id, text) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('logDate').value = new Date().toISOString().split('T')[0];
-      document.getElementById('progMonth').value = new Date().toISOString().slice(0, 7);
+      const logDateEl = document.getElementById('logDate');
+      if (logDateEl) logDateEl.value = new Date().toISOString().split('T')[0];
+
+      const progMonthEl = document.getElementById('progMonth');
+      if (progMonthEl) progMonthEl.value = new Date().toISOString().slice(0, 7);
       
       const savedTheme = localStorage.getItem('slalom_theme') || 'light';
       applyTheme(savedTheme);
 
-      // Initialize default Multi-Item Session
       initSessionItems();
+      renderCalcSlots();
 
-      document.getElementById('authOverlay').style.display = 'flex';
+      const overlay = document.getElementById('authOverlay');
+      if (overlay) overlay.style.display = 'flex';
     });
 
     function applyTheme(theme) {
@@ -999,12 +1044,13 @@
       localStorage.setItem('slalom_theme', theme);
 
       const isDark = theme === 'dark';
-      document.getElementById('themeBtnIcon').textContent = isDark ? '☀️' : '🌙';
+      safeSetTextContent('themeBtnIcon', isDark ? '☀️' : '🌙');
 
       Chart.defaults.color = isDark ? '#94a3b8' : '#64748b';
       Chart.defaults.borderColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
 
-      if (appState.currentUser && document.getElementById('tab-dashboard').classList.contains('active')) {
+      const dashTab = document.getElementById('tab-dashboard');
+      if (appState.currentUser && dashTab && dashTab.classList.contains('active')) {
         renderAnalytics();
       }
     }
@@ -1016,6 +1062,7 @@
 
     function showToast(message, type = 'warning') {
       const container = document.getElementById('toastContainer');
+      if (!container) return;
       const toast = document.createElement('div');
       toast.className = `toast toast-${type}`;
       toast.innerHTML = `<span>${type === 'success' ? '✅' : type === 'error' ? '🚨' : '⚠️'}</span><span>${message}</span>`;
@@ -1029,22 +1076,25 @@
 
     function togglePasswordVisibility() {
       const pwd = document.getElementById('authPassword');
-      pwd.type = pwd.type === 'password' ? 'text' : 'password';
+      if (pwd) pwd.type = pwd.type === 'password' ? 'text' : 'password';
     }
 
     function switchAuthMode(mode) {
       appState.authMode = mode;
       const isReg = mode === 'register';
 
-      document.getElementById('btnAuthLoginTab').classList.toggle('active', !isReg);
-      document.getElementById('btnAuthRegisterTab').classList.toggle('active', isReg);
+      const btnLogin = document.getElementById('btnAuthLoginTab');
+      if (btnLogin) btnLogin.classList.toggle('active', !isReg);
 
-      document.getElementById('authSubtitleText').textContent = isReg 
-        ? 'Create a new skater account to begin' 
-        : 'Sign in to access your training dashboard';
+      const btnReg = document.getElementById('btnAuthRegisterTab');
+      if (btnReg) btnReg.classList.toggle('active', isReg);
 
-      document.getElementById('skaterNameField').style.display = isReg ? 'block' : 'none';
-      document.getElementById('authSubmitBtn').innerHTML = `<span>${isReg ? 'Create Account' : 'Log In'}</span>`;
+      safeSetTextContent('authSubtitleText', isReg ? 'Create a new skater account to begin' : 'Sign in to access your training dashboard');
+
+      const skaterField = document.getElementById('skaterNameField');
+      if (skaterField) skaterField.style.display = isReg ? 'block' : 'none';
+
+      safeSetInnerHTML('authSubmitBtn', `<span>${isReg ? 'Create Account' : 'Log In'}</span>`);
     }
 
     async function handleAuthSubmit(e) {
@@ -1064,8 +1114,10 @@
         return;
       }
 
-      btn.disabled = true;
-      btn.innerHTML = `<span>${appState.authMode === 'register' ? 'Creating Account...' : 'Verifying...'}</span>`;
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span>${appState.authMode === 'register' ? 'Creating Account...' : 'Verifying...'}</span>`;
+      }
 
       try {
         if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "YOUR_APPS_SCRIPT_WEB_APP_URL") {
@@ -1101,18 +1153,23 @@
         console.error('Auth Error:', err);
         showToast(err.message || 'Error connecting to Google Sheets.', 'error');
       } finally {
-        btn.disabled = false;
-        btn.innerHTML = `<span>${appState.authMode === 'register' ? 'Create Account' : 'Log In'}</span>`;
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<span>${appState.authMode === 'register' ? 'Create Account' : 'Log In'}</span>`;
+        }
       }
     }
 
     function onAuthSuccess() {
-      document.getElementById('authOverlay').style.display = 'none';
-      document.getElementById('headerSkaterName').textContent = `Skater: ${appState.currentUser.skaterName}`;
-      document.getElementById('logSkater').value = appState.currentUser.skaterName;
+      const overlay = document.getElementById('authOverlay');
+      if (overlay) overlay.style.display = 'none';
+
+      safeSetTextContent('headerSkaterName', `Skater: ${appState.currentUser.skaterName}`);
+
+      const logSkater = document.getElementById('logSkater');
+      if (logSkater) logSkater.value = appState.currentUser.skaterName;
 
       populateProgressTrickFilter();
-      populateComboGraphSelect();
       renderSessionItems();
 
       switchTab('dashboard');
@@ -1123,10 +1180,15 @@
       appState.sessions = [];
       appState.customTricks = [];
 
-      document.getElementById('authUsername').value = '';
-      document.getElementById('authPassword').value = '';
-      document.getElementById('authSkaterName').value = '';
-      document.getElementById('authOverlay').style.display = 'flex';
+      const u = document.getElementById('authUsername');
+      if (u) u.value = '';
+      const p = document.getElementById('authPassword');
+      if (p) p.value = '';
+      const s = document.getElementById('authSkaterName');
+      if (s) s.value = '';
+
+      const overlay = document.getElementById('authOverlay');
+      if (overlay) overlay.style.display = 'flex';
 
       showToast('Logged out successfully.', 'success');
     }
@@ -1135,7 +1197,8 @@
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.bottom-nav .nav-item').forEach(n => n.classList.remove('active'));
 
-      document.getElementById(`tab-${tabId}`).classList.add('active');
+      const targetTab = document.getElementById(`tab-${tabId}`);
+      if (targetTab) targetTab.classList.add('active');
 
       const indexMap = { 'dashboard': 0, 'log': 1, 'history': 2, 'tricks': 3, 'calc': 4 };
       const idx = indexMap[tabId];
@@ -1149,6 +1212,7 @@
       if (tabId === 'calc') updateComboCalculator();
     }
 
+    // 5. CUSTOM TRICK USER ISOLATION
     function getAllTricks() {
       if (!appState.currentUser) return PREDEFINED_TRICKS;
       const userCustom = appState.customTricks.filter(t => 
@@ -1157,10 +1221,58 @@
       return [...PREDEFINED_TRICKS, ...userCustom];
     }
 
-    // 1. MULTI-ITEM TRAINING SESSION BUILDER (1 Session = Multiple Tricks/Combos)
+    // 6. DASHBOARD SYNC BUTTON (FETCH LATEST FROM GOOGLE SHEETS)
+    async function syncUserDataFromSheets() {
+      if (!appState.currentUser) return;
+      const btn = document.getElementById('btnSyncDashboard');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '🔄 Syncing...';
+      }
+
+      try {
+        if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "YOUR_APPS_SCRIPT_WEB_APP_URL") {
+          throw new Error('Google Apps Script URL is not configured.');
+        }
+
+        const response = await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({
+            action: 'syncUserData',
+            payload: { skaterName: appState.currentUser.skaterName, userId: appState.currentUser.userId }
+          })
+        });
+
+        const json = await response.json();
+        if (json.status === 'success' && json.data) {
+          appState.sessions = json.data.sessions || [];
+          appState.customTricks = json.data.customTricks || [];
+
+          populateProgressTrickFilter();
+          renderAnalytics();
+          renderHistory();
+          renderCustomTricksList();
+
+          showToast('Data synced successfully from Google Sheets!', 'success');
+        } else {
+          showToast(json.message || 'Sync failed.', 'error');
+        }
+      } catch (err) {
+        console.error('Sync Error:', err);
+        showToast('Failed to sync with Google Sheets.', 'error');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '🔄 Sync Data';
+        }
+      }
+    }
+
+    // MULTI-ITEM TRAINING SESSION BUILDER
     function initSessionItems() {
       appState.sessionItems = [
-        { id: Date.now(), type: 'single', trickName: 'Crazy', category: 'OTHERS', family: 'E', target: 20, completed: 16, missed: 4, falls: 0, notes: '' }
+        { id: Date.now(), type: 'single', trickName: 'Crazy', category: 'OTHERS', family: 'E', target: 20, completed: 16, missed: 4, falls: 0, notes: '', searchFilter: '' }
       ];
       renderSessionItems();
     }
@@ -1168,9 +1280,9 @@
     function addSessionItem(type) {
       const id = Date.now() + Math.random();
       if (type === 'single') {
-        appState.sessionItems.push({ id, type: 'single', trickName: 'Toe Christie', category: 'SITTING', family: 'A', target: 20, completed: 15, missed: 5, falls: 1, notes: '' });
+        appState.sessionItems.push({ id, type: 'single', trickName: 'Toe Christie', category: 'SITTING', family: 'A', target: 20, completed: 15, missed: 5, falls: 1, notes: '', searchFilter: '' });
       } else {
-        appState.sessionItems.push({ id, type: 'combo', trickName: 'Crazy → Nelson → Mabrouk', category: 'OTHERS', family: 'E', target: 20, completed: 14, missed: 6, totalAttempts: 10, connectedAttempts: 7, falls: 1, notes: '' });
+        appState.sessionItems.push({ id, type: 'combo', trickName: 'Crazy → Nelson → Mabrouk', category: 'OTHERS', family: 'E', target: 20, completed: 14, missed: 6, totalAttempts: 10, connectedAttempts: 7, falls: 1, notes: '', searchFilter: '' });
       }
       renderSessionItems();
     }
@@ -1186,23 +1298,38 @@
 
     function renderSessionItems() {
       const container = document.getElementById('sessionItemsContainer');
+      if (!container) return;
       const allTricks = getAllTricks();
 
       container.innerHTML = appState.sessionItems.map((item, idx) => {
         const isCombo = item.type === 'combo';
+        const searchVal = (item.searchFilter || '').toLowerCase();
+        
+        const filteredTricks = allTricks.filter(t => {
+          const name = (t.name || t.trickname || '').toLowerCase();
+          return name.includes(searchVal);
+        });
+
         return `
           <div class="session-item-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-              <span style="font-size:0.8rem; font-weight:800; color:var(--primary);">Item #${idx + 1}: ${isCombo ? 'Combo Sequence' : 'Individual Drill'}</span>
-              ${appState.sessionItems.length > 1 ? `<button type="button" onclick="removeSessionItem(${idx})" style="background:#fee2e2; border:none; color:#dc2626; padding:2px 8px; border-radius:6px; font-weight:700; font-size:0.75rem;">✕ Remove</button>` : ''}
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <span style="font-size:0.75rem; font-weight:800; color:var(--primary);">Item #${idx + 1}: ${isCombo ? 'Combo Sequence' : 'Individual Drill'}</span>
+              ${appState.sessionItems.length > 1 ? `<button type="button" onclick="removeSessionItem(${idx})" style="background:#fee2e2; border:none; color:#dc2626; padding:2px 8px; border-radius:6px; font-weight:700; font-size:0.7rem;">✕ Remove</button>` : ''}
             </div>
 
             ${!isCombo ? `
               <div class="row-2">
                 <div class="form-group">
                   <label>Trick</label>
+                  
+                  <!-- 1. SEARCH BAR IN ITEM SELECTOR -->
+                  <div class="search-bar-wrap">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" class="search-input" placeholder="Search trick..." value="${item.searchFilter || ''}" oninput="appState.sessionItems[${idx}].searchFilter = this.value; renderSessionItems();">
+                  </div>
+
                   <select onchange="onSessionItemTrickChange(${idx}, this.value)">
-                    ${allTricks.map(t => {
+                    ${filteredTricks.map(t => {
                       const name = t.name || t.trickname;
                       return `<option value="${name}" ${name === item.trickName ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
                     }).join('')}
@@ -1276,7 +1403,7 @@
 
     function autoCalcItemMissed(idx) {
       const item = appState.sessionItems[idx];
-      if (item.target >= item.completed) {
+      if (item && item.target >= item.completed) {
         item.missed = item.target - item.completed;
         const el = document.getElementById(`itemMissed_${idx}`);
         if (el) el.value = item.missed;
@@ -1286,8 +1413,11 @@
     // SAVE MULTI-ITEM TRAINING SESSION
     async function handleMultiSessionSubmit(e) {
       e.preventDefault();
-      const date = document.getElementById('logDate').value;
-      const globalNotes = document.getElementById('logSessionGlobalNotes').value.trim();
+      const dateEl = document.getElementById('logDate');
+      const date = dateEl ? dateEl.value : new Date().toISOString().split('T')[0];
+
+      const notesEl = document.getElementById('logSessionGlobalNotes');
+      const globalNotes = notesEl ? notesEl.value.trim() : '';
       const sessionId = 'SESS-' + Date.now();
 
       if (!appState.sessionItems || appState.sessionItems.length === 0) {
@@ -1327,10 +1457,8 @@
         };
       });
 
-      // Add to local state array
       formattedPayloadItems.forEach(rec => appState.sessions.unshift(rec));
 
-      // Sync backend
       if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== "YOUR_APPS_SCRIPT_WEB_APP_URL") {
         try {
           fetch(APPS_SCRIPT_URL, {
@@ -1352,36 +1480,99 @@
       }
 
       showToast(`Training session saved with ${formattedPayloadItems.length} practice item(s)!`, 'success');
-      document.getElementById('logSessionGlobalNotes').value = '';
+      if (notesEl) notesEl.value = '';
       initSessionItems();
       populateProgressTrickFilter();
-      populateComboGraphSelect();
       switchTab('dashboard');
     }
 
-    // 3. CUSTOM TRICK MANAGEMENT (EDIT & DELETE)
+    // 4. CRITICAL FIX FOR CUSTOM TRICK CREATION BUG (NO PAGE REFRESH)
+    async function handleCustomTrickSubmit(e) {
+      // PREVENT DEFAULT REFRESH BEHAVIOR STRICTLY
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      const nameEl = document.getElementById('custName');
+      const catEl = document.getElementById('custCat');
+      const famEl = document.getElementById('custFam');
+
+      const name = nameEl ? nameEl.value.trim() : '';
+      const category = catEl ? catEl.value : 'OTHERS';
+      const family = famEl ? famEl.value : 'Custom';
+
+      if (!name) {
+        showToast('Please enter a custom trick name.', 'warning');
+        return false;
+      }
+
+      const customTrick = {
+        id: 'CUST-' + Date.now(),
+        trickid: 'CUST-' + Date.now(),
+        trickname: name,
+        name: name,
+        category: category,
+        family: family,
+        type: 'Custom',
+        skaterName: appState.currentUser.skaterName
+      };
+
+      // Add immediately to local state so it appears in dropdowns/selectors instantly
+      appState.customTricks.push(customTrick);
+
+      if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== "YOUR_APPS_SCRIPT_WEB_APP_URL") {
+        try {
+          fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ action: 'addCustomTrick', payload: customTrick })
+          });
+        } catch(err) { console.error('API Error:', err); }
+      }
+
+      showToast(`Custom trick "${name}" created successfully!`, 'success');
+      if (nameEl) nameEl.value = '';
+
+      renderCustomTricksList();
+      renderSessionItems();
+      return false;
+    }
+
+    // EDIT CUSTOM TRICK
     function openEditCustomModal(trickId) {
       const trick = appState.customTricks.find(t => (t.id === trickId || t.trickid === trickId));
       if (!trick) return;
 
-      document.getElementById('editTrickId').value = trick.id || trick.trickid;
-      document.getElementById('editTrickName').value = trick.name || trick.trickname;
-      document.getElementById('editTrickCategory').value = trick.category || 'OTHERS';
+      const editId = document.getElementById('editTrickId');
+      if (editId) editId.value = trick.id || trick.trickid;
 
-      document.getElementById('editCustomModal').style.display = 'flex';
+      const editName = document.getElementById('editTrickName');
+      if (editName) editName.value = trick.name || trick.trickname;
+
+      const editCat = document.getElementById('editTrickCategory');
+      if (editCat) editCat.value = trick.category || 'OTHERS';
+
+      const modal = document.getElementById('editCustomModal');
+      if (modal) modal.style.display = 'flex';
     }
 
     function closeEditCustomModal() {
-      document.getElementById('editCustomModal').style.display = 'none';
+      const modal = document.getElementById('editCustomModal');
+      if (modal) modal.style.display = 'none';
     }
 
     async function handleEditCustomTrickSubmit(e) {
-      e.preventDefault();
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
       const trickId = document.getElementById('editTrickId').value;
       const newName = document.getElementById('editTrickName').value.trim();
       const newCategory = document.getElementById('editTrickCategory').value;
 
-      if (!newName) return;
+      if (!newName) return false;
 
       const targetIndex = appState.customTricks.findIndex(t => (t.id === trickId || t.trickid === trickId));
       if (targetIndex !== -1) {
@@ -1406,6 +1597,8 @@
       showToast(`Custom trick updated to "${newName}"`, 'success');
       closeEditCustomModal();
       renderCustomTricksList();
+      renderSessionItems();
+      return false;
     }
 
     function openDeleteConfirmModal(trickId) {
@@ -1413,15 +1606,19 @@
       if (!trick) return;
 
       appState.deletingTrickId = trickId;
-      document.getElementById('deleteModalMessage').textContent = `Are you sure you want to delete "${trick.name || trick.trickname}"? This action cannot be undone.`;
-      
-      document.getElementById('btnConfirmDelete').onclick = () => executeDeleteCustomTrick(trickId);
-      document.getElementById('confirmDeleteModal').style.display = 'flex';
+      safeSetTextContent('deleteModalMessage', `Are you sure you want to delete "${trick.name || trick.trickname}"? This action cannot be undone.`);
+
+      const btnDelete = document.getElementById('btnConfirmDelete');
+      if (btnDelete) btnDelete.onclick = () => executeDeleteCustomTrick(trickId);
+
+      const modal = document.getElementById('confirmDeleteModal');
+      if (modal) modal.style.display = 'flex';
     }
 
     function closeDeleteConfirmModal() {
       appState.deletingTrickId = null;
-      document.getElementById('confirmDeleteModal').style.display = 'none';
+      const modal = document.getElementById('confirmDeleteModal');
+      if (modal) modal.style.display = 'none';
     }
 
     async function executeDeleteCustomTrick(trickId) {
@@ -1444,11 +1641,12 @@
 
       showToast('Custom trick deleted permanently.', 'success');
       renderCustomTricksList();
+      renderSessionItems();
     }
 
     function renderCustomTricksList() {
       const container = document.getElementById('customTricksList');
-      if (!appState.currentUser) return;
+      if (!container || !appState.currentUser) return;
 
       const userCustom = appState.customTricks.filter(t => 
         String(t.skaterName || t.skatername).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
@@ -1462,7 +1660,7 @@
       container.innerHTML = userCustom.map(t => {
         const id = t.id || t.trickid;
         return `
-          <div style="padding:10px 0; border-bottom:1px solid var(--border-color); display:flex; justify-space-between; align-items:center;">
+          <div style="padding:10px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
             <div>
               <strong style="font-size:0.875rem;">${t.name || t.trickname}</strong>
               <div style="font-size:0.725rem; color:var(--text-muted); margin-top:2px;">${t.category} • Family ${t.family}</div>
@@ -1479,65 +1677,61 @@
 
     function populateProgressTrickFilter() {
       const select = document.getElementById('progTrick');
-      if (!appState.currentUser) return;
+      if (!select || !appState.currentUser) return;
+
+      const searchInput = document.getElementById('progTrickSearch');
+      const searchVal = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
       const skaterSessions = appState.sessions.filter(s => 
         String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
       );
       const uniqueTricks = [...new Map(skaterSessions.map(item => [item.trickName || item.trickname, item])).values()];
 
-      select.innerHTML = '<option value="ALL">All Items & Combos</option>';
+      select.innerHTML = '<option value="ALL">All Practice Items & Combos</option>';
       uniqueTricks.forEach(t => {
-        const opt = document.createElement('option');
-        opt.value = t.trickName || t.trickname;
-        opt.textContent = t.trickName || t.trickname;
-        select.appendChild(opt);
+        const name = t.trickName || t.trickname;
+        if (!searchVal || name.toLowerCase().includes(searchVal)) {
+          const opt = document.createElement('option');
+          opt.value = name;
+          opt.textContent = name;
+          select.appendChild(opt);
+        }
       });
     }
 
-    function populateComboGraphSelect() {
-      const select = document.getElementById('comboGraphSelect');
-      if (!appState.currentUser) return;
-
-      const comboSessions = appState.sessions.filter(s => 
-        String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase() &&
-        (s.sessionType === 'Combo' || s.sessiontype === 'Combo')
-      );
-
-      const uniqueCombos = [...new Set(comboSessions.map(s => s.trickName || s.trickname))];
-
-      select.innerHTML = '';
-      if (uniqueCombos.length === 0) {
-        select.innerHTML = '<option value="">No Combos Logged Yet</option>';
-        return;
-      }
-
-      uniqueCombos.forEach(c => {
-        const opt = document.createElement('option');
-        opt.value = c;
-        opt.textContent = c;
-        select.appendChild(opt);
-      });
-    }
-
-    // 4. ADVANCED GRAPH & TIME RANGE FILTERS
     function onTimeRangeFilterChange() {
-      const val = document.getElementById('progTimeRange').value;
-      document.getElementById('groupSpecificMonth').style.display = val === 'SPECIFIC_MONTH' ? 'block' : 'none';
-      document.getElementById('groupCustomRange').style.display = val === 'CUSTOM_RANGE' ? 'grid' : 'none';
+      const rangeEl = document.getElementById('progTimeRange');
+      const val = rangeEl ? rangeEl.value : 'THIS_MONTH';
+
+      const specMonth = document.getElementById('groupSpecificMonth');
+      if (specMonth) specMonth.style.display = val === 'SPECIFIC_MONTH' ? 'block' : 'none';
+
+      const custRange = document.getElementById('groupCustomRange');
+      if (custRange) custRange.style.display = val === 'CUSTOM_RANGE' ? 'grid' : 'none';
+
       renderAnalytics();
     }
 
     function renderAnalytics() {
       if (!appState.currentUser) return;
 
-      const timeRange = document.getElementById('progTimeRange').value;
-      const selectedMonth = document.getElementById('progMonth').value;
-      const startDate = document.getElementById('progStartDate').value;
-      const endDate = document.getElementById('progEndDate').value;
+      const timeRangeEl = document.getElementById('progTimeRange');
+      const timeRange = timeRangeEl ? timeRangeEl.value : 'THIS_MONTH';
 
-      const selectedCat = document.getElementById('progCategory').value;
-      const selectedTrick = document.getElementById('progTrick').value;
+      const monthEl = document.getElementById('progMonth');
+      const selectedMonth = monthEl ? monthEl.value : '';
+
+      const startEl = document.getElementById('progStartDate');
+      const startDate = startEl ? startEl.value : '';
+
+      const endEl = document.getElementById('progEndDate');
+      const endDate = endEl ? endEl.value : '';
+
+      const catEl = document.getElementById('progCategory');
+      const selectedCat = catEl ? catEl.value : 'ALL';
+
+      const trickEl = document.getElementById('progTrick');
+      const selectedTrick = trickEl ? trickEl.value : 'ALL';
 
       const now = new Date();
 
@@ -1545,7 +1739,6 @@
         const skaterMatch = String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase();
         if (!skaterMatch) return false;
 
-        // Time Range Filtering
         const sessionDate = new Date(s.date);
         if (timeRange === 'TODAY') {
           const todayStr = new Date().toISOString().split('T')[0];
@@ -1581,25 +1774,24 @@
         avgConnected = (sumConn / comboSessions.length).toFixed(1);
       }
 
-      document.getElementById('mSessions').textContent = totalSessions;
-      document.getElementById('mSuccess').textContent = `${avgSuccess}%`;
-      document.getElementById('mCompleted').textContent = totalCompleted;
-      document.getElementById('mFalls').textContent = totalFalls;
-      document.getElementById('mConnected').textContent = `${avgConnected}%`;
+      safeSetTextContent('mSessions', totalSessions);
+      safeSetTextContent('mSuccess', `${avgSuccess}%`);
+      safeSetTextContent('mCompleted', totalCompleted);
+      safeSetTextContent('mFalls', totalFalls);
+      safeSetTextContent('mConnected', `${avgConnected}%`);
 
-      // SAFE CHART INITIALIZATION
+      // 7. STRICT CANVAS CONTEXT SAFETY CHECK
       renderChartSuccessRate(filtered);
       renderChartCones(filtered);
       renderChartTricks(filtered);
       renderChartFalls(filtered);
       renderChartFamily();
-      renderComboProgressChart();
     }
 
-    // SAFE CANVAS CONTEXT GETTER
     function getSafeCanvasContext(canvasId) {
       const canvas = document.getElementById(canvasId);
       if (!canvas) return null;
+      if (!canvas.offsetParent && canvas.offsetWidth === 0 && canvas.offsetHeight === 0) return null;
       try {
         return canvas.getContext('2d');
       } catch(e) { return null; }
@@ -1775,60 +1967,21 @@
       });
     }
 
-    function renderComboProgressChart() {
-      const ctx = getSafeCanvasContext('chartComboProgress');
-      if (!ctx) return;
-      destroyChartInstance('combo');
-
-      const selectedCombo = document.getElementById('comboGraphSelect').value;
-      const range = document.getElementById('comboDateRangeSelect').value;
-
-      if (!selectedCombo) {
-        appState.charts.combo = new Chart(ctx, { type: 'line', data: { labels: [], datasets: [] } });
-        return;
-      }
-
-      const skaterSessions = appState.sessions.filter(s => 
-        String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase() &&
-        (s.trickName || s.trickname) === selectedCombo
-      );
-
-      const now = new Date();
-      const filtered = skaterSessions.filter(s => {
-        const d = new Date(s.date);
-        if (range === 'THIS_MONTH') return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-        if (range === 'THIS_WEEK') {
-          const diffDays = Math.ceil(Math.abs(now - d) / (1000 * 60 * 60 * 24));
-          return diffDays <= 7;
-        }
-        return true;
-      }).slice().reverse();
-
-      const labels = filtered.map(s => s.date);
-      const coneData = filtered.map(s => parseFloat(s.successRate || s.successrate || 0));
-      const connData = filtered.map(s => parseFloat(s.connectedCompletion || 0));
-
-      appState.charts.combo = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [
-            { label: 'Cone %', data: coneData, borderColor: '#10b981', backgroundColor: 'transparent', borderWidth: 2, tension: 0.3 },
-            { label: 'Connected Completion %', data: connData, borderColor: '#6366f1', backgroundColor: 'rgba(99, 102, 241, 0.12)', fill: true, borderWidth: 3, tension: 0.3 }
-          ]
-        },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } } }
-      });
-    }
-
     function renderHistory() {
       const container = document.getElementById('historyList');
-      if (!appState.currentUser) return;
+      if (!container || !appState.currentUser) return;
 
-      const typeFilter = document.getElementById('histType').value;
-      const catFilter = document.getElementById('histCat').value;
-      const famFilter = document.getElementById('histFam').value;
-      const monthFilter = document.getElementById('histMonth').value;
+      const typeEl = document.getElementById('histType');
+      const typeFilter = typeEl ? typeEl.value : 'ALL';
+
+      const catEl = document.getElementById('histCat');
+      const catFilter = catEl ? catEl.value : 'ALL';
+
+      const famEl = document.getElementById('histFam');
+      const famFilter = famEl ? famEl.value : 'ALL';
+
+      const monthEl = document.getElementById('histMonth');
+      const monthFilter = monthEl ? monthEl.value : '';
 
       const filtered = appState.sessions.filter(s => {
         const skaterMatch = String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase();
@@ -1883,9 +2036,9 @@
       }).join('');
     }
 
-    // 2. COMBO CALCULATOR — INDIVIDUAL CATEGORY & FAMILY FILTERS PER SLOT
+    // 2. COMBO CALCULATOR WITH INDIVIDUAL CATEGORY/FAMILY FILTERS PER SLOT
     function addCalcSlot() {
-      appState.calcSlots.push({ categoryFilter: 'ALL', familyFilter: 'ALL', selectedTrick: '' });
+      appState.calcSlots.push({ categoryFilter: 'ALL', familyFilter: 'ALL', selectedTrick: '', searchFilter: '' });
       renderCalcSlots();
     }
 
@@ -1896,6 +2049,8 @@
 
     function renderCalcSlots() {
       const container = document.getElementById('calcSlotsContainer');
+      if (!container) return;
+
       const allTricks = getAllTricks();
 
       if (appState.calcSlots.length === 0) {
@@ -1905,10 +2060,13 @@
       }
 
       container.innerHTML = appState.calcSlots.map((slot, idx) => {
+        const searchVal = (slot.searchFilter || '').toLowerCase();
+        
         const filteredTricks = allTricks.filter(t => {
           const matchCat = (slot.categoryFilter === 'ALL' || t.category === slot.categoryFilter);
           const matchFam = (slot.familyFilter === 'ALL' || t.family === slot.familyFilter);
-          return matchCat && matchFam;
+          const matchSearch = !searchVal || (t.name || t.trickname || '').toLowerCase().includes(searchVal);
+          return matchCat && matchFam && matchSearch;
         });
 
         return `
@@ -1945,6 +2103,13 @@
 
             <div class="form-group" style="margin-bottom:0;">
               <label>Select Trick for Slot #${idx + 1}</label>
+              
+              <!-- 1. SEARCH BAR FOR CALC SLOT -->
+              <div class="search-bar-wrap">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" placeholder="Search trick in slot..." value="${slot.searchFilter || ''}" oninput="appState.calcSlots[${idx}].searchFilter = this.value; renderCalcSlots();">
+              </div>
+
               <select onchange="appState.calcSlots[${idx}].selectedTrick = this.value; updateComboCalculator();">
                 <option value="">-- Choose Trick --</option>
                 ${filteredTricks.map(t => {
@@ -1965,12 +2130,12 @@
       const validSlots = appState.calcSlots.filter(s => s && s.selectedTrick && s.selectedTrick.trim() !== '');
 
       if (validSlots.length === 0) {
-        document.getElementById('calcScoreRange').textContent = '0 – 0 Points';
-        document.getElementById('aiRecommendationsContainer').innerHTML = `
+        safeSetTextContent('calcScoreRange', '0 – 0 Points');
+        safeSetInnerHTML('aiRecommendationsContainer', `
           <div class="empty-state" style="padding:16px 0;">
             <div class="empty-text">Select a trick to build your combo.</div>
           </div>
-        `;
+        `);
         return;
       }
 
@@ -1987,26 +2152,25 @@
         maxScore += pts.max;
       });
 
-      document.getElementById('calcScoreRange').textContent = `${minScore} – ${maxScore} Potential Difficulty Points`;
+      safeSetTextContent('calcScoreRange', `${minScore} – ${maxScore} Potential Difficulty Points`);
 
       generateAIRecommendations(selectedObjects, minScore, maxScore);
     }
 
     function generateAIRecommendations(tricks, currentMin, currentMax) {
-      const container = document.getElementById('aiRecommendationsContainer');
       const allTricks = getAllTricks();
 
       const targetUpgradeIdx = tricks.findIndex(t => t.family === 'E' || t.family === 'D');
 
       if (targetUpgradeIdx === -1) {
-        container.innerHTML = `
+        safeSetInnerHTML('aiRecommendationsContainer', `
           <div style="padding:10px; background:var(--input-bg); border-radius:10px; border:1px solid var(--border-color);">
             <div style="font-size:0.825rem; font-weight:800; color:var(--primary);">This is a good combo.</div>
             <div style="font-size:0.725rem; color:var(--text-muted); margin-top:2px;">
               Your sequence incorporates high-tier matrix difficulty (Family A/B/C) with strong technical progression.
             </div>
           </div>
-        `;
+        `);
         return;
       }
 
@@ -2014,11 +2178,11 @@
       const upgradeCandidates = allTricks.filter(t => t.category === targetTrick.category && (t.family === 'C' || t.family === 'B' || t.family === 'A'));
 
       if (upgradeCandidates.length === 0) {
-        container.innerHTML = `
+        safeSetInnerHTML('aiRecommendationsContainer', `
           <div style="padding:10px; background:var(--input-bg); border-radius:10px; border:1px solid var(--border-color);">
             <div style="font-size:0.825rem; font-weight:800; color:var(--primary);">This is a good combo.</div>
           </div>
-        `;
+        `);
         return;
       }
 
@@ -2029,7 +2193,7 @@
       const newMin = currentMin - origPts.min + recPts.min;
       const newMax = currentMax - origPts.max + recPts.max;
 
-      container.innerHTML = `
+      safeSetInnerHTML('aiRecommendationsContainer', `
         <div style="padding:10px; background:var(--input-bg); border-radius:10px; border:1px solid var(--border-color);">
           <div style="font-size:0.775rem; font-weight:700; color:var(--primary);">Suggested Progression Upgrade:</div>
           <div style="font-size:0.825rem; margin-top:2px;">
@@ -2039,7 +2203,7 @@
             Potential Upgraded Range: ${newMin} – ${newMax} Points (+${recPts.min - origPts.min} pts)
           </div>
         </div>
-      `;
+      `);
     }
   </script>
 </body>
