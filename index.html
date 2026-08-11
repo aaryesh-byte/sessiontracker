@@ -1325,7 +1325,7 @@
                   <!-- 1. SEARCH BAR IN ITEM SELECTOR -->
                   <div class="search-bar-wrap">
                     <span class="search-icon">🔍</span>
-                    <input type="text" class="search-input" placeholder="Search trick..." value="${item.searchFilter || ''}" oninput="appState.sessionItems[${idx}].searchFilter = this.value; renderSessionItems();">
+                    <input type="text" class="search-input" placeholder="Search trick..." value="${item.searchFilter || ''}" oninput="onSessionItemSearchInput(${idx}, this.value)">
                   </div>
 
                   <select onchange="onSessionItemTrickChange(${idx}, this.value)">
@@ -1388,6 +1388,32 @@
           </div>
         `;
       }).join('');
+    }
+
+    function onSessionItemSearchInput(idx, value) {
+      const item = appState.sessionItems[idx];
+      if (!item) return;
+
+      item.searchFilter = value || '';
+      const searchVal = item.searchFilter.toLowerCase().trim();
+      const select = document.getElementById(`itemTrickSelect_${idx}`);
+      if (!select) return;
+
+      const allTricks = getAllTricks();
+      const filteredTricks = allTricks.filter(t => {
+        const name = (t.name || t.trickname || '').toLowerCase();
+        return name.includes(searchVal);
+      });
+
+      // Update only the trick dropdown. Do NOT re-render the whole session card,
+      // so the search input keeps its focus while the user types.
+      select.innerHTML = `
+        <option value="">-- Choose Trick --</option>
+        ${filteredTricks.map(t => {
+          const name = t.name || t.trickname;
+          return `<option value="${name}" ${name === item.trickName ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
+        }).join('')}
+      `;
     }
 
     function onSessionItemTrickChange(idx, selectedTrickName) {
@@ -2107,10 +2133,10 @@
               <!-- 1. SEARCH BAR FOR CALC SLOT -->
               <div class="search-bar-wrap">
                 <span class="search-icon">🔍</span>
-                <input type="text" class="search-input" placeholder="Search trick in slot..." value="${slot.searchFilter || ''}" oninput="appState.calcSlots[${idx}].searchFilter = this.value; renderCalcSlots();">
+                <input type="text" class="search-input" placeholder="Search trick in slot..." value="${slot.searchFilter || ''}" oninput="onCalcSlotSearchInput(${idx}, this.value)">
               </div>
 
-              <select onchange="appState.calcSlots[${idx}].selectedTrick = this.value; updateComboCalculator();">
+              <select id="calcTrickSelect_${idx}" onchange="appState.calcSlots[${idx}].selectedTrick = this.value; updateComboCalculator();">
                 <option value="">-- Choose Trick --</option>
                 ${filteredTricks.map(t => {
                   const name = t.name || t.trickname;
@@ -2123,6 +2149,32 @@
       }).join('');
 
       updateComboCalculator();
+    }
+
+    function onCalcSlotSearchInput(idx, value) {
+      const slot = appState.calcSlots[idx];
+      if (!slot) return;
+
+      slot.searchFilter = value || '';
+      const searchVal = slot.searchFilter.toLowerCase().trim();
+      const select = document.getElementById(`calcTrickSelect_${idx}`);
+      if (!select) return;
+
+      const allTricks = getAllTricks();
+      const filteredTricks = allTricks.filter(t => {
+        const matchCat = (slot.categoryFilter === 'ALL' || t.category === slot.categoryFilter);
+        const matchFam = (slot.familyFilter === 'ALL' || t.family === slot.familyFilter);
+        const name = (t.name || t.trickname || '').toLowerCase();
+        return matchCat && matchFam && (!searchVal || name.includes(searchVal));
+      });
+
+      select.innerHTML = `
+        <option value="">-- Choose Trick --</option>
+        ${filteredTricks.map(t => {
+          const name = t.name || t.trickname;
+          return `<option value="${name}" ${name === slot.selectedTrick ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
+        }).join('')}
+      `;
     }
 
     function updateComboCalculator() {
