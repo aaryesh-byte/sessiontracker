@@ -1,53 +1,70 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
-  <title>Inline Freestyle Slalom Tracker</title>
+  <title>Liquid Glass — Freestyle Slalom Protocol</title>
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Google Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Google Fonts: Hanken Grotesk, Inter, Geist -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Hanken+Grotesk:ital,wght@0,500;0,600;0,700;0,800;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   
   <style>
     :root {
-      --primary: #4f46e5;
-      --primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-      --bg-gradient: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.1) 0px, transparent 50%),
-                        radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.1) 0px, transparent 50%);
-      --body-bg: #f8fafc;
-      --glass-bg: rgba(255, 255, 255, 0.85);
-      --glass-border: rgba(255, 255, 255, 0.6);
-      --card-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      --border-color: #e2e8f0;
-      --input-bg: #ffffff;
-      --radius: 14px;
-
-      /* LIQUID GLASS NAVIGATION THEME */
-      --liquid-glass-bg: rgba(255, 255, 255, 0.75);
-      --liquid-glass-border: rgba(255, 255, 255, 0.8);
-      --liquid-glass-shadow: 0 12px 32px rgba(31, 38, 135, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      /* LIQUID GLASS DESIGN SYSTEM TOKENS */
+      --bg-base: #111416;
+      --bg-surface: #1a1c1e;
+      --bg-container: #1e2022;
+      --bg-container-high: #282a2d;
+      --bg-container-highest: #333537;
+      
+      --primary: #00ffc2;
+      --primary-dim: #00e1ab;
+      --primary-dark: #003828;
+      --primary-glow: rgba(0, 255, 194, 0.18);
+      
+      --on-surface: #e2e2e5;
+      --on-surface-muted: #83958c;
+      --on-surface-variant: #b9cbc1;
+      
+      --border-razor: rgba(255, 255, 255, 0.12);
+      --border-hover: rgba(0, 255, 194, 0.4);
+      --glass-tint: rgba(255, 255, 255, 0.03);
+      --glass-blur: blur(20px) saturate(180%);
+      
+      --card-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+      --radius-sm: 0.375rem;
+      --radius-md: 0.75rem;
+      --radius-lg: 1rem;
+      --radius-pill: 9999px;
+      
+      --font-display: 'Hanken Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'Geist', monospace;
     }
 
-    [data-theme="dark"] {
-      --primary: #6366f1;
-      --primary-gradient: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
-      --bg-gradient: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.18) 0px, transparent 50%),
-                        radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.12) 0px, transparent 50%);
-      --body-bg: #090d16;
-      --glass-bg: rgba(15, 23, 42, 0.82);
-      --glass-border: rgba(255, 255, 255, 0.1);
-      --card-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --border-color: #1e293b;
-      --input-bg: #0f172a;
-
-      --liquid-glass-bg: rgba(15, 23, 42, 0.78);
-      --liquid-glass-border: rgba(255, 255, 255, 0.15);
-      --liquid-glass-shadow: 0 12px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    [data-theme="light"] {
+      --bg-base: #f0f4f2;
+      --bg-surface: #ffffff;
+      --bg-container: #f7faf8;
+      --bg-container-high: #e2e8e4;
+      --bg-container-highest: #d1dad5;
+      
+      --primary: #00a881;
+      --primary-dim: #008767;
+      --primary-dark: #003828;
+      --primary-glow: rgba(0, 168, 129, 0.15);
+      
+      --on-surface: #111815;
+      --on-surface-muted: #52635a;
+      --on-surface-variant: #34423b;
+      
+      --border-razor: rgba(0, 0, 0, 0.1);
+      --border-hover: rgba(0, 168, 129, 0.5);
+      --glass-tint: rgba(255, 255, 255, 0.7);
+      --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
     }
 
     html, body {
@@ -56,87 +73,159 @@
       overflow-x: hidden !important;
       margin: 0;
       padding: 0;
+      background-color: var(--bg-base);
+      color: var(--on-surface);
+      font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 100vh;
+      padding-bottom: 100px;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      -webkit-tap-highlight-color: transparent;
     }
 
-    body {
-      background-color: var(--body-bg);
-      background-image: var(--bg-gradient);
-      background-attachment: fixed;
-      color: var(--text-main);
-      min-height: 100vh;
-      transition: background-color 0.3s ease, color 0.3s ease;
-      padding-bottom: 110px;
+    /* TYPOGRAPHY HELPERS */
+    .display-metric {
+      font-family: var(--font-display);
+      font-size: 2.25rem;
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--primary);
     }
 
-    /* AUTH OVERLAY */
+    .headline-lg {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--on-surface);
+    }
+
+    .label-caps {
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--on-surface-muted);
+    }
+
+    /* AUTH OVERLAY SCREEN */
     #authOverlay {
       position: fixed;
       inset: 0;
       width: 100vw;
       height: 100vh;
-      background: var(--body-bg);
-      background-image: var(--bg-gradient);
+      background: rgba(12, 14, 17, 0.92);
+      backdrop-filter: blur(28px) saturate(180%);
+      -webkit-backdrop-filter: blur(28px) saturate(180%);
       z-index: 999999;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 14px;
+      padding: 16px;
       overflow-y: auto;
     }
 
     .auth-card {
-      background: var(--glass-bg);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--glass-border);
-      border-radius: 20px;
-      padding: 24px 18px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-razor);
+      border-radius: var(--radius-lg);
+      padding: 32px 24px;
       width: 100%;
-      max-width: 360px;
-      box-shadow: var(--card-shadow);
+      max-width: 380px;
+      box-shadow: var(--card-shadow), var(--primary-glow);
       text-align: center;
-      margin: auto;
+      position: relative;
     }
 
-    .auth-icon { font-size: 2.2rem; margin-bottom: 4px; }
-    .auth-title { font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin-bottom: 2px; }
-    .auth-subtitle { font-size: 0.775rem; color: var(--text-muted); margin-bottom: 16px; }
+    .auth-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 10%;
+      right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--primary), transparent);
+    }
 
-    .password-wrap { position: relative; width: 100%; }
-    .toggle-password-btn {
-      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-      background: none; border: none; cursor: pointer; font-size: 1rem; color: var(--text-muted); padding: 4px;
+    .auth-logo {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      color: var(--primary);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .auth-subtitle {
+      font-size: 0.8125rem;
+      color: var(--on-surface-muted);
+      margin-bottom: 24px;
     }
 
     .auth-tabs {
-      display: flex; background: var(--border-color); padding: 3px; border-radius: 10px; margin-bottom: 16px;
-    }
-    .auth-tab-btn {
-      flex: 1; padding: 8px; border: none; background: none; font-weight: 700; font-size: 0.775rem;
-      color: var(--text-muted); border-radius: 8px; cursor: pointer; transition: all 0.2s;
-    }
-    .auth-tab-btn.active {
-      background: var(--input-bg); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.06);
+      display: flex;
+      background: var(--bg-container);
+      padding: 4px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-razor);
+      margin-bottom: 20px;
     }
 
-    /* HEADER */
+    .auth-tab-btn {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      background: none;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 0.75rem;
+      color: var(--on-surface-muted);
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .auth-tab-btn.active {
+      background: var(--primary);
+      color: var(--primary-dark);
+      box-shadow: 0 0 12px var(--primary-glow);
+    }
+
+    .password-wrap {
+      position: relative;
+      width: 100%;
+    }
+
+    .toggle-password-btn {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      color: var(--on-surface-muted);
+    }
+
+    /* TOP HEADER BAR */
     header {
-      background: var(--glass-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border-color);
+      background: rgba(17, 20, 22, 0.85);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border-bottom: 1px solid var(--border-razor);
       position: sticky;
       top: 0;
       z-index: 1000;
-      padding: 10px 14px;
+      padding: 12px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -144,44 +233,501 @@
     }
 
     .brand {
-      font-size: 1.05rem;
+      font-family: var(--font-display);
+      font-size: 1.125rem;
       font-weight: 800;
-      background: var(--primary-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      letter-spacing: 0.08em;
+      color: var(--primary);
+      text-transform: uppercase;
       display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: rgba(0, 255, 194, 0.1);
+      border: 1px solid var(--primary-dim);
+      border-radius: var(--radius-pill);
+      color: var(--primary);
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 8px var(--primary);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.4; }
+      50% { opacity: 1; }
+      100% { opacity: 0.4; }
+    }
+
+    .main-viewport {
+      width: 100%;
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 20px 16px;
+    }
+
+    /* GLASS CARDS & CONTAINERS */
+    .glass-card {
+      background: var(--bg-surface);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--border-razor);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--card-shadow);
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .glass-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.15), transparent);
+    }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--on-surface);
+      letter-spacing: -0.01em;
+    }
+
+    /* FORM ELEMENTS */
+    .form-group {
+      margin-bottom: 14px;
+      width: 100%;
+    }
+
+    label {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+      font-weight: 600;
+      color: var(--on-surface-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      max-width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border-razor);
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      background: var(--bg-container);
+      color: var(--on-surface);
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+      background: var(--bg-container-high);
+    }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      width: 100%;
+    }
+
+    @media (max-width: 600px) {
+      .row-2, .row-3 {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+      }
+    }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px 20px;
+      background: var(--primary);
+      color: var(--primary-dark);
+      border: none;
+      border-radius: var(--radius-pill);
+      font-family: var(--font-display);
+      font-size: 0.875rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      box-shadow: 0 4px 16px var(--primary-glow);
+      transition: all 0.2s ease;
+      min-height: 44px;
+    }
+
+    .btn:hover {
+      background: var(--primary-dim);
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: var(--bg-container-high);
+      color: var(--on-surface);
+      border: 1px solid var(--border-razor);
+      box-shadow: none;
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-container-highest);
+      border-color: var(--border-hover);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      box-shadow: none;
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.25);
+    }
+
+    .btn-sm {
+      min-height: 34px;
+      padding: 6px 14px;
+      font-size: 0.75rem;
+      border-radius: var(--radius-pill);
+      width: auto;
+    }
+
+    .theme-toggle-btn {
+      border: 1px solid var(--border-razor);
+      background: var(--bg-container);
+      color: var(--on-surface);
+      padding: 6px 12px;
+      border-radius: var(--radius-pill);
+      font-weight: 700;
+      font-size: 0.75rem;
+      cursor: pointer;
+      display: inline-flex;
       align-items: center;
       gap: 6px;
     }
 
-    .user-pill { display: flex; align-items: center; gap: 6px; }
-
-    .main-viewport {
-      width: 100%;
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 12px;
-      overflow-x: hidden;
+    .btn-logout {
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      background: rgba(239, 68, 68, 0.12);
+      color: #f87171;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      font-size: 0.75rem;
     }
 
-    /* 3. MOBILE COMPACT LIQUID GLASS FLOATING BOTTOM NAVIGATION BAR */
+    /* SEARCH BAR STYLING */
+    .search-bar-wrap {
+      position: relative;
+      margin-bottom: 8px;
+      width: 100%;
+    }
+
+    .search-input {
+      padding-left: 36px;
+      font-size: 0.8125rem;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.875rem;
+      color: var(--on-surface-muted);
+    }
+
+    /* BADGES & CHIPS */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .badge-family { background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); }
+    .badge-category { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+    .badge-custom { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-combo { background: rgba(0, 255, 194, 0.15); color: var(--primary); border: 1px solid var(--primary-dim); }
+
+    /* DASHBOARD METRICS GRID */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+      width: 100%;
+    }
+
+    @media (min-width: 768px) {
+      .metrics-grid {
+        grid-template-columns: repeat(5, 1fr);
+      }
+    }
+
+    .metric-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-razor);
+      border-radius: var(--radius-lg);
+      padding: 16px 12px;
+      text-align: center;
+      box-shadow: var(--card-shadow);
+      position: relative;
+    }
+
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 20%;
+      right: 20%;
+      height: 1px;
+      background: var(--primary);
+      opacity: 0.4;
+    }
+
+    .metric-value {
+      font-family: var(--font-display);
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-top: 4px;
+    }
+
+    .metric-label {
+      font-family: var(--font-mono);
+      font-size: 0.625rem;
+      color: var(--on-surface-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* HISTORY ITEMS */
+    .history-item {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-razor);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--card-shadow);
+      width: 100%;
+      word-break: break-word;
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+      gap: 8px;
+    }
+
+    .history-title {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    .history-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--on-surface-variant);
+      margin-top: 8px;
+    }
+
+    /* CHARTS CONTAINER */
+    .chart-container {
+      position: relative;
+      height: 200px;
+      width: 100%;
+      max-width: 100%;
+      margin-top: 8px;
+    }
+
+    /* EMPTY STATES & TOASTS */
+    .empty-state {
+      text-align: center;
+      padding: 32px 16px;
+      color: var(--on-surface-muted);
+    }
+
+    .empty-icon {
+      font-size: 2.25rem;
+      margin-bottom: 8px;
+      opacity: 0.8;
+    }
+
+    .empty-text {
+      font-size: 0.875rem;
+      font-weight: 500;
+      max-width: 300px;
+      margin: 0 auto 14px auto;
+      line-height: 1.4;
+    }
+
+    #toastContainer {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      left: 20px;
+      max-width: 380px;
+      margin: 0 auto;
+      z-index: 100000;
+      pointer-events: none;
+    }
+
+    .toast {
+      pointer-events: auto;
+      background: var(--bg-container-high);
+      color: var(--on-surface);
+      border: 1px solid var(--border-razor);
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .toast-warning { border-left: 4px solid #f59e0b; }
+    .toast-success { border-left: 4px solid var(--primary); }
+    .toast-error { border-left: 4px solid #ef4444; }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(-12px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.25s ease-in-out;
+      width: 100%;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .session-item-card {
+      background: var(--bg-container);
+      border: 1px solid var(--border-razor);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      margin-bottom: 10px;
+      position: relative;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      z-index: 99999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    /* FLOATING PILL BOTTOM NAVIGATION BAR */
     .bottom-nav {
       position: fixed;
-      bottom: 10px;
+      bottom: 16px;
       left: 50%;
       transform: translateX(-50%);
-      width: calc(100% - 20px);
-      max-width: 560px;
-      background: var(--liquid-glass-bg);
-      backdrop-filter: blur(20px) saturate(180%);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
-      border: 1px solid var(--liquid-glass-border);
-      border-radius: 28px;
-      box-shadow: var(--liquid-glass-shadow);
+      width: calc(100% - 32px);
+      max-width: 520px;
+      background: rgba(26, 28, 30, 0.85);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--border-razor);
+      border-radius: var(--radius-pill);
+      box-shadow: var(--card-shadow), 0 0 20px rgba(0,0,0,0.5);
       display: flex;
       justify-content: space-around;
       align-items: center;
-      padding: 5px 4px;
+      padding: 6px;
       z-index: 20000;
       transition: all 0.25s ease;
     }
@@ -190,186 +736,38 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      font-family: var(--font-mono);
       font-size: 0.625rem;
-      font-weight: 700;
-      color: var(--text-muted);
+      font-weight: 600;
+      color: var(--on-surface-muted);
       text-decoration: none;
       cursor: pointer;
       flex: 1;
-      padding: 3px 0;
-      border-radius: 16px;
+      padding: 6px 0;
+      border-radius: var(--radius-pill);
       transition: all 0.2s ease;
+      position: relative;
     }
 
     .nav-item.active {
       color: var(--primary);
-      background: rgba(99, 102, 241, 0.12);
+      background: rgba(0, 255, 194, 0.08);
     }
 
-    .nav-icon { font-size: 1.1rem; margin-bottom: 1px; }
-
-    /* 2. UI POLISH & TYPOGRAPHY */
-    .glass-card {
-      background: var(--glass-bg);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius);
-      padding: 12px;
-      margin-bottom: 12px;
-      box-shadow: var(--card-shadow);
-      width: 100%;
-      max-width: 100%;
-      overflow-x: hidden;
+    .nav-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: 3px;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 6px var(--primary);
     }
 
-    .card-title {
-      font-size: 0.95rem;
-      font-weight: 800;
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: var(--text-main);
-      letter-spacing: -0.2px;
-      word-break: break-word;
-    }
-
-    .form-group { margin-bottom: 10px; width: 100%; }
-    label {
-      display: block; font-size: 0.675rem; font-weight: 800; color: var(--text-muted);
-      margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;
-    }
-    input, select, textarea {
-      width: 100%; max-width: 100%; padding: 10px 12px; border: 1px solid var(--border-color);
-      border-radius: 8px; font-size: 0.875rem; background: var(--input-bg);
-      color: var(--text-main); outline: none; transition: all 0.2s ease;
-    }
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-    }
-
-    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
-    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; width: 100%; }
-
-    @media (max-width: 520px) {
-      .row-2, .row-3 { grid-template-columns: 1fr !important; gap: 8px !important; }
-    }
-
-    .btn {
-      display: inline-flex; align-items: center; justify-content: center; width: 100%;
-      padding: 10px 14px; background: var(--primary-gradient); color: #fff; border: none;
-      border-radius: 10px; font-size: 0.875rem; font-weight: 700; cursor: pointer;
-      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2); transition: all 0.2s ease; min-height: 42px;
-    }
-    .btn:active { transform: scale(0.98); }
-    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-
-    .btn-secondary {
-      background: var(--border-color); color: var(--text-main); box-shadow: none;
-    }
-
-    .btn-danger {
-      background: #fee2e2; color: #dc2626; box-shadow: none;
-    }
-
-    .btn-sm {
-      min-height: 32px; padding: 4px 10px; font-size: 0.75rem; border-radius: 6px; width: auto;
-    }
-
-    .theme-toggle-btn {
-      border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main);
-      padding: 4px 8px; border-radius: 16px; font-weight: 700; font-size: 0.75rem; cursor: pointer;
-      display: inline-flex; align-items: center; gap: 4px;
-    }
-
-    .btn-logout {
-      border: none; background: #fee2e2; color: #dc2626; font-weight: 700;
-      padding: 4px 8px; border-radius: 12px; cursor: pointer; font-size: 0.725rem;
-    }
-
-    /* 1. TRICK SEARCH BAR STYLING */
-    .search-bar-wrap {
-      position: relative; margin-bottom: 6px; width: 100%;
-    }
-    .search-input {
-      padding-left: 30px; font-size: 0.8rem;
-    }
-    .search-icon {
-      position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 0.8rem; color: var(--text-muted);
-    }
-
-    .badge {
-      display: inline-block; padding: 3px 8px; border-radius: 16px;
-      font-size: 0.65rem; font-weight: 700; text-transform: uppercase; white-space: nowrap;
-    }
-    .badge-family { background: #e0e7ff; color: #3730a3; }
-    .badge-category { background: #f3e8ff; color: #6b21a8; }
-    .badge-custom { background: #fef3c7; color: #92400e; }
-    .badge-combo { background: #dcfce7; color: #166534; }
-
-    .metrics-grid {
-      display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 12px; width: 100%;
-    }
-    @media (min-width: 600px) {
-      .metrics-grid { grid-template-columns: repeat(5, 1fr); gap: 8px; }
-    }
-
-    .metric-card {
-      background: var(--glass-bg); backdrop-filter: blur(8px); border: 1px solid var(--glass-border);
-      border-radius: var(--radius); padding: 10px 6px; text-align: center; box-shadow: var(--card-shadow);
-    }
-    .metric-value {
-      font-size: 1.15rem; font-weight: 800; background: var(--primary-gradient);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-top: 1px;
-    }
-    .metric-label { font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; }
-
-    .history-item {
-      background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius);
-      padding: 10px 12px; margin-bottom: 8px; box-shadow: var(--card-shadow); width: 100%; word-break: break-word;
-    }
-    .history-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; gap: 6px; }
-    .history-title { font-weight: 800; font-size: 0.875rem; }
-    .history-stats { display: flex; flex-wrap: wrap; gap: 6px 10px; font-size: 0.75rem; color: var(--text-muted); margin-top: 6px; }
-
-    .chart-container {
-      position: relative; height: 190px; width: 100%; max-width: 100%; margin-top: 4px; overflow: hidden;
-    }
-
-    .empty-state { text-align: center; padding: 24px 12px; color: var(--text-muted); }
-    .empty-icon { font-size: 2rem; margin-bottom: 6px; opacity: 0.8; }
-    .empty-text { font-size: 0.825rem; font-weight: 600; max-width: 260px; margin: 0 auto 10px auto; line-height: 1.35; }
-
-    #toastContainer {
-      position: fixed; top: 12px; right: 12px; left: 12px; max-width: 360px;
-      margin: 0 auto; z-index: 100000; pointer-events: none;
-    }
-    .toast {
-      pointer-events: auto; background: #0f172a; color: #fff; padding: 10px 14px;
-      border-radius: 10px; font-size: 0.8rem; font-weight: 600;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.22); margin-bottom: 6px; display: flex;
-      align-items: center; gap: 6px; animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    .toast-warning { background: #d97706; }
-    .toast-success { background: #059669; }
-    .toast-error { background: #dc2626; }
-
-    @keyframes toastIn { from { opacity: 0; transform: translateY(-12px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
-
-    .tab-content { display: none; animation: fadeIn 0.2s ease-in-out; width: 100%; }
-    .tab-content.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
-
-    .session-item-card {
-      background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 10px;
-      padding: 10px; margin-bottom: 8px; position: relative;
-    }
-
-    .modal-overlay {
-      position: fixed; inset: 0; width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
-      z-index: 99999; display: none; align-items: center; justify-content: center; padding: 16px;
+    .nav-icon {
+      font-size: 1.15rem;
+      margin-bottom: 2px;
     }
   </style>
 </head>
@@ -383,13 +781,12 @@
   <!-- TOAST CONTAINER -->
   <div id="toastContainer"></div>
 
-
   <!-- EDIT CUSTOM TRICK MODAL -->
   <div id="editCustomModal" class="modal-overlay">
-    <div class="glass-card" style="max-width:360px; margin:auto; background:var(--input-bg);">
+    <div class="glass-card" style="max-width:380px; width:100%; margin:auto;">
       <div class="card-title">
         <span>Edit Custom Trick</span>
-        <button type="button" onclick="closeEditCustomModal()" style="border:none; background:none; font-size:1.1rem; cursor:pointer; color:var(--text-muted);">✕</button>
+        <button type="button" onclick="closeEditCustomModal()" style="border:none; background:none; font-size:1.1rem; cursor:pointer; color:var(--on-surface-muted);">✕</button>
       </div>
       <form id="editCustomForm" onsubmit="handleEditCustomTrickSubmit(event)">
         <input type="hidden" id="editTrickId">
@@ -407,7 +804,7 @@
             <option value="SPINNING">Spinning</option>
           </select>
         </div>
-        <div style="display:flex; gap:8px; margin-top:12px;">
+        <div style="display:flex; gap:10px; margin-top:16px;">
           <button type="button" class="btn btn-secondary" onclick="closeEditCustomModal()">Cancel</button>
           <button type="submit" class="btn">Update Trick</button>
         </div>
@@ -415,28 +812,25 @@
     </div>
   </div>
 
-
   <!-- CONFIRM DELETE MODAL -->
   <div id="confirmDeleteModal" class="modal-overlay">
-    <div class="glass-card" style="max-width:340px; margin:auto; background:var(--input-bg); text-align:center;">
-      <div class="card-title" style="justify-content:center; color:#dc2626;">Delete Custom Trick</div>
-      <p id="deleteModalMessage" style="font-size:0.825rem; color:var(--text-muted); margin-bottom:16px;">
+    <div class="glass-card" style="max-width:360px; width:100%; margin:auto; text-align:center;">
+      <div class="card-title" style="justify-content:center; color:#f87171;">Delete Custom Trick</div>
+      <p id="deleteModalMessage" style="font-size:0.875rem; color:var(--on-surface-muted); margin-bottom:20px;">
         Are you sure you want to delete this custom trick?
       </p>
-      <div style="display:flex; gap:8px;">
+      <div style="display:flex; gap:10px;">
         <button type="button" class="btn btn-secondary" onclick="closeDeleteConfirmModal()">Cancel</button>
         <button type="button" class="btn btn-danger" id="btnConfirmDelete">Delete Trick</button>
       </div>
     </div>
   </div>
 
-
   <!-- AUTHENTICATION OVERLAY SCREEN -->
   <div id="authOverlay">
     <div class="auth-card">
-      <div class="auth-icon">🛼</div>
-      <div class="auth-title">Slalom Tracker</div>
-      <div class="auth-subtitle" id="authSubtitleText">Sign in to access your training dashboard</div>
+      <div class="auth-logo">LIQUID GLASS</div>
+      <div class="auth-subtitle" id="authSubtitleText">Sign in to access your freestyle protocol</div>
 
       <div class="auth-tabs">
         <button type="button" class="auth-tab-btn active" id="btnAuthLoginTab" onclick="switchAuthMode('login')">Sign In</button>
@@ -446,7 +840,7 @@
       <form id="loginForm" onsubmit="handleAuthSubmit(event)">
         <div class="form-group" style="text-align:left;">
           <label>Username</label>
-          <input type="text" id="authUsername" placeholder="e.g. aaryesh" autocomplete="username" required>
+          <input type="text" id="authUsername" placeholder="e.g. alex_chen" autocomplete="username" required>
         </div>
 
         <div class="form-group" style="text-align:left;">
@@ -459,22 +853,26 @@
 
         <div class="form-group" style="text-align:left; display:none;" id="skaterNameField">
           <label>Skater Full Name</label>
-          <input type="text" id="authSkaterName" placeholder="e.g. Aaryesh Sharma">
+          <input type="text" id="authSkaterName" placeholder="e.g. Alex Chen">
         </div>
 
-        <button type="submit" id="authSubmitBtn" class="btn" style="margin-top:4px;">
+        <button type="submit" id="authSubmitBtn" class="btn" style="margin-top:8px;">
           <span>Log In</span>
         </button>
       </form>
     </div>
   </div>
 
-
   <!-- TOP HEADER BAR -->
   <header>
-    <div class="brand"><span>🛼</span> SlalomTracker</div>
+    <div class="brand">
+      <span>⚡</span> LIQUID GLASS
+    </div>
     <div class="user-pill">
-      <span style="font-size:0.75rem; font-weight:700;" id="headerSkaterName">Skater: -</span>
+      <div class="live-badge">
+        <span class="live-dot"></span>
+        <span id="headerSkaterName">Skater: -</span>
+      </div>
       <button class="theme-toggle-btn" onclick="toggleTheme()">
         <span id="themeBtnIcon">🌙</span>
       </button>
@@ -482,18 +880,16 @@
     </div>
   </header>
 
-
   <!-- MAIN CONTENT VIEWPORT -->
   <main class="main-viewport">
 
     <!-- TAB 1: DASHBOARD / PROGRESS -->
     <div id="tab-dashboard" class="tab-content active">
       
-      <!-- 6. DASHBOARD HEADER & SYNC BUTTON -->
-      <div class="glass-card" style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px;">
+      <div class="glass-card" style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px;">
         <div>
-          <h2 style="font-size:1.1rem; font-weight:800; color:var(--text-main);">Training Analytics</h2>
-          <div style="font-size:0.7rem; color:var(--text-muted);">Real-time performance metrics</div>
+          <h2 class="headline-lg">Performance Analytics</h2>
+          <div class="label-caps" style="margin-top:2px;">Real-Time Protocol Metrics</div>
         </div>
         <button type="button" id="btnSyncDashboard" class="btn btn-secondary btn-sm" onclick="syncUserDataFromSheets()">
           🔄 Sync Data
@@ -505,7 +901,7 @@
         <div class="card-title">Dashboard Filters</div>
         
         <div class="row-2">
-          <div class="form-group" style="margin-bottom:6px;">
+          <div class="form-group">
             <label>Time Range Filter</label>
             <select id="progTimeRange" onchange="onTimeRangeFilterChange()">
               <option value="THIS_MONTH">This Month</option>
@@ -517,28 +913,26 @@
             </select>
           </div>
 
-          <div class="form-group" id="groupSpecificMonth" style="margin-bottom:6px;">
+          <div class="form-group" id="groupSpecificMonth">
             <label>Specific Month</label>
             <input type="month" id="progMonth" onchange="renderAnalytics()">
           </div>
         </div>
 
-        <div class="row-2" id="groupCustomRange" style="display:none; margin-bottom:6px;">
-          <div class="form-group" style="margin-bottom:0;">
+        <div class="row-2" id="groupCustomRange" style="display:none;">
+          <div class="form-group">
             <label>Start Date</label>
             <input type="date" id="progStartDate" onchange="renderAnalytics()">
           </div>
-          <div class="form-group" style="margin-bottom:0;">
+          <div class="form-group">
             <label>End Date</label>
             <input type="date" id="progEndDate" onchange="renderAnalytics()">
           </div>
         </div>
 
         <div class="row-2">
-          <div class="form-group" style="margin-bottom:0;">
+          <div class="form-group">
             <label>Practice Item / Combo Filter</label>
-            
-            <!-- 1. SEARCH BAR FOR DASHBOARD FILTER -->
             <div class="search-bar-wrap">
               <span class="search-icon">🔍</span>
               <input type="text" class="search-input" id="progTrickSearch" placeholder="Search item..." oninput="populateProgressTrickFilter()">
@@ -548,7 +942,7 @@
             </select>
           </div>
 
-          <div class="form-group" style="margin-bottom:0;">
+          <div class="form-group">
             <label>Category Filter</label>
             <select id="progCategory" onchange="renderAnalytics()">
               <option value="ALL">All Categories</option>
@@ -578,7 +972,7 @@
             <div id="mCompleted" class="metric-value">0</div>
           </div>
           <div class="metric-card">
-            <div class="metric-label">Falls</div>
+            <div class="metric-label">Impacts/Falls</div>
             <div id="mFalls" class="metric-value">0</div>
           </div>
           <div class="metric-card">
@@ -621,7 +1015,6 @@
 
     </div>
 
-
     <!-- TAB 2: LOG TRAINING SESSION -->
     <div id="tab-log" class="tab-content">
       <div class="glass-card">
@@ -630,7 +1023,7 @@
         <form id="multiSessionForm" onsubmit="handleMultiSessionSubmit(event)">
           <div class="row-2">
             <div class="form-group">
-              <label>Skater</label>
+              <label>Skater Protocol</label>
               <input type="text" id="logSkater" readonly style="font-weight:700;">
             </div>
             <div class="form-group">
@@ -639,33 +1032,33 @@
             </div>
           </div>
 
-          <!-- DYNAMIC SESSION PRACTICE ITEMS LIST -->
           <div class="form-group">
-            <label style="margin-bottom:8px;">Session Practiced Items (Individual Drills & Combos)</label>
+            <label style="margin-bottom:10px;">Session Practiced Items (Individual Drills & Combos)</label>
             <div id="sessionItemsContainer"></div>
             
-            <button type="button" class="btn btn-secondary btn-sm" onclick="addSessionItem('single')" style="margin-top:6px; margin-right:6px;">+ Add Individual Trick</button>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="addSessionItem('combo')" style="margin-top:6px;">+ Add Combo Sequence</button>
+            <div style="display:flex; gap:10px; margin-top:10px;">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="addSessionItem('single')">+ Add Individual Trick</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="addSessionItem('combo')">+ Add Combo Sequence</button>
+            </div>
           </div>
 
-          <div class="form-group" style="margin-top:12px;">
+          <div class="form-group" style="margin-top:16px;">
             <label>Overall Session Notes</label>
-            <input type="text" id="logSessionGlobalNotes" placeholder="e.g. Great 2-hour workout at the park">
+            <input type="text" id="logSessionGlobalNotes" placeholder="e.g. High speed slalom session at main arena">
           </div>
 
-          <button type="submit" class="btn" style="margin-top:8px;">Save Full Session</button>
+          <button type="submit" class="btn" style="margin-top:12px;">Finish & Log Session</button>
         </form>
 
       </div>
     </div>
 
-
     <!-- TAB 3: TRAINING HISTORY -->
     <div id="tab-history" class="tab-content">
-      <div class="glass-card" style="margin-bottom:10px;">
+      <div class="glass-card">
         <div class="card-title">History Filters</div>
         <div class="row-2">
-          <div class="form-group" style="margin-bottom:6px;">
+          <div class="form-group">
             <label>Session Type</label>
             <select id="histType" onchange="renderHistory()">
               <option value="ALL">All Types</option>
@@ -673,7 +1066,7 @@
               <option value="Combo">Combo Sequence</option>
             </select>
           </div>
-          <div class="form-group" style="margin-bottom:6px;">
+          <div class="form-group">
             <label>Category</label>
             <select id="histCat" onchange="renderHistory()">
               <option value="ALL">All Categories</option>
@@ -686,7 +1079,7 @@
           </div>
         </div>
         <div class="row-2">
-          <div class="form-group" style="margin-bottom:0;">
+          <div class="form-group">
             <label>Family</label>
             <select id="histFam" onchange="renderHistory()">
               <option value="ALL">All Families</option>
@@ -697,7 +1090,7 @@
               <option value="E">Family E</option>
             </select>
           </div>
-          <div class="form-group" style="margin-bottom:0;">
+          <div class="form-group">
             <label>Month</label>
             <input type="month" id="histMonth" onchange="renderHistory()">
           </div>
@@ -707,12 +1100,10 @@
       <div id="historyList"></div>
     </div>
 
-
     <!-- TAB 4: MY TRICKS -->
     <div id="tab-tricks" class="tab-content">
       <div class="glass-card">
         <div class="card-title">Add Custom Trick</div>
-        <!-- 4. CUSTOM TRICK FORM WITH EVENT PREVENT DEFAULT -->
         <form id="customTrickForm" onsubmit="handleCustomTrickSubmit(event)">
           <div class="form-group">
             <label>Custom Trick Name</label>
@@ -741,7 +1132,7 @@
               </select>
             </div>
           </div>
-          <button type="submit" class="btn">Create Custom Trick</button>
+          <button type="submit" class="btn" style="margin-top:8px;">Create Custom Trick</button>
         </form>
       </div>
 
@@ -751,23 +1142,21 @@
       </div>
     </div>
 
-
     <!-- TAB 5: COMBO CALCULATOR -->
     <div id="tab-calc" class="tab-content">
       <div class="glass-card">
-        <div class="card-title">🧮 Combo Calculator (Matrix 2026)</div>
-        <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">
-          Build a combo sequence using independent filters per slot to calculate difficulty ranges.
+        <div class="card-title">🧮 Combo Builder (Matrix 2026)</div>
+        <p style="font-size:0.8125rem; color:var(--on-surface-muted); margin-bottom:16px;">
+          Build a combo sequence using independent filters per slot to calculate difficulty ranges and flow mechanics.
         </p>
 
-        <!-- DYNAMIC CALCULATOR SLOTS -->
         <div id="calcSlotsContainer"></div>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="addCalcSlot()" style="margin-top:4px;">+ Add Trick Slot</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="addCalcSlot()" style="margin-top:8px;">+ Add Trick Slot</button>
         
-        <div style="margin-top:12px; padding:10px; background:var(--input-bg); border-radius:10px; border:1px solid var(--border-color);">
-          <div style="font-size:0.7rem; font-weight:700; color:var(--text-muted);">ESTIMATED TECHNICAL SCORE RANGE</div>
-          <div id="calcScoreRange" style="font-size:1.2rem; font-weight:800; color:var(--primary); margin-top:2px;">0 – 0 Points</div>
-          <div style="font-size:0.65rem; color:var(--text-muted); margin-top:2px; font-style:italic;">
+        <div style="margin-top:16px; padding:16px; background:var(--bg-container); border-radius:var(--radius-md); border:1px solid var(--border-razor);">
+          <div class="label-caps">ESTIMATED TECHNICAL SCORE RANGE</div>
+          <div id="calcScoreRange" class="display-metric" style="font-size:1.5rem; margin-top:4px;">0 – 0 Points</div>
+          <div style="font-size:0.75rem; color:var(--on-surface-muted); margin-top:4px; font-style:italic;">
             Estimation based on Matrix 2026 difficulty. Actual judging depends on execution quality, speed, and deductions.
           </div>
         </div>
@@ -782,16 +1171,19 @@
 
   </main>
 
-
   <!-- LIQUID GLASS FLOATING BOTTOM NAVIGATION BAR -->
   <nav class="bottom-nav">
     <div class="nav-item active" onclick="switchTab('dashboard', this)">
       <span class="nav-icon">📊</span>
-      <span>Dashboard</span>
+      <span>Dash</span>
     </div>
     <div class="nav-item" onclick="switchTab('log', this)">
       <span class="nav-icon">📝</span>
-      <span>Log</span>
+      <span>Train</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('calc', this)">
+      <span class="nav-icon">🛠️</span>
+      <span>Build</span>
     </div>
     <div class="nav-item" onclick="switchTab('history', this)">
       <span class="nav-icon">📜</span>
@@ -799,14 +1191,9 @@
     </div>
     <div class="nav-item" onclick="switchTab('tricks', this)">
       <span class="nav-icon">💡</span>
-      <span>My Tricks</span>
-    </div>
-    <div class="nav-item" onclick="switchTab('calc', this)">
-      <span class="nav-icon">🧮</span>
-      <span>Combo Calc</span>
+      <span>Matrix</span>
     </div>
   </nav>
-
 
   <!-- JAVASCRIPT LOGIC -->
   <script>
@@ -942,7 +1329,6 @@
       { id: 'SPN-A2', name: 'Toe Christie Spin', category: 'SPINNING', family: 'A' },
       { id: 'SPN-A3', name: 'Back Toe Footgun Spin', category: 'SPINNING', family: 'A' },
       { id: 'SPN-A4', name: 'Toe Footgun Spin', category: 'SPINNING', family: 'A' },
-      
       { id: 'SPN-A5', name: 'Toe Back Seven', category: 'SPINNING', family: 'A' },
       { id: 'SPN-A5', name: 'Toe Back Chicken', category: 'SPINNING', family: 'A' },
       { id: 'SPN-A6', name: 'Toe One Cone Back Seven', category: 'SPINNING', family: 'A' },
@@ -951,7 +1337,6 @@
       { id: 'SPN-B1', name: 'Toe Chicken', category: 'SPINNING', family: 'B' },
       { id: 'SPN-B2', name: 'Toe One Cone Seven', category: 'SPINNING', family: 'B' },
       { id: 'SPN-B2', name: 'Toe One Cone Chicken', category: 'SPINNING', family: 'B' },
-      
       { id: 'SPN-A5', name: 'Heel Back Seven', category: 'SPINNING', family: 'A' },
       { id: 'SPN-A5', name: 'Heel Back Chicken', category: 'SPINNING', family: 'A' },
       { id: 'SPN-A6', name: 'Heel One Cone Back Seven', category: 'SPINNING', family: 'A' },
@@ -960,29 +1345,24 @@
       { id: 'SPN-B1', name: 'Heel Chicken', category: 'SPINNING', family: 'B' },
       { id: 'SPN-B2', name: 'Heel One Cone Seven', category: 'SPINNING', family: 'B' },
       { id: 'SPN-B2', name: 'Heel One Cone Chicken', category: 'SPINNING', family: 'B' },
-      
       { id: 'SPN-B3', name: 'Flat Back Seven', category: 'SPINNING', family: 'B' },
       { id: 'SPN-B3', name: 'Flat Back Chicken', category: 'SPINNING', family: 'B' },
       { id: 'SPN-B4', name: 'Flat Seven', category: 'SPINNING', family: 'B' },
       { id: 'SPN-B4', name: 'Flat Chicken', category: 'SPINNING', family: 'B' },
-      
       { id: 'SPN-C1', name: 'One Cone Back Korean Spin', category: 'SPINNING', family: 'C' },
       { id: 'SPN-C2', name: 'Back Korean Spin', category: 'SPINNING', family: 'C' },
       { id: 'SPN-C3', name: 'One Cone Korean Spin', category: 'SPINNING', family: 'C' },
       { id: 'SPN-C4', name: 'Korean Spin', category: 'SPINNING', family: 'C' },
-      
       { id: 'SPN-C5', name: 'Back Toe Toe Wheel Spin', category: 'SPINNING', family: 'C' },
       { id: 'SPN-C5', name: 'Back Heel Toe Wheel Spin', category: 'SPINNING', family: 'C' },
       { id: 'SPN-C5', name: 'Back Heel Heel Wheel Spin', category: 'SPINNING', family: 'C' },
       { id: 'SPN-C6', name: 'Toe Toe Wheel Spin', category: 'SPINNING', family: 'C' },
       { id: 'SPN-C6', name: 'Heel Toe Wheel Spin', category: 'SPINNING', family: 'C' },
       { id: 'SPN-C6', name: 'Heel Heel Wheel Spin', category: 'SPINNING', family: 'C' },
-      
       { id: 'SPN-D1', name: 'Back J-Turn', category: 'SPINNING', family: 'D' },
       { id: 'SPN-D2', name: 'J-Turn', category: 'SPINNING', family: 'D' },
       { id: 'SPN-D3', name: 'Two Feet Spin', category: 'SPINNING', family: 'D' },
       { id: 'SPN-D4', name: 'Totalcross', category: 'SPINNING', family: 'D' },
-      
       { id: 'SPN-E1', name: 'Italian', category: 'SPINNING', family: 'E' },
       { id: 'SPN-E1', name: 'Volt', category: 'SPINNING', family: 'E' },
       { id: 'SPN-E2', name: 'Crazy Sun', category: 'SPINNING', family: 'E' },
@@ -1011,7 +1391,6 @@
       charts: {}
     };
 
-    // SAFE DOM INNER HTML UTILITY (8. FIXES "Cannot set properties of null (setting 'innerHTML')")
     function safeSetInnerHTML(id, html) {
       const el = document.getElementById(id);
       if (el) el.innerHTML = html;
@@ -1029,7 +1408,7 @@
       const progMonthEl = document.getElementById('progMonth');
       if (progMonthEl) progMonthEl.value = new Date().toISOString().slice(0, 7);
       
-      const savedTheme = localStorage.getItem('slalom_theme') || 'light';
+      const savedTheme = localStorage.getItem('slalom_theme') || 'dark';
       applyTheme(savedTheme);
 
       initSessionItems();
@@ -1046,8 +1425,8 @@
       const isDark = theme === 'dark';
       safeSetTextContent('themeBtnIcon', isDark ? '☀️' : '🌙');
 
-      Chart.defaults.color = isDark ? '#94a3b8' : '#64748b';
-      Chart.defaults.borderColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
+      Chart.defaults.color = isDark ? '#83958c' : '#52635a';
+      Chart.defaults.borderColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)';
 
       const dashTab = document.getElementById('tab-dashboard');
       if (appState.currentUser && dashTab && dashTab.classList.contains('active')) {
@@ -1056,7 +1435,7 @@
     }
 
     function toggleTheme() {
-      const current = document.documentElement.getAttribute('data-theme') || 'light';
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
       applyTheme(current === 'light' ? 'dark' : 'light');
     }
 
@@ -1065,7 +1444,7 @@
       if (!container) return;
       const toast = document.createElement('div');
       toast.className = `toast toast-${type}`;
-      toast.innerHTML = `<span>${type === 'success' ? '✅' : type === 'error' ? '🚨' : '⚠️'}</span><span>${message}</span>`;
+      toast.innerHTML = `<span>${type === 'success' ? '⚡' : type === 'error' ? '🚨' : '⚠️'}</span><span>${message}</span>`;
       container.appendChild(toast);
       setTimeout(() => {
         toast.style.opacity = '0';
@@ -1089,12 +1468,12 @@
       const btnReg = document.getElementById('btnAuthRegisterTab');
       if (btnReg) btnReg.classList.toggle('active', isReg);
 
-      safeSetTextContent('authSubtitleText', isReg ? 'Create a new skater account to begin' : 'Sign in to access your training dashboard');
+      safeSetTextContent('authSubtitleText', isReg ? 'Create a new skater protocol account' : 'Sign in to access your freestyle protocol');
 
       const skaterField = document.getElementById('skaterNameField');
       if (skaterField) skaterField.style.display = isReg ? 'block' : 'none';
 
-      safeSetInnerHTML('authSubmitBtn', `<span>${isReg ? 'Create Account' : 'Log In'}</span>`);
+      safeSetInnerHTML('authSubmitBtn', `<span>${isReg ? 'Create Protocol' : 'Log In'}</span>`);
     }
 
     async function handleAuthSubmit(e) {
@@ -1116,7 +1495,7 @@
 
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = `<span>${appState.authMode === 'register' ? 'Creating Account...' : 'Verifying...'}</span>`;
+        btn.innerHTML = `<span>${appState.authMode === 'register' ? 'Creating...' : 'Verifying...'}</span>`;
       }
 
       try {
@@ -1142,7 +1521,7 @@
             appState.sessions = json.data.sessions || [];
             appState.customTricks = json.data.customTricks || [];
 
-            showToast(`Welcome back, ${appState.currentUser.skaterName}!`, 'success');
+            showToast(`Protocol initiated: Welcome ${appState.currentUser.skaterName}`, 'success');
             onAuthSuccess();
           }
         } else {
@@ -1151,11 +1530,11 @@
 
       } catch (err) {
         console.error('Auth Error:', err);
-        showToast(err.message || 'Error connecting to Google Sheets.', 'error');
+        showToast(err.message || 'Error connecting to Google Sheets backend.', 'error');
       } finally {
         if (btn) {
           btn.disabled = false;
-          btn.innerHTML = `<span>${appState.authMode === 'register' ? 'Create Account' : 'Log In'}</span>`;
+          btn.innerHTML = `<span>${appState.authMode === 'register' ? 'Create Protocol' : 'Log In'}</span>`;
         }
       }
     }
@@ -1164,7 +1543,7 @@
       const overlay = document.getElementById('authOverlay');
       if (overlay) overlay.style.display = 'none';
 
-      safeSetTextContent('headerSkaterName', `Skater: ${appState.currentUser.skaterName}`);
+      safeSetTextContent('headerSkaterName', appState.currentUser.skaterName);
 
       const logSkater = document.getElementById('logSkater');
       if (logSkater) logSkater.value = appState.currentUser.skaterName;
@@ -1190,7 +1569,7 @@
       const overlay = document.getElementById('authOverlay');
       if (overlay) overlay.style.display = 'flex';
 
-      showToast('Logged out successfully.', 'success');
+      showToast('Logged out of Liquid Glass.', 'success');
     }
 
     function switchTab(tabId, el) {
@@ -1200,7 +1579,7 @@
       const targetTab = document.getElementById(`tab-${tabId}`);
       if (targetTab) targetTab.classList.add('active');
 
-      const indexMap = { 'dashboard': 0, 'log': 1, 'history': 2, 'tricks': 3, 'calc': 4 };
+      const indexMap = { 'dashboard': 0, 'log': 1, 'calc': 2, 'history': 3, 'tricks': 4 };
       const idx = indexMap[tabId];
 
       const navItems = document.querySelectorAll('.bottom-nav .nav-item');
@@ -1212,7 +1591,6 @@
       if (tabId === 'calc') updateComboCalculator();
     }
 
-    // 5. CUSTOM TRICK USER ISOLATION
     function getAllTricks() {
       if (!appState.currentUser) return PREDEFINED_TRICKS;
       const userCustom = appState.customTricks.filter(t => 
@@ -1221,7 +1599,6 @@
       return [...PREDEFINED_TRICKS, ...userCustom];
     }
 
-    // 6. DASHBOARD SYNC BUTTON (FETCH LATEST FROM GOOGLE SHEETS)
     async function syncUserDataFromSheets() {
       if (!appState.currentUser) return;
       const btn = document.getElementById('btnSyncDashboard');
@@ -1254,13 +1631,13 @@
           renderHistory();
           renderCustomTricksList();
 
-          showToast('Data synced successfully from Google Sheets!', 'success');
+          showToast('Data synced with Liquid Glass Cloud!', 'success');
         } else {
           showToast(json.message || 'Sync failed.', 'error');
         }
       } catch (err) {
         console.error('Sync Error:', err);
-        showToast('Failed to sync with Google Sheets.', 'error');
+        showToast('Failed to sync with Google Sheets backend.', 'error');
       } finally {
         if (btn) {
           btn.disabled = false;
@@ -1269,7 +1646,6 @@
       }
     }
 
-    // MULTI-ITEM TRAINING SESSION BUILDER
     function initSessionItems() {
       appState.sessionItems = [
         { id: Date.now(), type: 'single', trickName: 'Crazy', category: 'OTHERS', family: 'E', target: 20, completed: 16, missed: 4, falls: 0, notes: '', searchFilter: '' }
@@ -1312,23 +1688,20 @@
 
         return `
           <div class="session-item-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-              <span style="font-size:0.75rem; font-weight:800; color:var(--primary);">Item #${idx + 1}: ${isCombo ? 'Combo Sequence' : 'Individual Drill'}</span>
-              ${appState.sessionItems.length > 1 ? `<button type="button" onclick="removeSessionItem(${idx})" style="background:#fee2e2; border:none; color:#dc2626; padding:2px 8px; border-radius:6px; font-weight:700; font-size:0.7rem;">✕ Remove</button>` : ''}
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span class="badge ${isCombo ? 'badge-combo' : 'badge-family'}">Item #${idx + 1}: ${isCombo ? 'Combo Sequence' : 'Individual Drill'}</span>
+              ${appState.sessionItems.length > 1 ? `<button type="button" onclick="removeSessionItem(${idx})" style="background:rgba(239, 68, 68, 0.15); border:1px solid rgba(239, 68, 68, 0.3); color:#f87171; padding:2px 8px; border-radius:var(--radius-pill); font-weight:700; font-size:0.7rem; cursor:pointer;">✕ Remove</button>` : ''}
             </div>
 
             ${!isCombo ? `
               <div class="row-2">
                 <div class="form-group">
-                  <label>Trick</label>
-                  
-                  <!-- 1. SEARCH BAR IN ITEM SELECTOR -->
+                  <label>Select Trick</label>
                   <div class="search-bar-wrap">
                     <span class="search-icon">🔍</span>
                     <input type="text" class="search-input" placeholder="Search trick..." value="${item.searchFilter || ''}" oninput="onSessionItemSearchInput(${idx}, this.value)">
                   </div>
-
-                  <select onchange="onSessionItemTrickChange(${idx}, this.value)">
+                  <select id="itemTrickSelect_${idx}" onchange="onSessionItemTrickChange(${idx}, this.value)">
                     ${filteredTricks.map(t => {
                       const name = t.name || t.trickname;
                       return `<option value="${name}" ${name === item.trickName ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
@@ -1337,7 +1710,7 @@
                 </div>
                 <div class="form-group">
                   <label>Category / Family</label>
-                  <input type="text" value="${item.category} (Fam ${item.family})" readonly style="background:var(--body-bg); font-weight:700;">
+                  <input type="text" value="${item.category} (Fam ${item.family})" readonly style="background:var(--bg-container-high); font-weight:700;">
                 </div>
               </div>
             ` : `
@@ -1382,7 +1755,7 @@
               </div>
               <div class="form-group" style="margin-bottom:0;">
                 <label>Item Notes</label>
-                <input type="text" value="${item.notes || ''}" oninput="appState.sessionItems[${idx}].notes = this.value;" placeholder="Specific notes for this item">
+                <input type="text" value="${item.notes || ''}" oninput="appState.sessionItems[${idx}].notes = this.value;" placeholder="Specific notes for this drill">
               </div>
             </div>
           </div>
@@ -1405,8 +1778,6 @@
         return name.includes(searchVal);
       });
 
-      // Update only the trick dropdown. Do NOT re-render the whole session card,
-      // so the search input keeps its focus while the user types.
       select.innerHTML = `
         <option value="">-- Choose Trick --</option>
         ${filteredTricks.map(t => {
@@ -1436,7 +1807,6 @@
       }
     }
 
-    // SAVE MULTI-ITEM TRAINING SESSION
     async function handleMultiSessionSubmit(e) {
       e.preventDefault();
       const dateEl = document.getElementById('logDate');
@@ -1512,9 +1882,7 @@
       switchTab('dashboard');
     }
 
-    // 4. CRITICAL FIX FOR CUSTOM TRICK CREATION BUG (NO PAGE REFRESH)
     async function handleCustomTrickSubmit(e) {
-      // PREVENT DEFAULT REFRESH BEHAVIOR STRICTLY
       if (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -1544,7 +1912,6 @@
         skaterName: appState.currentUser.skaterName
       };
 
-      // Add immediately to local state so it appears in dropdowns/selectors instantly
       appState.customTricks.push(customTrick);
 
       if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== "YOUR_APPS_SCRIPT_WEB_APP_URL") {
@@ -1557,7 +1924,7 @@
         } catch(err) { console.error('API Error:', err); }
       }
 
-      showToast(`Custom trick "${name}" created successfully!`, 'success');
+      showToast(`Custom trick "${name}" created!`, 'success');
       if (nameEl) nameEl.value = '';
 
       renderCustomTricksList();
@@ -1565,7 +1932,6 @@
       return false;
     }
 
-    // EDIT CUSTOM TRICK
     function openEditCustomModal(trickId) {
       const trick = appState.customTricks.find(t => (t.id === trickId || t.trickid === trickId));
       if (!trick) return;
@@ -1632,7 +1998,7 @@
       if (!trick) return;
 
       appState.deletingTrickId = trickId;
-      safeSetTextContent('deleteModalMessage', `Are you sure you want to delete "${trick.name || trick.trickname}"? This action cannot be undone.`);
+      safeSetTextContent('deleteModalMessage', `Are you sure you want to delete "${trick.name || trick.trickname}"?`);
 
       const btnDelete = document.getElementById('btnConfirmDelete');
       if (btnDelete) btnDelete.onclick = () => executeDeleteCustomTrick(trickId);
@@ -1665,7 +2031,7 @@
         } catch(err) { console.error('API Delete Error:', err); }
       }
 
-      showToast('Custom trick deleted permanently.', 'success');
+      showToast('Custom trick deleted.', 'success');
       renderCustomTricksList();
       renderSessionItems();
     }
@@ -1679,19 +2045,19 @@
       );
 
       if (userCustom.length === 0) {
-        container.innerHTML = `<div class="empty-state"><div class="empty-icon">💡</div><div class="empty-text">No custom tricks created yet. Use the form above to add personal combos.</div></div>`;
+        container.innerHTML = `<div class="empty-state"><div class="empty-icon">💡</div><div class="empty-text">No custom tricks created yet. Use the form above to add personal tricks.</div></div>`;
         return;
       }
 
       container.innerHTML = userCustom.map(t => {
         const id = t.id || t.trickid;
         return `
-          <div style="padding:10px 0; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+          <div style="padding:12px 0; border-bottom:1px solid var(--border-razor); display:flex; justify-content:space-between; align-items:center;">
             <div>
               <strong style="font-size:0.875rem;">${t.name || t.trickname}</strong>
-              <div style="font-size:0.725rem; color:var(--text-muted); margin-top:2px;">${t.category} • Family ${t.family}</div>
+              <div style="font-size:0.75rem; color:var(--on-surface-muted); margin-top:2px;">${t.category} • Family ${t.family}</div>
             </div>
-            <div style="display:flex; align-items:center; gap:6px;">
+            <div style="display:flex; align-items:center; gap:8px;">
               <span class="badge badge-custom">Custom</span>
               <button class="btn btn-secondary btn-sm" onclick="openEditCustomModal('${id}')">Edit</button>
               <button class="btn btn-danger btn-sm" onclick="openDeleteConfirmModal('${id}')">Delete</button>
@@ -1806,7 +2172,6 @@
       safeSetTextContent('mFalls', totalFalls);
       safeSetTextContent('mConnected', `${avgConnected}%`);
 
-      // 7. STRICT CANVAS CONTEXT SAFETY CHECK
       renderChartSuccessRate(filtered);
       renderChartCones(filtered);
       renderChartTricks(filtered);
@@ -1852,12 +2217,13 @@
           datasets: [{
             label: 'Cone Success Rate %',
             data: data,
-            borderColor: '#4f46e5',
-            backgroundColor: 'rgba(79, 70, 229, 0.12)',
+            borderColor: '#00ffc2',
+            backgroundColor: 'rgba(0, 255, 194, 0.12)',
             fill: true,
             tension: 0.35,
-            borderWidth: 3,
-            pointRadius: 3
+            borderWidth: 2,
+            pointRadius: 4,
+            pointBackgroundColor: '#00ffc2'
           }]
         },
         options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } } }
@@ -1883,8 +2249,8 @@
         data: {
           labels: labels,
           datasets: [
-            { label: 'Target Cones', data: labels.map(d => grouped[d].target), borderColor: '#94a3b8', backgroundColor: 'transparent', borderWidth: 2, tension: 0.3 },
-            { label: 'Completed Cones', data: labels.map(d => grouped[d].completed), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.12)', fill: true, borderWidth: 3, tension: 0.3 }
+            { label: 'Target Cones', data: labels.map(d => grouped[d].target), borderColor: '#83958c', backgroundColor: 'transparent', borderWidth: 2, tension: 0.3 },
+            { label: 'Completed Cones', data: labels.map(d => grouped[d].completed), borderColor: '#00ffc2', backgroundColor: 'rgba(0, 255, 194, 0.12)', fill: true, borderWidth: 2, tension: 0.3 }
           ]
         },
         options: { responsive: true, maintainAspectRatio: false }
@@ -1914,11 +2280,11 @@
           datasets: [{
             label: 'Avg Success %',
             data: data,
-            borderColor: '#06b6d4',
-            backgroundColor: 'rgba(6, 182, 212, 0.12)',
+            borderColor: '#38bdf8',
+            backgroundColor: 'rgba(56, 189, 248, 0.12)',
             fill: true,
             tension: 0.35,
-            borderWidth: 3,
+            borderWidth: 2,
             pointRadius: 4
           }]
         },
@@ -1946,11 +2312,11 @@
           datasets: [{
             label: 'Falls Count',
             data: labels.map(d => grouped[d]),
-            borderColor: '#ef4444',
-            backgroundColor: 'rgba(239, 68, 68, 0.12)',
+            borderColor: '#f87171',
+            backgroundColor: 'rgba(248, 113, 113, 0.12)',
             fill: true,
             tension: 0.35,
-            borderWidth: 3
+            borderWidth: 2
           }]
         },
         options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
@@ -1981,11 +2347,11 @@
           datasets: [{
             label: 'Success Rate %',
             data: familyData,
-            borderColor: '#8b5cf6',
-            backgroundColor: 'rgba(139, 92, 246, 0.12)',
+            borderColor: '#a855f7',
+            backgroundColor: 'rgba(168, 85, 247, 0.12)',
             fill: true,
             tension: 0.3,
-            borderWidth: 3,
+            borderWidth: 2,
             pointRadius: 5
           }]
         },
@@ -2022,7 +2388,7 @@
       });
 
       if (filtered.length === 0) {
-        container.innerHTML = `<div class="glass-card empty-state"><div class="empty-icon">🛹</div><div class="empty-text">No practice sessions yet. Start your first session to track your progress.</div><button class="btn" style="max-width:180px; margin:0 auto;" onclick="switchTab('log')">Log First Session</button></div>`;
+        container.innerHTML = `<div class="glass-card empty-state"><div class="empty-icon">📜</div><div class="empty-text">No practice sessions logged yet.</div><button class="btn" style="max-width:200px; margin:0 auto;" onclick="switchTab('log')">Log Training Session</button></div>`;
         return;
       }
 
@@ -2039,12 +2405,12 @@
             <div class="history-header">
               <div>
                 <div class="history-title">${s.trickName || s.trickname}</div>
-                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">
+                <div style="font-size:0.75rem; color:var(--on-surface-muted); margin-top:2px;">
                   ${s.date} • <span class="badge ${isCombo ? 'badge-combo' : 'badge-category'}">${isCombo ? 'Combo' : s.category}</span> <span class="badge badge-family">Fam ${s.family}</span>
                 </div>
               </div>
               <div>
-                <span class="badge" style="background:${success >= 80 ? '#d1fae5' : '#fef3c7'}; color:${success >= 80 ? '#065f46' : '#92400e'}; font-size:0.7rem;">
+                <span class="badge" style="background:${success >= 80 ? 'rgba(0, 255, 194, 0.15)' : 'rgba(245, 158, 11, 0.15)'}; color:${success >= 80 ? 'var(--primary)' : '#fbbf24'}; border: 1px solid ${success >= 80 ? 'var(--primary-dim)' : 'rgba(245, 158, 11, 0.3)'}">
                   ${success}% Success
                 </span>
               </div>
@@ -2056,13 +2422,12 @@
               <span>🚨 Falls: ${s.falls}</span>
               ${isCombo ? `<span style="font-weight:700; color:var(--primary);">🔗 Connected: ${connected}</span>` : ''}
             </div>
-            ${s.notes ? `<div style="font-size:0.775rem; color:var(--text-main); margin-top:6px; font-style:italic;">"${s.notes}"</div>` : ''}
+            ${s.notes ? `<div style="font-size:0.8125rem; color:var(--on-surface); margin-top:8px; font-style:italic; border-top:1px solid var(--border-razor); padding-top:6px;">"${s.notes}"</div>` : ''}
           </div>
         `;
       }).join('');
     }
 
-    // 2. COMBO CALCULATOR WITH INDIVIDUAL CATEGORY/FAMILY FILTERS PER SLOT
     function addCalcSlot() {
       appState.calcSlots.push({ categoryFilter: 'ALL', familyFilter: 'ALL', selectedTrick: '', searchFilter: '' });
       renderCalcSlots();
@@ -2097,15 +2462,15 @@
 
         return `
           <div class="session-item-card">
-            <div style="display:flex; justify-space-between; align-items:center; margin-bottom:6px;">
-              <span style="font-size:0.75rem; font-weight:800; color:var(--primary);">Trick Slot #${idx + 1}</span>
-              <button type="button" onclick="removeCalcSlot(${idx})" style="background:#fee2e2; border:none; color:#dc2626; padding:2px 8px; border-radius:6px; font-weight:700; font-size:0.725rem;">✕ Remove</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span class="badge badge-family">Trick Slot #${idx + 1}</span>
+              <button type="button" onclick="removeCalcSlot(${idx})" style="background:rgba(239, 68, 68, 0.15); border:1px solid rgba(239, 68, 68, 0.3); color:#f87171; padding:2px 8px; border-radius:var(--radius-pill); font-weight:700; font-size:0.7rem; cursor:pointer;">✕ Remove</button>
             </div>
 
-            <div class="row-2" style="margin-bottom:6px;">
+            <div class="row-2" style="margin-bottom:8px;">
               <div class="form-group" style="margin-bottom:0;">
                 <label>Category Filter</label>
-                <select style="font-size:0.8rem; padding:6px;" onchange="appState.calcSlots[${idx}].categoryFilter = this.value; renderCalcSlots();">
+                <select style="font-size:0.8rem; padding:8px;" onchange="appState.calcSlots[${idx}].categoryFilter = this.value; renderCalcSlots();">
                   <option value="ALL" ${slot.categoryFilter === 'ALL' ? 'selected' : ''}>All Categories</option>
                   <option value="OTHERS" ${slot.categoryFilter === 'OTHERS' ? 'selected' : ''}>Others</option>
                   <option value="SITTING" ${slot.categoryFilter === 'SITTING' ? 'selected' : ''}>Sitting</option>
@@ -2116,7 +2481,7 @@
               </div>
               <div class="form-group" style="margin-bottom:0;">
                 <label>Family Filter</label>
-                <select style="font-size:0.8rem; padding:6px;" onchange="appState.calcSlots[${idx}].familyFilter = this.value; renderCalcSlots();">
+                <select style="font-size:0.8rem; padding:8px;" onchange="appState.calcSlots[${idx}].familyFilter = this.value; renderCalcSlots();">
                   <option value="ALL" ${slot.familyFilter === 'ALL' ? 'selected' : ''}>All Families</option>
                   <option value="A" ${slot.familyFilter === 'A' ? 'selected' : ''}>Family A</option>
                   <option value="B" ${slot.familyFilter === 'B' ? 'selected' : ''}>Family B</option>
@@ -2129,13 +2494,10 @@
 
             <div class="form-group" style="margin-bottom:0;">
               <label>Select Trick for Slot #${idx + 1}</label>
-              
-              <!-- 1. SEARCH BAR FOR CALC SLOT -->
               <div class="search-bar-wrap">
                 <span class="search-icon">🔍</span>
                 <input type="text" class="search-input" placeholder="Search trick in slot..." value="${slot.searchFilter || ''}" oninput="onCalcSlotSearchInput(${idx}, this.value)">
               </div>
-
               <select id="calcTrickSelect_${idx}" onchange="appState.calcSlots[${idx}].selectedTrick = this.value; updateComboCalculator();">
                 <option value="">-- Choose Trick --</option>
                 ${filteredTricks.map(t => {
@@ -2204,7 +2566,7 @@
         maxScore += pts.max;
       });
 
-      safeSetTextContent('calcScoreRange', `${minScore} – ${maxScore} Potential Difficulty Points`);
+      safeSetTextContent('calcScoreRange', `${minScore} – ${maxScore} Potential Points`);
 
       generateAIRecommendations(selectedObjects, minScore, maxScore);
     }
@@ -2216,9 +2578,9 @@
 
       if (targetUpgradeIdx === -1) {
         safeSetInnerHTML('aiRecommendationsContainer', `
-          <div style="padding:10px; background:var(--input-bg); border-radius:10px; border:1px solid var(--border-color);">
-            <div style="font-size:0.825rem; font-weight:800; color:var(--primary);">This is a good combo.</div>
-            <div style="font-size:0.725rem; color:var(--text-muted); margin-top:2px;">
+          <div style="padding:14px; background:var(--bg-container); border-radius:var(--radius-md); border:1px solid var(--border-razor);">
+            <div style="font-size:0.875rem; font-weight:800; color:var(--primary);">High Technical Balance</div>
+            <div style="font-size:0.8125rem; color:var(--on-surface-muted); margin-top:4px;">
               Your sequence incorporates high-tier matrix difficulty (Family A/B/C) with strong technical progression.
             </div>
           </div>
@@ -2231,8 +2593,8 @@
 
       if (upgradeCandidates.length === 0) {
         safeSetInnerHTML('aiRecommendationsContainer', `
-          <div style="padding:10px; background:var(--input-bg); border-radius:10px; border:1px solid var(--border-color);">
-            <div style="font-size:0.825rem; font-weight:800; color:var(--primary);">This is a good combo.</div>
+          <div style="padding:14px; background:var(--bg-container); border-radius:var(--radius-md); border:1px solid var(--border-razor);">
+            <div style="font-size:0.875rem; font-weight:800; color:var(--primary);">Solid Combo Base</div>
           </div>
         `);
         return;
@@ -2246,12 +2608,12 @@
       const newMax = currentMax - origPts.max + recPts.max;
 
       safeSetInnerHTML('aiRecommendationsContainer', `
-        <div style="padding:10px; background:var(--input-bg); border-radius:10px; border:1px solid var(--border-color);">
-          <div style="font-size:0.775rem; font-weight:700; color:var(--primary);">Suggested Progression Upgrade:</div>
-          <div style="font-size:0.825rem; margin-top:2px;">
-            Replace <span style="text-decoration:line-through; color:var(--text-muted);">${targetTrick.name || targetTrick.trickname}</span> (Fam ${targetTrick.family}) with <strong>${recommendedUpgrade.name || recommendedUpgrade.trickname}</strong> (Fam ${recommendedUpgrade.family})
+        <div style="padding:14px; background:var(--bg-container); border-radius:var(--radius-md); border:1px solid var(--border-razor);">
+          <div class="label-caps" style="color:var(--primary);">Suggested Progression Upgrade</div>
+          <div style="font-size:0.875rem; margin-top:4px;">
+            Replace <span style="text-decoration:line-through; color:var(--on-surface-muted);">${targetTrick.name || targetTrick.trickname}</span> (Fam ${targetTrick.family}) with <strong>${recommendedUpgrade.name || recommendedUpgrade.trickname}</strong> (Fam ${recommendedUpgrade.family})
           </div>
-          <div style="font-size:0.775rem; font-weight:700; color:#10b981; margin-top:6px;">
+          <div style="font-size:0.8125rem; font-weight:700; color:var(--primary); margin-top:8px;">
             Potential Upgraded Range: ${newMin} – ${newMax} Points (+${recPts.min - origPts.min} pts)
           </div>
         </div>
