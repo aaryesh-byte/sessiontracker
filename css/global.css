@@ -74,27 +74,38 @@
       background: rgba(0, 168, 129, 0.1);
     }
 
-    /* TUTORIAL OVERLAY & BACKDROP LOCK */
+    /* TUTORIAL OVERLAY & COMPLETE SCREEN LOCK */
     body.tutorial-active {
       overflow: hidden !important;
-      pointer-events: none !important;
+      touch-action: none !important;
       user-select: none !important;
+      -webkit-user-select: none !important;
+    }
+
+    body.tutorial-active header,
+    body.tutorial-active main,
+    body.tutorial-active nav,
+    body.tutorial-active .modal-overlay:not(#tutorialOverlay) {
+      pointer-events: none !important;
+      filter: blur(4px) brightness(0.6);
+      transition: filter 0.25s ease;
     }
 
     #tutorialOverlay {
       position: fixed;
       inset: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(12, 14, 17, 0.90);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      z-index: 9999999;
+      width: 100%;
+      height: 100%;
+      background: rgba(8, 10, 12, 0.88);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      z-index: 9999999 !important;
       display: none;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 16px;
       pointer-events: auto !important;
+      touch-action: auto !important;
     }
 
     body.tutorial-active #tutorialOverlay,

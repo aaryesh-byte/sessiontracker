@@ -13,28 +13,36 @@ let appState = {
     };
 
 async function handleAuthSubmit(e) {
-      if (e) e.preventDefault();
-      if (appState.isAuthenticating) return;
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
 
-      const u = document.getElementById('authUsername').value.trim();
-      const p = document.getElementById('authPassword').value.trim();
-      const skaterName = document.getElementById('authSkaterName').value.trim();
+      if (appState.isAuthenticating) return false;
+
+      const uEl = document.getElementById('authUsername');
+      const pEl = document.getElementById('authPassword');
+      const sEl = document.getElementById('authSkaterName');
       const btn = document.getElementById('authSubmitBtn');
+
+      const u = uEl ? uEl.value.trim() : '';
+      const p = pEl ? pEl.value.trim() : '';
+      const skaterName = sEl ? sEl.value.trim() : '';
 
       if (!u || !p) {
         showToast('Please enter both username and password.', 'warning');
-        return;
+        return false;
       }
 
       if (appState.authMode === 'register' && !skaterName) {
         showToast('Please enter your full skater name.', 'warning');
-        return;
+        return false;
       }
 
       appState.isAuthenticating = true;
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = `<span>⏳ ${appState.authMode === 'register' ? 'Verifying & Registering...' : 'Authenticating Protocol...'}</span>`;
+        btn.innerHTML = `<span>⏳ ${appState.authMode === 'register' ? 'Creating Account...' : 'Authenticating...'}</span>`;
       }
 
       try {
@@ -53,8 +61,11 @@ async function handleAuthSubmit(e) {
 
         if (json.status === 'success') {
           if (appState.authMode === 'register') {
-            // Auto-authenticate immediately after successful registration
-            const registeredUser = json.user || { username: u, skaterName: skaterName, userId: u };
+            const registeredUser = json.user || {
+              username: u,
+              skaterName: skaterName || u,
+              userId: u
+            };
             appState.currentUser = registeredUser;
             appState.sessions = (json.data && json.data.sessions) ? json.data.sessions : [];
             appState.customTricks = (json.data && json.data.customTricks) ? json.data.customTricks : [];
@@ -77,13 +88,13 @@ async function handleAuthSubmit(e) {
           if (errMsg.toLowerCase().includes('already exists') || errMsg.toLowerCase().includes('duplicate')) {
             showToast('Username already exists. Please choose a different username.', 'error');
           } else {
-            showToast(errMsg || 'Action failed.', 'error');
+            showToast(errMsg || 'Authentication failed. Check credentials.', 'error');
           }
         }
 
       } catch (err) {
         console.error('Auth Error:', err);
-        showToast(err.message || 'Error connecting to Google Sheets backend.', 'error');
+        showToast(err.message || 'Error connecting to backend.', 'error');
       } finally {
         appState.isAuthenticating = false;
         if (btn) {
@@ -91,6 +102,8 @@ async function handleAuthSubmit(e) {
           btn.innerHTML = `<span>${appState.authMode === 'register' ? 'Create Protocol' : 'Log In'}</span>`;
         }
       }
+
+      return false;
     }
 
   
@@ -128,7 +141,9 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   const loginForm = document.getElementById('loginForm');
   if (loginForm) {
-    loginForm.addEventListener('submit', handleAuthSubmit);
+    loginForm.onsubmit = function(e) {
+      return handleAuthSubmit(e);
+    };
   }
 
   initSessionItems();
@@ -213,7 +228,9 @@ window.toggleTheme = toggleTheme;
       const overlay = document.getElementById('authOverlay');
       if (overlay) overlay.style.display = 'none';
 
+      const username = String(appState.currentUser.username || '').toLowerCase().trim();
       const skaterName = appState.currentUser.skaterName || appState.currentUser.username || 'Skater';
+
       safeSetTextContent('headerSkaterName', skaterName);
 
       const logSkater = document.getElementById('logSkater');
@@ -222,14 +239,16 @@ window.toggleTheme = toggleTheme;
       populateProgressTrickFilter();
       renderSessionItems();
 
-      const userKey = `slalom_tutorial_completed_${String(appState.currentUser.username || skaterName).toLowerCase().trim()}`;
+      switchTab('dashboard');
+
+      const userKey = `slalom_tutorial_completed_${username || String(skaterName).toLowerCase().trim()}`;
       const hasCompleted = localStorage.getItem(userKey) === 'true';
 
-      switchTab('dashboard').then(() => {
-        if (isNewUser || !hasCompleted) {
-          setTimeout(() => startTutorial(), 350);
-        }
-      });
+      if (isNewUser || !hasCompleted) {
+        setTimeout(() => {
+          startTutorial();
+        }, 200);
+      }
     }
 
     const TUTORIAL_STEPS = [
@@ -317,7 +336,9 @@ window.toggleTheme = toggleTheme;
         nextBtn.textContent = (idx === TUTORIAL_STEPS.length - 1) ? 'Finish Walkthrough 🚀' : 'Next Step →';
       }
 
-      switchTab(step.tab);
+      if (step.tab) {
+        switchTab(step.tab);
+      }
     }
 
     function nextTutorialStep() {
