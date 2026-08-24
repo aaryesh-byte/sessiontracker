@@ -41,12 +41,12 @@ async function handleAuthSubmit(e) {
       appState.isAuthenticating = true;
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = `<span>⏳ ${appState.authMode === 'register' ? 'Creating Account...' : 'Authenticating...'}</span>`;
+        btn.innerHTML = `<span>⏳ ${appState.authMode === 'register' ? 'Creating Account...' : 'Verifying...'}</span>`;
       }
 
       try {
         if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "YOUR_APPS_SCRIPT_WEB_APP_URL") {
-          throw new Error('Google Apps Script URL is not configured in config.js.');
+          throw new Error('Google Apps Script URL is not configured in js/config.js.');
         }
 
         const payload = { username: u, password: p, skaterName: skaterName };
@@ -59,26 +59,23 @@ async function handleAuthSubmit(e) {
         const json = await response.json();
 
         if (json.status === 'success') {
+          const authenticatedUser = json.user || {
+            username: u,
+            skaterName: skaterName || u,
+            userId: u
+          };
+
+          appState.currentUser = authenticatedUser;
+          appState.sessions = (json.data && Array.isArray(json.data.sessions)) ? json.data.sessions : [];
+          appState.customTricks = (json.data && Array.isArray(json.data.customTricks)) ? json.data.customTricks : [];
+
           if (appState.authMode === 'register') {
-            const registeredUser = json.user || {
-              username: u,
-              skaterName: skaterName || u,
-              userId: u
-            };
-            appState.currentUser = registeredUser;
-            appState.sessions = (json.data && json.data.sessions) ? json.data.sessions : [];
-            appState.customTricks = (json.data && json.data.customTricks) ? json.data.customTricks : [];
-
-            showToast(`Registration complete: Welcome ${registeredUser.skaterName}!`, 'success');
-            onAuthSuccess();
+            showToast(`Registration complete: Welcome ${authenticatedUser.skaterName}!`, 'success');
           } else {
-            appState.currentUser = json.user;
-            appState.sessions = (json.data && json.data.sessions) ? json.data.sessions : [];
-            appState.customTricks = (json.data && json.data.customTricks) ? json.data.customTricks : [];
-
-            showToast(`Protocol initiated: Welcome ${appState.currentUser.skaterName}`, 'success');
-            onAuthSuccess();
+            showToast(`Welcome back, ${authenticatedUser.skaterName}!`, 'success');
           }
+
+          onAuthSuccess();
         } else {
           const rawMsg = (json.message || '').toLowerCase();
 

@@ -2,32 +2,41 @@
 
 
     function initSessionItems() {
-      appState.sessionItems = [
-        { id: Date.now(), type: 'single', trickName: 'Crazy', category: 'OTHERS', family: 'E', target: 20, completed: 16, missed: 4, falls: 0, notes: '', searchFilter: '' }
-      ];
+      appState.sessionItems = [];
       renderSessionItems();
     }
 
     function addSessionItem(type) {
       const id = Date.now() + Math.random();
       if (type === 'single') {
-        appState.sessionItems.push({ id, type: 'single', trickName: 'Toe Christie', category: 'SITTING', family: 'A', target: 20, completed: 15, missed: 5, falls: 1, notes: '', searchFilter: '' });
+        appState.sessionItems.push({
+          id,
+          type: 'single',
+          trickName: '',
+          category: '',
+          family: '',
+          target: '',
+          completed: '',
+          missed: '',
+          falls: 0,
+          notes: '',
+          searchFilter: ''
+        });
       } else {
         appState.sessionItems.push({
           id,
           type: 'combo',
           trickName: '',
           slots: [
-            { categoryFilter: 'SITTING', familyFilter: 'ALL', searchFilter: '', selectedTrick: 'Toe Christie', category: 'SITTING', family: 'A' },
-            { categoryFilter: 'WHEELING', familyFilter: 'ALL', searchFilter: '', selectedTrick: 'Toe FWD Wheeling', category: 'WHEELING', family: 'C' },
-            { categoryFilter: 'SPINNING', familyFilter: 'ALL', searchFilter: '', selectedTrick: 'Italian', category: 'SPINNING', family: 'E' }
+            { categoryFilter: 'ALL', familyFilter: 'ALL', searchFilter: '', selectedTrick: '', category: '', family: '' },
+            { categoryFilter: 'ALL', familyFilter: 'ALL', searchFilter: '', selectedTrick: '', category: '', family: '' }
           ],
-          target: 20,
-          completed: 14,
-          missed: 6,
-          totalAttempts: 10,
-          connectedAttempts: 7,
-          falls: 1,
+          target: '',
+          completed: '',
+          missed: '',
+          totalAttempts: '',
+          connectedAttempts: '',
+          falls: 0,
           notes: ''
         });
       }
@@ -35,10 +44,6 @@
     }
 
     function removeSessionItem(index) {
-      if (appState.sessionItems.length <= 1) {
-        showToast('A training session requires at least one practice item.', 'warning');
-        return;
-      }
       appState.sessionItems.splice(index, 1);
       renderSessionItems();
     }
@@ -115,6 +120,15 @@
       if (!container) return;
       const allTricks = getAllTricks();
 
+      if (!appState.sessionItems || appState.sessionItems.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state" style="padding:20px 10px; border:1px dashed var(--border-razor); border-radius:var(--radius-md); margin-bottom:10px;">
+            <div class="empty-text" style="margin-bottom:0;">No practice items added. Click below to add an individual trick drill or a combo sequence.</div>
+          </div>
+        `;
+        return;
+      }
+
       container.innerHTML = appState.sessionItems.map((item, idx) => {
         const isCombo = item.type === 'combo';
         const searchVal = (item.searchFilter || '').toLowerCase();
@@ -128,7 +142,7 @@
           <div class="session-item-card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
               <span class="badge ${isCombo ? 'badge-combo' : 'badge-family'}">Item #${idx + 1}: ${isCombo ? 'Combo Sequence Builder' : 'Individual Drill'}</span>
-              ${appState.sessionItems.length > 1 ? `<button type="button" onclick="removeSessionItem(${idx})" style="background:rgba(239, 68, 68, 0.15); border:1px solid rgba(239, 68, 68, 0.3); color:#f87171; padding:2px 8px; border-radius:var(--radius-pill); font-weight:700; font-size:0.7rem; cursor:pointer;">✕ Remove Item</button>` : ''}
+              <button type="button" onclick="removeSessionItem(${idx})" style="background:rgba(239, 68, 68, 0.15); border:1px solid rgba(239, 68, 68, 0.3); color:#f87171; padding:2px 8px; border-radius:var(--radius-pill); font-weight:700; font-size:0.7rem; cursor:pointer;">✕ Remove Item</button>
             </div>
 
             ${!isCombo ? `
@@ -140,6 +154,7 @@
                     <input type="text" class="search-input" placeholder="Search trick..." value="${item.searchFilter || ''}" oninput="onSessionItemSearchInput(${idx}, this.value)">
                   </div>
                   <select id="itemTrickSelect_${idx}" onchange="onSessionItemTrickChange(${idx}, this.value)">
+                    <option value="" disabled ${!item.trickName ? 'selected' : ''}>-- Select a trick --</option>
                     ${filteredTricks.map(t => {
                       const name = t.name || t.trickname;
                       return `<option value="${name}" ${name === item.trickName ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
@@ -148,7 +163,7 @@
                 </div>
                 <div class="form-group">
                   <label>Category / Family</label>
-                  <input type="text" value="${item.category} (Fam ${item.family})" readonly style="background:var(--bg-container-high); font-weight:700;">
+                  <input type="text" value="${item.category ? item.category + ' (Fam ' + item.family + ')' : ''}" placeholder="Auto-detected from trick" readonly style="background:var(--bg-container-high); font-weight:700;">
                 </div>
               </div>
             ` : `
@@ -200,7 +215,7 @@
                           <input type="text" class="search-input" style="padding:6px 6px 6px 28px; font-size:0.75rem;" placeholder="Search trick in position..." value="${slot.searchFilter || ''}" oninput="onComboSlotSearchInput(${idx}, ${sIdx}, this.value)">
                         </div>
                         <select id="comboTrickSelect_${idx}_${sIdx}" style="font-size:0.75rem; padding:6px 8px;" onchange="onComboSlotTrickChange(${idx}, ${sIdx}, this.value)">
-                          <option value="">-- Choose Trick --</option>
+                          <option value="" disabled ${!slot.selectedTrick ? 'selected' : ''}>-- Add a trick to your combo --</option>
                           ${sFiltered.map(t => {
                             const name = t.name || t.trickname;
                             return `<option value="${name}" ${name === slot.selectedTrick ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
@@ -218,15 +233,15 @@
             <div class="row-3">
               <div class="form-group">
                 <label>Target Cones</label>
-                <input type="number" min="1" value="${item.target}" oninput="appState.sessionItems[${idx}].target = parseInt(this.value)||0; autoCalcItemMissed(${idx});">
+                <input type="number" min="1" placeholder="Enter target cones" value="${item.target !== undefined && item.target !== '' ? item.target : ''}" oninput="appState.sessionItems[${idx}].target = this.value === '' ? '' : parseInt(this.value, 10); autoCalcItemMissed(${idx});">
               </div>
               <div class="form-group">
                 <label>Completed</label>
-                <input type="number" min="0" value="${item.completed}" oninput="appState.sessionItems[${idx}].completed = parseInt(this.value)||0; autoCalcItemMissed(${idx});">
+                <input type="number" min="0" placeholder="Enter completed cones" value="${item.completed !== undefined && item.completed !== '' ? item.completed : ''}" oninput="appState.sessionItems[${idx}].completed = this.value === '' ? '' : parseInt(this.value, 10); autoCalcItemMissed(${idx});">
               </div>
               <div class="form-group">
                 <label>Kicked/Missed</label>
-                <input type="number" id="itemMissed_${idx}" min="0" value="${item.missed}" oninput="appState.sessionItems[${idx}].missed = parseInt(this.value)||0;">
+                <input type="number" id="itemMissed_${idx}" min="0" placeholder="Missed cones" value="${item.missed !== undefined && item.missed !== '' ? item.missed : ''}" oninput="appState.sessionItems[${idx}].missed = this.value === '' ? '' : parseInt(this.value, 10);">
               </div>
             </div>
 
@@ -234,11 +249,11 @@
               <div class="row-2">
                 <div class="form-group">
                   <label>Total Attempts</label>
-                  <input type="number" min="1" value="${item.totalAttempts || 10}" oninput="appState.sessionItems[${idx}].totalAttempts = parseInt(this.value)||1;">
+                  <input type="number" min="1" placeholder="e.g. 10" value="${item.totalAttempts !== undefined && item.totalAttempts !== '' ? item.totalAttempts : ''}" oninput="appState.sessionItems[${idx}].totalAttempts = this.value === '' ? '' : parseInt(this.value, 10);">
                 </div>
                 <div class="form-group">
                   <label>Connected Attempts</label>
-                  <input type="number" min="0" value="${item.connectedAttempts || 7}" oninput="appState.sessionItems[${idx}].connectedAttempts = parseInt(this.value)||0;">
+                  <input type="number" min="0" placeholder="e.g. 7" value="${item.connectedAttempts !== undefined && item.connectedAttempts !== '' ? item.connectedAttempts : ''}" oninput="appState.sessionItems[${idx}].connectedAttempts = this.value === '' ? '' : parseInt(this.value, 10);">
                 </div>
               </div>
             ` : ''}
@@ -246,7 +261,7 @@
             <div class="row-2">
               <div class="form-group" style="margin-bottom:0;">
                 <label>Falls Count</label>
-                <input type="number" min="0" value="${item.falls}" oninput="appState.sessionItems[${idx}].falls = parseInt(this.value)||0;">
+                <input type="number" min="0" placeholder="e.g. 0" value="${item.falls !== undefined && item.falls !== '' ? item.falls : ''}" oninput="appState.sessionItems[${idx}].falls = this.value === '' ? '' : parseInt(this.value, 10);">
               </div>
               <div class="form-group" style="margin-bottom:0;">
                 <label>Item Notes</label>
@@ -297,7 +312,7 @@
 
     function autoCalcItemMissed(idx) {
       const item = appState.sessionItems[idx];
-      if (item && item.target >= item.completed) {
+      if (item && item.target !== '' && item.completed !== '' && item.target >= item.completed) {
         item.missed = item.target - item.completed;
         const el = document.getElementById(`itemMissed_${idx}`);
         if (el) el.value = item.missed;
@@ -323,14 +338,43 @@
       const sessionId = 'SESS-' + Date.now();
 
       if (!appState.sessionItems || appState.sessionItems.length === 0) {
-        showToast('Please add at least one practice item to the session.', 'warning');
+        showToast('Please add at least one trick or combo before saving this session.', 'warning');
         return;
       }
 
+      // Validate every session item thoroughly to prevent blank/fake saves
+      for (let i = 0; i < appState.sessionItems.length; i++) {
+        const item = appState.sessionItems[i];
+        const isCombo = item.type === 'combo';
+
+        if (!isCombo) {
+          if (!item.trickName || item.trickName.trim() === '') {
+            showToast(`Please select a trick for Item #${i + 1}.`, 'warning');
+            return;
+          }
+        } else {
+          const validSlots = (item.slots || []).filter(s => s.selectedTrick && s.selectedTrick.trim() !== '');
+          if (validSlots.length < 2) {
+            showToast(`Please select at least 2 tricks for Combo #${i + 1}.`, 'warning');
+            return;
+          }
+        }
+
+        if (item.target === '' || item.target === undefined || isNaN(Number(item.target)) || Number(item.target) <= 0) {
+          showToast(`Please enter a valid target cone count (> 0) for Item #${i + 1}.`, 'warning');
+          return;
+        }
+
+        if (item.completed === '' || item.completed === undefined || isNaN(Number(item.completed)) || Number(item.completed) < 0) {
+          showToast(`Please enter a valid completed cone count for Item #${i + 1}.`, 'warning');
+          return;
+        }
+      }
+
       const formattedPayloadItems = appState.sessionItems.map(item => {
-        const target = item.target || 20;
-        const completed = item.completed || 0;
-        const missed = item.missed || 0;
+        const target = Number(item.target);
+        const completed = Number(item.completed);
+        const missed = item.missed !== '' && item.missed !== undefined ? Number(item.missed) : Math.max(0, target - completed);
         const isCombo = item.type === 'combo';
         
         let connRate = 'N/A';
@@ -339,8 +383,8 @@
         let comboFam = item.family || 'Custom';
 
         if (isCombo) {
-          const tot = item.totalAttempts || 1;
-          const conn = item.connectedAttempts || 0;
+          const tot = item.totalAttempts !== '' && item.totalAttempts !== undefined ? Math.max(1, Number(item.totalAttempts)) : 1;
+          const conn = item.connectedAttempts !== '' && item.connectedAttempts !== undefined ? Number(item.connectedAttempts) : 0;
           connRate = ((conn / tot) * 100).toFixed(1) + '%';
 
           if (item.slots && item.slots.length > 0) {
@@ -365,7 +409,7 @@
           targetCones: target,
           completedCones: completed,
           missedCones: missed,
-          falls: item.falls || 0,
+          falls: item.falls !== '' && item.falls !== undefined ? Number(item.falls) : 0,
           successRate: parseFloat(((completed / target) * 100).toFixed(1)),
           connectedCompletion: connRate,
           notes: item.notes || globalNotes

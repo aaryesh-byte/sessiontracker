@@ -18,12 +18,6 @@
       const typeEl = document.getElementById('histType');
       const typeFilter = typeEl ? typeEl.value : 'ALL';
 
-      const catEl = document.getElementById('histCat');
-      const catFilter = catEl ? catEl.value : 'ALL';
-
-      const famEl = document.getElementById('histFam');
-      const famFilter = famEl ? famEl.value : 'ALL';
-
       const monthEl = document.getElementById('histMonth');
       const monthFilter = monthEl ? monthEl.value : '';
 
@@ -31,13 +25,12 @@
       const dateFilter = dateEl ? dateEl.value : '';
 
       const filtered = appState.sessions.filter(s => {
-        const skaterMatch = String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase();
-        if (!skaterMatch) return false;
+        const currentSkater = String(appState.currentUser.skaterName || appState.currentUser.username || '').toLowerCase();
+        const recordSkater = String(s.skaterName || s.skatername || s.userId || s.userid || '').toLowerCase();
+        if (currentSkater && recordSkater && currentSkater !== recordSkater) return false;
 
         const sType = s.sessionType || s.sessiontype || 'Single';
         if (typeFilter !== 'ALL' && sType !== typeFilter) return false;
-        if (catFilter !== 'ALL' && s.category !== catFilter) return false;
-        if (famFilter !== 'ALL' && s.family !== famFilter) return false;
         if (dateFilter) {
           if (s.date !== dateFilter) return false;
         } else if (monthFilter && !String(s.date).startsWith(monthFilter)) {

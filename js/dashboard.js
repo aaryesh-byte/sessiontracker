@@ -1,72 +1,74 @@
 // Dashboard/progress functionality.
 
 
+    let isSyncingData = false;
+
     async function syncUserDataFromSheets() {
-      if (!appState.currentUser) return;
+      if (!appState.currentUser || isSyncingData) return;
+
       const btn = document.getElementById('btnSyncDashboard');
+      isSyncingData = true;
+
       if (btn) {
         btn.disabled = true;
         btn.innerHTML = '🔄 Syncing...';
       }
 
-      const metricsCont = document.getElementById('dashboardMetricsContainer');
-      const origMetricsHTML = metricsCont ? metricsCont.innerHTML : null;
-
-      if (metricsCont) {
-        metricsCont.innerHTML = `
-          <div class="skeleton-card" style="margin-bottom:16px;">
-            <div class="skeleton skeleton-title" style="width:30%;"></div>
-            <div class="metrics-grid">
-              <div class="skeleton-card"><div class="skeleton skeleton-metric"></div></div>
-              <div class="skeleton-card"><div class="skeleton skeleton-metric"></div></div>
-              <div class="skeleton-card"><div class="skeleton skeleton-metric"></div></div>
-              <div class="skeleton-card"><div class="skeleton skeleton-metric"></div></div>
-              <div class="skeleton-card"><div class="skeleton skeleton-metric"></div></div>
-            </div>
-          </div>
-          <div class="skeleton-card" style="height:220px;"></div>
-        `;
-      }
-
       try {
         if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "YOUR_APPS_SCRIPT_WEB_APP_URL") {
-          throw new Error('Google Apps Script URL is not configured.');
+          throw new Error('Google Apps Script URL is not configured in js/config.js.');
         }
+
+        const activeSkater = appState.currentUser.skaterName || appState.currentUser.username;
+        const activeUsername = appState.currentUser.username || appState.currentUser.skaterName;
+
+        const payload = {
+          skaterName: activeSkater,
+          username: activeUsername,
+          userId: activeSkater
+        };
 
         const response = await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain' },
           body: JSON.stringify({
             action: 'syncUserData',
-            payload: { skaterName: appState.currentUser.skaterName, userId: appState.currentUser.userId }
+            payload: payload
           })
         });
 
         const json = await response.json();
+
         if (json.status === 'success' && json.data) {
-          appState.sessions = json.data.sessions || [];
-          appState.customTricks = json.data.customTricks || [];
+          appState.sessions = Array.isArray(json.data.sessions) ? json.data.sessions : [];
+          appState.customTricks = Array.isArray(json.data.customTricks) ? json.data.customTricks : [];
 
           populateProgressTrickFilter();
           renderAnalytics();
-          renderHistory();
-          renderCustomTricksList();
+
+          const histContainer = document.getElementById('historyList');
+          if (histContainer) renderHistory();
+
+          const custContainer = document.getElementById('customTricksList');
+          if (custContainer) renderCustomTricksList();
 
           showToast('Data synced with Liquid Glass Cloud!', 'success');
         } else {
-          showToast(json.message || 'Sync failed.', 'error');
+          showToast(json.message || 'Unable to sync data from backend.', 'error');
+          renderAnalytics();
         }
       } catch (err) {
         console.error('Sync Error:', err);
-        showToast('Failed to sync with Google Sheets backend.', 'error');
+        showToast(err.message || 'Unable to connect with the backend.', 'error');
+        renderAnalytics();
       } finally {
+        isSyncingData = false;
         if (btn) {
           btn.disabled = false;
           btn.innerHTML = '🔄 Sync Data';
         }
       }
     }
-
 
     function populateProgressTrickFilter() {
       const select = document.getElementById('progTrick');
