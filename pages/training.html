@@ -1,0 +1,36 @@
+<div id="tab-log" class="tab-content">
+      <div class="glass-card">
+        <div class="card-title">Log Training Session</div>
+
+        <form id="multiSessionForm" onsubmit="handleMultiSessionSubmit(event)">
+          <div class="row-2">
+            <div class="form-group">
+              <label>Skater Protocol</label>
+              <input type="text" id="logSkater" readonly style="font-weight:700;">
+            </div>
+            <div class="form-group">
+              <label>Date</label>
+              <input type="date" id="logDate" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label style="margin-bottom:10px;">Session Practiced Items (Individual Drills & Combos)</label>
+            <div id="sessionItemsContainer"></div>
+            
+            <div style="display:flex; gap:10px; margin-top:10px;">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="addSessionItem('single')">+ Add Individual Trick</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="addSessionItem('combo')">+ Add Combo Sequence</button>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top:16px;">
+            <label>Overall Session Notes</label>
+            <input type="text" id="logSessionGlobalNotes" placeholder="e.g. High speed slalom session at main arena">
+          </div>
+
+          <button type="submit" class="btn" style="margin-top:12px;">Finish & Log Session</button>
+        </form>
+
+      </div>
+    </div>
