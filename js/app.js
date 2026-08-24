@@ -22,30 +22,11 @@ let appState = {
       if (el) el.textContent = text;
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      const logDateEl = document.getElementById('logDate');
-      if (logDateEl) logDateEl.value = new Date().toISOString().split('T')[0];
-
-      const progMonthEl = document.getElementById('progMonth');
-      if (progMonthEl) progMonthEl.value = new Date().toISOString().slice(0, 7);
-      
-      const savedTheme = localStorage.getItem('slalom_theme') || 'dark';
-      applyTheme(savedTheme);
-
-      initSessionItems();
-      renderCalcSlots();
-
-      const overlay = document.getElementById('authOverlay');
-      if (overlay) overlay.style.display = 'flex';
-    });
-
-window.addEventListener('DOMContentLoaded', async () => {
+    window.addEventListener('DOMContentLoaded', async () => {
   const savedTheme = localStorage.getItem('slalom_theme') || 'dark';
   applyTheme(savedTheme);
 
-  // Keep the existing in-memory session state behavior.
   initSessionItems();
-  renderCalcSlots();
 
   const overlay = document.getElementById('authOverlay');
   if (overlay) overlay.style.display = 'flex';
@@ -240,10 +221,15 @@ async function switchTab(tabId, el) {
     container.innerHTML = await response.text();
     container.dataset.page = tabId;
 
+    const tabContent = container.querySelector('.tab-content');
+    if (tabContent) tabContent.classList.add('active');
+
     // Initialize controls belonging to the newly loaded page.
     if (tabId === 'log') {
       const logDateEl = document.getElementById('logDate');
       if (logDateEl && !logDateEl.value) logDateEl.value = new Date().toISOString().split('T')[0];
+      const logSkater = document.getElementById('logSkater');
+      if (logSkater && appState.currentUser) logSkater.value = appState.currentUser.skaterName;
       renderSessionItems();
     }
     if (tabId === 'dashboard') {
@@ -254,7 +240,7 @@ async function switchTab(tabId, el) {
     }
     if (tabId === 'history') renderHistory();
     if (tabId === 'tricks') renderCustomTricksList();
-    if (tabId === 'calc') updateComboCalculator();
+    if (tabId === 'calc') renderCalcSlots();
 
     // Re-apply theme after injecting page markup.
     const theme = document.documentElement.getAttribute('data-theme') || 'dark';
