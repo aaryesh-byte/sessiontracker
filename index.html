@@ -16,20 +16,24 @@
   <div id="toastContainer"></div>
 
   <!-- GUIDED ONBOARDING TUTORIAL MODAL -->
+  <!-- GUIDED ONBOARDING TUTORIAL MODAL -->
   <div id="tutorialOverlay">
-    <div class="tutorial-card">
-      <div class="tutorial-step-badge" id="tutStepBadge">Step 1 of 6</div>
-      <h3 class="headline-lg" id="tutTitle" style="font-size:1.2rem; margin-bottom:8px;">Welcome to Liquid Glass</h3>
-      <p id="tutBody" style="font-size:0.875rem; color:var(--on-surface-muted); line-height:1.5; margin-bottom:20px;">
-        Track and analyze your freestyle slalom protocol with real-time analytics and combo matrix scoring.
+    <div class="tutorial-card" style="max-width:440px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <span class="tutorial-step-badge" id="tutStepBadge">Step 1 of 10</span>
+        <span id="tutCategoryBadge" class="badge badge-combo" style="font-size:0.65rem;">Platform Walkthrough</span>
+      </div>
+      <h3 class="headline-lg" id="tutTitle" style="font-size:1.25rem; margin-bottom:8px;">Welcome to Liquid Glass</h3>
+      <p id="tutBody" style="font-size:0.875rem; color:var(--on-surface-muted); line-height:1.55; margin-bottom:22px;">
+        Master your freestyle slalom protocol with real-time analytics, drill tracking, and combo matrix scoring.
       </p>
       <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
-        <button type="button" class="btn btn-secondary btn-sm" onclick="skipTutorial()">Skip Tour</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="skipTutorial()">Skip Walkthrough</button>
         <button type="button" class="btn btn-sm" id="tutNextBtn" onclick="nextTutorialStep()">Next Step →</button>
       </div>
     </div>
   </div>
-
+  
   <!-- EDIT CUSTOM TRICK MODAL -->
   <div id="editCustomModal" class="modal-overlay">
     <div class="glass-card" style="max-width:380px; width:100%; margin:auto;">

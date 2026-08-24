@@ -218,6 +218,14 @@
       const container = document.getElementById('customTricksList');
       if (!container || !appState.currentUser) return;
 
+      if (!appState.customTricks) {
+        container.innerHTML = `
+          <div class="skeleton skeleton-text" style="height:36px; margin-bottom:8px;"></div>
+          <div class="skeleton skeleton-text" style="height:36px;"></div>
+        `;
+        return;
+      }
+
       const userCustom = appState.customTricks.filter(t => 
         String(t.skaterName || t.skatername).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
       );

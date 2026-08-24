@@ -9,6 +9,25 @@
         btn.innerHTML = '🔄 Syncing...';
       }
 
+      const metricsCont = document.getElementById('dashboardMetricsContainer');
+      const origMetricsHTML = metricsCont ? metricsCont.innerHTML : null;
+
+      if (metricsCont) {
+        metricsCont.innerHTML = `
+          <div class="skeleton-card" style="margin-bottom:16px;">
+            <div class="skeleton skeleton-title" style="width:30%;"></div>
+            <div class="metrics-grid">
+              <div class="skeleton-card"><div class="skeleton skeleton-metric"></div></div>
+              <div class="skeleton-card"><div class="skeleton skeleton-metric"></div></div>
+              <div class="skeleton-card"><div class="skeleton skeleton-metric"></div></div>
+              <div class="skeleton-card"><div class="skeleton skeleton-metric"></div></div>
+              <div class="skeleton-card"><div class="skeleton skeleton-metric"></div></div>
+            </div>
+          </div>
+          <div class="skeleton-card" style="height:220px;"></div>
+        `;
+      }
+
       try {
         if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "YOUR_APPS_SCRIPT_WEB_APP_URL") {
           throw new Error('Google Apps Script URL is not configured.');

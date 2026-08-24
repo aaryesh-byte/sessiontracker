@@ -5,6 +5,16 @@
       const container = document.getElementById('historyList');
       if (!container || !appState.currentUser) return;
 
+      if (appState.sessions.length === 0) {
+        container.innerHTML = `
+          <div class="skeleton-card">
+            <div class="skeleton skeleton-title" style="width:45%;"></div>
+            <div class="skeleton skeleton-text"></div>
+            <div class="skeleton skeleton-text" style="width:70%;"></div>
+          </div>
+        `;
+      }
+
       const typeEl = document.getElementById('histType');
       const typeFilter = typeEl ? typeEl.value : 'ALL';
 

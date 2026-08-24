@@ -152,33 +152,63 @@ window.toggleTheme = toggleTheme;
 
     const TUTORIAL_STEPS = [
       {
-        title: 'Performance Analytics',
-        body: 'Monitor your real-time training volume, average cone success rates, connected combo metrics, and falls over time.',
+        title: 'Performance Dashboard',
+        category: 'Analytics',
+        body: 'Your central command view. Displays real-time total practice volume, average cone success rates, connected completion rates, and falls over time.',
         tab: 'dashboard'
       },
       {
         title: 'Log Training Session',
-        body: 'Log individual trick drills or multi-position combos with independent category and family filters for each slot.',
+        category: 'Training',
+        body: 'Log full practice sessions on any date. A single session can include multiple individual drills and multiple combo sequences together.',
         tab: 'log'
       },
       {
-        title: 'Combo Builder & Matrix',
-        body: 'Build combinations slot-by-slot to calculate technical difficulty ranges and receive AI Matrix 2026 upgrade recommendations.',
+        title: 'Individual Trick Logging',
+        category: 'Training',
+        body: 'Track individual drills with precise Target Cones, Completed Cones, Missed/Kicked Cones, and Falls count.',
+        tab: 'log'
+      },
+      {
+        title: 'Combo Training Builder',
+        category: 'Training',
+        body: 'Build multi-slot combo sequences with independent category and family filters for each position, recording connected attempt rates.',
+        tab: 'log'
+      },
+      {
+        title: 'Combo Calculator & Matrix',
+        category: 'Matrix 2026',
+        body: 'Simulate combo combinations position-by-position to determine official estimated score ranges and get AI Matrix upgrade suggestions.',
         tab: 'calc'
       },
       {
+        title: 'Progress Graphs & Metrics',
+        category: 'Analytics',
+        body: 'Interactive visual graphs for cone success rates over time, target vs completed cones, item progress, and fall frequency.',
+        tab: 'dashboard'
+      },
+      {
         title: 'Training History & Date Filters',
-        body: 'Review all past training sessions. Filter by specific training dates, months, session types, or families.',
+        category: 'History',
+        body: 'Filter and inspect past sessions by exact calendar date, month, practice category, or difficulty family.',
         tab: 'history'
       },
       {
         title: 'Custom Tricks Catalog',
-        body: 'Create and manage your custom tricks with automatic duplicate detection against the official trick matrix.',
+        category: 'Matrix',
+        body: 'Create custom tricks with intelligent duplicate and similarity detection against the official Matrix.',
         tab: 'tricks'
       },
       {
-        title: 'Cloud Sync & Themes',
-        body: 'Keep your training metrics in sync across devices and switch between dark and light themes at any time.',
+        title: 'Cloud Sync',
+        category: 'Data Protocol',
+        body: 'Keep all your practice logs and custom tricks synchronized with the Google Sheets backend at any time.',
+        tab: 'dashboard'
+      },
+      {
+        title: 'Navigation & Account',
+        category: 'Protocol',
+        body: 'Switch between dark and light themes, inspect live skater credentials, and navigate cleanly across all modules.',
         tab: 'dashboard'
       }
     ];
@@ -195,12 +225,13 @@ window.toggleTheme = toggleTheme;
       if (!step) return;
 
       safeSetTextContent('tutStepBadge', `Step ${idx + 1} of ${TUTORIAL_STEPS.length}`);
+      safeSetTextContent('tutCategoryBadge', step.category);
       safeSetTextContent('tutTitle', step.title);
       safeSetTextContent('tutBody', step.body);
 
       const nextBtn = document.getElementById('tutNextBtn');
       if (nextBtn) {
-        nextBtn.textContent = (idx === TUTORIAL_STEPS.length - 1) ? 'Finish Tour 🚀' : 'Next Step →';
+        nextBtn.textContent = (idx === TUTORIAL_STEPS.length - 1) ? 'Finish Walkthrough 🚀' : 'Next Step →';
       }
 
       switchTab(step.tab);
@@ -286,11 +317,27 @@ async function switchTab(tabId, el) {
   if (!container) return;
 
   try {
+    container.innerHTML = `
+      <div class="skeleton-card">
+        <div class="skeleton skeleton-title"></div>
+        <div class="skeleton skeleton-text"></div>
+        <div class="skeleton skeleton-text" style="width:80%;"></div>
+      </div>
+      <div class="skeleton-card">
+        <div class="skeleton skeleton-title" style="width:40%;"></div>
+        <div class="skeleton skeleton-text"></div>
+        <div class="skeleton skeleton-text" style="width:65%;"></div>
+      </div>
+    `;
+
     const response = await fetch(`pages/${page}.html`, { cache: 'no-store' });
     if (!response.ok) throw new Error(`Failed to load ${page}.html (${response.status})`);
     container.innerHTML = await response.text();
     container.dataset.page = tabId;
 
+    const tabContent = container.querySelector('.tab-content');
+    if (tabContent) tabContent.classList.add('active');
+    
     // Initialize controls belonging to the newly loaded page.
     if (tabId === 'log') {
       const logDateEl = document.getElementById('logDate');
