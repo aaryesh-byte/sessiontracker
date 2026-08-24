@@ -251,17 +251,46 @@
     }
 
     .brand {
-      font-family: var(--font-display);
-      font-size: 1.125rem;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      color: var(--primary);
-      text-transform: uppercase;
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
+    .brand-logo-img {
+      height: 28px;
+      width: auto;
+      max-width: 160px;
+      object-fit: contain;
+      filter: brightness(0) invert(1);
+      transition: filter 0.2s ease, transform 0.2s ease;
+    }
+
+    [data-theme="light"] .brand-logo-img {
+      filter: none;
+    }
+
+    .header-logo-img {
+      height: 26px;
+    }
+
+    .auth-brand-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .auth-logo-img {
+      height: 38px;
+      max-width: 210px;
+    }
+
+    .footer-logo-img {
+      height: 30px;
+      max-width: 170px;
+      margin-bottom: 4px;
+    }
+    
     .user-pill {
       display: flex;
       align-items: center;

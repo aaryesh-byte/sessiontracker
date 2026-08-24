@@ -52,7 +52,7 @@
           const custContainer = document.getElementById('customTricksList');
           if (custContainer) renderCustomTricksList();
 
-          showToast('Data synced with Liquid Glass Cloud!', 'success');
+          showToast('Data synced with RollSync Cloud!', 'success');
         } else {
           showToast(json.message || 'Unable to sync data from backend.', 'error');
           renderAnalytics();

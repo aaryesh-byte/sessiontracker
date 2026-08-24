@@ -240,7 +240,7 @@ async function handleAuthSubmit(e) {
       const overlay = document.getElementById('authOverlay');
       if (overlay) overlay.style.display = 'flex';
 
-      showToast('Logged out of Liquid Glass.', 'success');
+      showToast('Logged out of RollSync.', 'success');
     }
 
 async function switchTab(tabId, el) {
