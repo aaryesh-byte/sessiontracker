@@ -12,7 +12,81 @@ let appState = {
       tutorialStep: 0
     };
 
+async function handleAuthSubmit(e) {
+      if (e) e.preventDefault();
+      if (appState.isAuthenticating) return;
 
+      const u = document.getElementById('authUsername').value.trim();
+      const p = document.getElementById('authPassword').value.trim();
+      const skaterName = document.getElementById('authSkaterName').value.trim();
+      const btn = document.getElementById('authSubmitBtn');
+
+      if (!u || !p) {
+        showToast('Please enter both username and password.', 'warning');
+        return;
+      }
+
+      if (appState.authMode === 'register' && !skaterName) {
+        showToast('Please enter your full skater name.', 'warning');
+        return;
+      }
+
+      appState.isAuthenticating = true;
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span>⏳ ${appState.authMode === 'register' ? 'Verifying & Registering...' : 'Authenticating Protocol...'}</span>`;
+      }
+
+      try {
+        if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "YOUR_APPS_SCRIPT_WEB_APP_URL") {
+          throw new Error('Google Apps Script URL is not configured.');
+        }
+
+        const payload = { username: u, password: p, skaterName: skaterName };
+        const response = await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({ action: appState.authMode, payload: payload })
+        });
+
+        const json = await response.json();
+
+        if (json.status === 'success') {
+          if (appState.authMode === 'register') {
+            showToast('Account registered successfully! Please sign in.', 'success');
+            localStorage.setItem(`slalom_is_new_${u.toLowerCase()}`, 'true');
+            switchAuthMode('login');
+          } else {
+            appState.currentUser = json.user;
+            appState.sessions = (json.data && json.data.sessions) ? json.data.sessions : [];
+            appState.customTricks = (json.data && json.data.customTricks) ? json.data.customTricks : [];
+
+            showToast(`Protocol initiated: Welcome ${appState.currentUser.skaterName}`, 'success');
+            const isNew = localStorage.getItem(`slalom_is_new_${u.toLowerCase()}`) === 'true';
+            onAuthSuccess(isNew);
+          }
+        } else {
+          const errMsg = json.message || '';
+          if (errMsg.toLowerCase().includes('already exists') || errMsg.toLowerCase().includes('duplicate')) {
+            showToast('Username already exists. Please choose a different username.', 'error');
+          } else {
+            showToast(errMsg || 'Action failed.', 'error');
+          }
+        }
+
+      } catch (err) {
+        console.error('Auth Error:', err);
+        showToast(err.message || 'Error connecting to Google Sheets backend.', 'error');
+      } finally {
+        appState.isAuthenticating = false;
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<span>${appState.authMode === 'register' ? 'Create Protocol' : 'Log In'}</span>`;
+        }
+      }
+    }
+
+  
     function safeSetInnerHTML(id, html) {
       const el = document.getElementById(id);
       if (el) el.innerHTML = html;
@@ -337,7 +411,7 @@ async function switchTab(tabId, el) {
 
     const tabContent = container.querySelector('.tab-content');
     if (tabContent) tabContent.classList.add('active');
-    
+
     // Initialize controls belonging to the newly loaded page.
     if (tabId === 'log') {
       const logDateEl = document.getElementById('logDate');
