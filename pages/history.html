@@ -35,8 +35,17 @@
             </select>
           </div>
           <div class="form-group">
-            <label>Month</label>
+            <label>Specific Date</label>
+            <input type="date" id="histDate" onchange="renderHistory()">
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="form-group">
+            <label>Month Filter</label>
             <input type="month" id="histMonth" onchange="renderHistory()">
+          </div>
+          <div class="form-group" style="display:flex; align-items:flex-end;">
+            <button type="button" id="btnClearHistFilters" class="btn btn-secondary btn-sm" style="width:100%; height:42px;" onclick="clearHistoryFilters()">Clear Filters</button>
           </div>
         </div>
       </div>

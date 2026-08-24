@@ -28,10 +28,33 @@ let appState = {
 
   initSessionItems();
 
+  // Try to restore session from sessionStorage
+  const savedAuth = sessionStorage.getItem('slalom_auth');
+  if (savedAuth) {
+    try {
+      const parsed = JSON.parse(savedAuth);
+      if (parsed && parsed.currentUser) {
+        appState.currentUser = parsed.currentUser;
+        appState.sessions = parsed.sessions || [];
+        appState.customTricks = parsed.customTricks || [];
+
+        onAuthSuccess();
+        return;
+      }
+    } catch(err) {
+      console.error('Failed to restore session:', err);
+    }
+  }
+
   const overlay = document.getElementById('authOverlay');
   if (overlay) overlay.style.display = 'flex';
+});
 
-  await switchTab('dashboard');
+// Browser back/forward navigation handler
+window.addEventListener('popstate', async (e) => {
+  if (appState.currentUser && e.state && e.state.tabId) {
+    await switchTab(e.state.tabId, null, false);
+  }
 });
 
 
@@ -166,6 +189,15 @@ let appState = {
       const overlay = document.getElementById('authOverlay');
       if (overlay) overlay.style.display = 'none';
 
+      // Persist auth state to sessionStorage
+      try {
+        sessionStorage.setItem('slalom_auth', JSON.stringify({
+          currentUser: appState.currentUser,
+          sessions: appState.sessions,
+          customTricks: appState.customTricks
+        }));
+      } catch(e) {}
+
       safeSetTextContent('headerSkaterName', appState.currentUser.skaterName);
 
       const logSkater = document.getElementById('logSkater');
@@ -174,7 +206,8 @@ let appState = {
       populateProgressTrickFilter();
       renderSessionItems();
 
-      switchTab('dashboard');
+      const initialTab = window.location.hash.replace('#', '') || 'dashboard';
+      switchTab(initialTab, null, true);
     }
 
 
@@ -182,6 +215,10 @@ let appState = {
       appState.currentUser = null;
       appState.sessions = [];
       appState.customTricks = [];
+      sessionStorage.removeItem('slalom_auth');
+
+      const container = document.getElementById('pageContainer');
+      if (container) container.innerHTML = '';
 
       const u = document.getElementById('authUsername');
       if (u) u.value = '';
@@ -196,7 +233,7 @@ let appState = {
       showToast('Logged out of Liquid Glass.', 'success');
     }
 
-async function switchTab(tabId, el) {
+async function switchTab(tabId, el, updateHistory = true) {
   const pageMap = {
     dashboard: 'dashboard',
     log: 'training',
@@ -223,6 +260,10 @@ async function switchTab(tabId, el) {
 
     const tabContent = container.querySelector('.tab-content');
     if (tabContent) tabContent.classList.add('active');
+
+    if (updateHistory) {
+      history.pushState({ tabId: tabId }, '', `#${tabId}`);
+    }
 
     // Initialize controls belonging to the newly loaded page.
     if (tabId === 'log') {

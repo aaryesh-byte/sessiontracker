@@ -160,7 +160,6 @@
       renderChartCones(filtered);
       renderChartTricks(filtered);
       renderChartFalls(filtered);
-      renderChartFamily();
     }
 
 

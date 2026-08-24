@@ -1,0 +1,114 @@
+ INFO  Accepting connections at http://localhost:8080
+ HTTP  8/24/2026 11:18:23 AM ::1 HEAD /
+ HTTP  8/24/2026 11:18:23 AM ::1 Returned 200 in 250 ms
+ HTTP  8/24/2026 11:18:56 AM ::1 GET /index.html
+ HTTP  8/24/2026 11:18:56 AM ::1 Returned 301 in 2 ms
+ HTTP  8/24/2026 11:18:56 AM ::1 GET /index
+ HTTP  8/24/2026 11:18:56 AM ::1 Returned 301 in 1 ms
+ HTTP  8/24/2026 11:18:56 AM ::1 GET /
+ HTTP  8/24/2026 11:18:56 AM ::1 Returned 200 in 11 ms
+ HTTP  8/24/2026 11:18:56 AM ::1 GET /css/global.css
+ HTTP  8/24/2026 11:18:56 AM ::1 Returned 200 in 4 ms
+ HTTP  8/24/2026 11:18:56 AM ::1 GET /css/dashboard.css
+ HTTP  8/24/2026 11:18:56 AM ::1 GET /css/training.css
+ HTTP  8/24/2026 11:18:56 AM ::1 GET /css/combo.css
+ HTTP  8/24/2026 11:18:56 AM ::1 GET /css/history.css
+ HTTP  8/24/2026 11:18:56 AM ::1 GET /css/progress.css
+ HTTP  8/24/2026 11:18:56 AM ::1 Returned 200 in 10 ms
+ HTTP  8/24/2026 11:18:56 AM ::1 GET /js/config.js
+ HTTP  8/24/2026 11:18:56 AM ::1 Returned 200 in 11 ms
+ HTTP  8/24/2026 11:18:56 AM ::1 Returned 200 in 11 ms
+ HTTP  8/24/2026 11:18:56 AM ::1 Returned 200 in 10 ms
+ HTTP  8/24/2026 11:18:56 AM ::1 Returned 200 in 8 ms
+ HTTP  8/24/2026 11:18:56 AM ::1 Returned 200 in 11 ms
+ HTTP  8/24/2026 11:18:56 AM ::1 GET /data/tricks.js
+ HTTP  8/24/2026 11:18:56 AM ::1 GET /js/app.js
+ HTTP  8/24/2026 11:18:56 AM ::1 GET /js/dashboard.js
+ HTTP  8/24/2026 11:18:56 AM ::1 GET /js/training.js
+ HTTP  8/24/2026 11:18:56 AM ::1 GET /js/history.js
+ HTTP  8/24/2026 11:18:56 AM ::1 GET /js/custom-tricks.js
+ HTTP  8/24/2026 11:18:56 AM ::1 Returned 200 in 9 ms
+ HTTP  8/24/2026 11:18:56 AM ::1 Returned 200 in 9 ms
+ HTTP  8/24/2026 11:18:56 AM ::1 Returned 200 in 9 ms
+ HTTP  8/24/2026 11:18:56 AM ::1 Returned 200 in 10 ms
+ HTTP  8/24/2026 11:18:56 AM ::1 Returned 200 in 8 ms
+ HTTP  8/24/2026 11:18:56 AM ::1 Returned 200 in 10 ms
+ HTTP  8/24/2026 11:18:56 AM ::1 GET /js/combo-calculator.js
+ HTTP  8/24/2026 11:18:56 AM ::1 Returned 200 in 9 ms
+ HTTP  8/24/2026 11:18:57 AM ::1 GET /pages/dashboard.html
+ HTTP  8/24/2026 11:18:57 AM ::1 Returned 301 in 1 ms
+ HTTP  8/24/2026 11:18:57 AM ::1 GET /pages/dashboard
+ HTTP  8/24/2026 11:18:57 AM ::1 Returned 200 in 2 ms
+ HTTP  8/24/2026 11:18:57 AM ::1 GET /css/global.css
+ HTTP  8/24/2026 11:18:57 AM ::1 GET /css/dashboard.css
+ HTTP  8/24/2026 11:18:57 AM ::1 GET /css/training.css
+ HTTP  8/24/2026 11:18:57 AM ::1 GET /css/combo.css
+ HTTP  8/24/2026 11:18:57 AM ::1 GET /css/history.css
+ HTTP  8/24/2026 11:18:57 AM ::1 GET /css/progress.css
+ HTTP  8/24/2026 11:18:57 AM ::1 Returned 304 in 5 ms
+ HTTP  8/24/2026 11:18:57 AM ::1 Returned 304 in 5 ms
+ HTTP  8/24/2026 11:18:57 AM ::1 Returned 304 in 5 ms
+ HTTP  8/24/2026 11:18:57 AM ::1 Returned 304 in 5 ms
+ HTTP  8/24/2026 11:18:57 AM ::1 Returned 304 in 6 ms
+ HTTP  8/24/2026 11:18:57 AM ::1 Returned 304 in 6 ms
+ HTTP  8/24/2026 11:20:08 AM ::1 GET /index.html
+ HTTP  8/24/2026 11:20:08 AM ::1 Returned 301 in 1 ms
+ HTTP  8/24/2026 11:20:08 AM ::1 GET /index
+ HTTP  8/24/2026 11:20:08 AM ::1 Returned 301 in 0 ms
+ HTTP  8/24/2026 11:20:08 AM ::1 GET /
+ HTTP  8/24/2026 11:20:08 AM ::1 Returned 200 in 1 ms
+ HTTP  8/24/2026 11:20:08 AM ::1 GET /css/global.css
+ HTTP  8/24/2026 11:20:08 AM ::1 Returned 200 in 1 ms
+ HTTP  8/24/2026 11:20:08 AM ::1 GET /css/dashboard.css
+ HTTP  8/24/2026 11:20:08 AM ::1 GET /css/training.css
+ HTTP  8/24/2026 11:20:08 AM ::1 GET /css/combo.css
+ HTTP  8/24/2026 11:20:08 AM ::1 Returned 200 in 2 ms
+ HTTP  8/24/2026 11:20:08 AM ::1 Returned 200 in 2 ms
+ HTTP  8/24/2026 11:20:08 AM ::1 GET /css/history.css
+ HTTP  8/24/2026 11:20:08 AM ::1 GET /css/progress.css
+ HTTP  8/24/2026 11:20:08 AM ::1 Returned 200 in 3 ms
+ HTTP  8/24/2026 11:20:08 AM ::1 Returned 200 in 2 ms
+ HTTP  8/24/2026 11:20:08 AM ::1 Returned 200 in 3 ms
+ HTTP  8/24/2026 11:20:08 AM ::1 GET /js/config.js
+ HTTP  8/24/2026 11:20:08 AM ::1 GET /data/tricks.js
+ HTTP  8/24/2026 11:20:08 AM ::1 GET /js/app.js
+ HTTP  8/24/2026 11:20:08 AM ::1 GET /js/dashboard.js
+ HTTP  8/24/2026 11:20:08 AM ::1 GET /js/training.js
+ HTTP  8/24/2026 11:20:08 AM ::1 GET /js/history.js
+ HTTP  8/24/2026 11:20:08 AM ::1 Returned 200 in 4 ms
+ HTTP  8/24/2026 11:20:08 AM ::1 Returned 200 in 3 ms
+ HTTP  8/24/2026 11:20:08 AM ::1 Returned 200 in 3 ms
+ HTTP  8/24/2026 11:20:08 AM ::1 Returned 200 in 3 ms
+ HTTP  8/24/2026 11:20:08 AM ::1 Returned 200 in 3 ms
+ HTTP  8/24/2026 11:20:08 AM ::1 Returned 200 in 3 ms
+ HTTP  8/24/2026 11:20:08 AM ::1 GET /js/custom-tricks.js
+ HTTP  8/24/2026 11:20:08 AM ::1 GET /js/combo-calculator.js
+ HTTP  8/24/2026 11:20:08 AM ::1 Returned 200 in 2 ms
+ HTTP  8/24/2026 11:20:08 AM ::1 Returned 200 in 1 ms
+ HTTP  8/24/2026 11:20:08 AM ::1 GET /pages/dashboard.html
+ HTTP  8/24/2026 11:20:08 AM ::1 Returned 301 in 1 ms
+ HTTP  8/24/2026 11:20:08 AM ::1 GET /pages/dashboard
+ HTTP  8/24/2026 11:20:08 AM ::1 Returned 200 in 2 ms
+ HTTP  8/24/2026 11:20:08 AM ::1 GET /css/global.css
+ HTTP  8/24/2026 11:20:08 AM ::1 GET /css/dashboard.css
+ HTTP  8/24/2026 11:20:08 AM ::1 GET /css/training.css
+ HTTP  8/24/2026 11:20:08 AM ::1 GET /css/combo.css
+ HTTP  8/24/2026 11:20:08 AM ::1 Returned 304 in 3 ms
+ HTTP  8/24/2026 11:20:08 AM ::1 Returned 304 in 2 ms
+ HTTP  8/24/2026 11:20:08 AM ::1 Returned 304 in 1 ms
+ HTTP  8/24/2026 11:20:08 AM ::1 GET /css/history.css
+ HTTP  8/24/2026 11:20:08 AM ::1 GET /css/progress.css
+ HTTP  8/24/2026 11:20:08 AM ::1 Returned 304 in 2 ms
+ HTTP  8/24/2026 11:20:08 AM ::1 Returned 304 in 1 ms
+ HTTP  8/24/2026 11:20:08 AM ::1 Returned 304 in 1 ms
+ HTTP  8/24/2026 3:36:26 PM ::1 GET /pages/dashboard.html
+ HTTP  8/24/2026 3:36:26 PM ::1 Returned 301 in 38 ms
+ HTTP  8/24/2026 3:36:34 PM ::1 GET /index.html
+ HTTP  8/24/2026 3:36:34 PM ::1 Returned 301 in 1 ms
+
+ INFO  Gracefully shutting down. Please wait...
+npm notice
+npm notice New minor version of npm available! 11.11.0 -> 11.19.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.19.0
+npm notice To update run: npm install -g npm@11.19.0
+npm notice

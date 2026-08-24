@@ -20,6 +20,25 @@
         return false;
       }
 
+      const allTricks = getAllTricks();
+      const lowerName = name.toLowerCase();
+
+      // Check for exact duplicate name (case-insensitive)
+      const exactMatch = allTricks.find(t => (t.name || t.trickname || '').toLowerCase() === lowerName);
+      if (exactMatch) {
+        showToast(`Creation blocked: Trick "${exactMatch.name || exactMatch.trickname}" already exists in matrix/custom tricks.`, 'error');
+        return false;
+      }
+
+      // Check for similar trick name
+      const similarMatch = allTricks.find(t => {
+        const existing = (t.name || t.trickname || '').toLowerCase();
+        return existing.includes(lowerName) || lowerName.includes(existing);
+      });
+      if (similarMatch) {
+        showToast(`Note: Similar trick "${similarMatch.name || similarMatch.trickname}" found in catalog.`, 'warning');
+      }
+
       const customTrick = {
         id: 'CUST-' + Date.now(),
         trickid: 'CUST-' + Date.now(),

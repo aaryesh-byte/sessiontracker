@@ -14,6 +14,9 @@
       const famEl = document.getElementById('histFam');
       const famFilter = famEl ? famEl.value : 'ALL';
 
+      const dateEl = document.getElementById('histDate');
+      const dateFilter = dateEl ? dateEl.value : '';
+
       const monthEl = document.getElementById('histMonth');
       const monthFilter = monthEl ? monthEl.value : '';
 
@@ -25,6 +28,7 @@
         if (typeFilter !== 'ALL' && sType !== typeFilter) return false;
         if (catFilter !== 'ALL' && s.category !== catFilter) return false;
         if (famFilter !== 'ALL' && s.family !== famFilter) return false;
+        if (dateFilter && String(s.date) !== dateFilter) return false;
         if (monthFilter && !String(s.date).startsWith(monthFilter)) return false;
         return true;
       });
@@ -68,4 +72,24 @@
           </div>
         `;
       }).join('');
+    }
+
+
+    function clearHistoryFilters() {
+      const typeEl = document.getElementById('histType');
+      if (typeEl) typeEl.value = 'ALL';
+
+      const catEl = document.getElementById('histCat');
+      if (catEl) catEl.value = 'ALL';
+
+      const famEl = document.getElementById('histFam');
+      if (famEl) famEl.value = 'ALL';
+
+      const dateEl = document.getElementById('histDate');
+      if (dateEl) dateEl.value = '';
+
+      const monthEl = document.getElementById('histMonth');
+      if (monthEl) monthEl.value = '';
+
+      renderHistory();
     }

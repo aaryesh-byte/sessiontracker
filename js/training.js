@@ -3,7 +3,7 @@
 
     function initSessionItems() {
       appState.sessionItems = [
-        { id: Date.now(), type: 'single', trickName: 'Crazy', category: 'OTHERS', family: 'E', target: 20, completed: 16, missed: 4, falls: 0, notes: '', searchFilter: '' }
+        { id: Date.now(), type: 'single', trickName: 'Crazy', category: 'OTHERS', family: 'E', categoryFilter: 'ALL', familyFilter: 'ALL', target: 20, completed: 16, missed: 4, falls: 0, notes: '', searchFilter: '' }
       ];
       renderSessionItems();
     }
@@ -12,9 +12,28 @@
     function addSessionItem(type) {
       const id = Date.now() + Math.random();
       if (type === 'single') {
-        appState.sessionItems.push({ id, type: 'single', trickName: 'Toe Christie', category: 'SITTING', family: 'A', target: 20, completed: 15, missed: 5, falls: 1, notes: '', searchFilter: '' });
+        appState.sessionItems.push({ id, type: 'single', trickName: 'Toe Christie', category: 'SITTING', family: 'A', categoryFilter: 'ALL', familyFilter: 'ALL', target: 20, completed: 15, missed: 5, falls: 1, notes: '', searchFilter: '' });
       } else {
-        appState.sessionItems.push({ id, type: 'combo', trickName: 'Crazy → Nelson → Mabrouk', category: 'OTHERS', family: 'E', target: 20, completed: 14, missed: 6, totalAttempts: 10, connectedAttempts: 7, falls: 1, notes: '', searchFilter: '' });
+        appState.sessionItems.push({
+          id,
+          type: 'combo',
+          trickName: 'Nelson → Mabrouk → Italian',
+          category: 'SPINNING',
+          family: 'E',
+          comboSlots: [
+            { categoryFilter: 'ALL', familyFilter: 'ALL', selectedTrick: 'Nelson', searchFilter: '' },
+            { categoryFilter: 'ALL', familyFilter: 'ALL', selectedTrick: 'Mabrouk', searchFilter: '' },
+            { categoryFilter: 'ALL', familyFilter: 'ALL', selectedTrick: 'Italian', searchFilter: '' }
+          ],
+          target: 20,
+          completed: 14,
+          missed: 6,
+          totalAttempts: 10,
+          connectedAttempts: 7,
+          falls: 1,
+          notes: '',
+          searchFilter: ''
+        });
       }
       renderSessionItems();
     }
@@ -30,6 +49,36 @@
     }
 
 
+    function addComboItemSlot(itemIdx) {
+      const item = appState.sessionItems[itemIdx];
+      if (item && item.comboSlots) {
+        item.comboSlots.push({ categoryFilter: 'ALL', familyFilter: 'ALL', selectedTrick: '', searchFilter: '' });
+        renderSessionItems();
+      }
+    }
+
+
+    function removeComboItemSlot(itemIdx, slotIdx) {
+      const item = appState.sessionItems[itemIdx];
+      if (item && item.comboSlots && item.comboSlots.length > 1) {
+        item.comboSlots.splice(slotIdx, 1);
+        updateComboItemSequenceName(itemIdx);
+        renderSessionItems();
+      } else {
+        showToast('A combo sequence must have at least one trick slot.', 'warning');
+      }
+    }
+
+
+    function updateComboItemSequenceName(itemIdx) {
+      const item = appState.sessionItems[itemIdx];
+      if (item && item.comboSlots) {
+        const names = item.comboSlots.map(s => s.selectedTrick).filter(n => n && n.trim() !== '');
+        item.trickName = names.length > 0 ? names.join(' → ') : 'Custom Combo Sequence';
+      }
+    }
+
+
     function renderSessionItems() {
       const container = document.getElementById('sessionItemsContainer');
       if (!container) return;
@@ -40,8 +89,10 @@
         const searchVal = (item.searchFilter || '').toLowerCase();
         
         const filteredTricks = allTricks.filter(t => {
-          const name = (t.name || t.trickname || '').toLowerCase();
-          return name.includes(searchVal);
+          const matchCat = (!item.categoryFilter || item.categoryFilter === 'ALL' || t.category === item.categoryFilter);
+          const matchFam = (!item.familyFilter || item.familyFilter === 'ALL' || t.family === item.familyFilter);
+          const matchSearch = !searchVal || (t.name || t.trickname || '').toLowerCase().includes(searchVal);
+          return matchCat && matchFam && matchSearch;
         });
 
         return `
@@ -52,29 +103,104 @@
             </div>
 
             ${!isCombo ? `
-              <div class="row-2">
-                <div class="form-group">
-                  <label>Select Trick</label>
-                  <div class="search-bar-wrap">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" class="search-input" placeholder="Search trick..." value="${item.searchFilter || ''}" oninput="onSessionItemSearchInput(${idx}, this.value)">
-                  </div>
-                  <select id="itemTrickSelect_${idx}" onchange="onSessionItemTrickChange(${idx}, this.value)">
-                    ${filteredTricks.map(t => {
-                      const name = t.name || t.trickname;
-                      return `<option value="${name}" ${name === item.trickName ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
-                    }).join('')}
+              <div class="row-2" style="margin-bottom:8px;">
+                <div class="form-group" style="margin-bottom:0;">
+                  <label>Category Filter</label>
+                  <select style="font-size:0.8rem; padding:8px;" onchange="appState.sessionItems[${idx}].categoryFilter = this.value; renderSessionItems();">
+                    <option value="ALL" ${item.categoryFilter === 'ALL' ? 'selected' : ''}>All Categories</option>
+                    <option value="OTHERS" ${item.categoryFilter === 'OTHERS' ? 'selected' : ''}>Others</option>
+                    <option value="SITTING" ${item.categoryFilter === 'SITTING' ? 'selected' : ''}>Sitting</option>
+                    <option value="JUMPING" ${item.categoryFilter === 'JUMPING' ? 'selected' : ''}>Jumping</option>
+                    <option value="WHEELING" ${item.categoryFilter === 'WHEELING' ? 'selected' : ''}>Wheeling</option>
+                    <option value="SPINNING" ${item.categoryFilter === 'SPINNING' ? 'selected' : ''}>Spinning</option>
                   </select>
                 </div>
-                <div class="form-group">
-                  <label>Category / Family</label>
-                  <input type="text" value="${item.category} (Fam ${item.family})" readonly style="background:var(--bg-container-high); font-weight:700;">
+                <div class="form-group" style="margin-bottom:0;">
+                  <label>Family Filter</label>
+                  <select style="font-size:0.8rem; padding:8px;" onchange="appState.sessionItems[${idx}].familyFilter = this.value; renderSessionItems();">
+                    <option value="ALL" ${item.familyFilter === 'ALL' ? 'selected' : ''}>All Families</option>
+                    <option value="A" ${item.familyFilter === 'A' ? 'selected' : ''}>Family A</option>
+                    <option value="B" ${item.familyFilter === 'B' ? 'selected' : ''}>Family B</option>
+                    <option value="C" ${item.familyFilter === 'C' ? 'selected' : ''}>Family C</option>
+                    <option value="D" ${item.familyFilter === 'D' ? 'selected' : ''}>Family D</option>
+                    <option value="E" ${item.familyFilter === 'E' ? 'selected' : ''}>Family E</option>
+                  </select>
                 </div>
               </div>
-            ` : `
+
               <div class="form-group">
-                <label>Combo Sequence Name</label>
-                <input type="text" value="${item.trickName}" oninput="appState.sessionItems[${idx}].trickName = this.value" placeholder="e.g. Crazy → Nelson → Mabrouk">
+                <label>Select Trick</label>
+                <div class="search-bar-wrap">
+                  <span class="search-icon">🔍</span>
+                  <input type="text" class="search-input" placeholder="Search trick..." value="${item.searchFilter || ''}" oninput="onSessionItemSearchInput(${idx}, this.value)">
+                </div>
+                <select id="itemTrickSelect_${idx}" onchange="onSessionItemTrickChange(${idx}, this.value)">
+                  <option value="">-- Choose Trick --</option>
+                  ${filteredTricks.map(t => {
+                    const name = t.name || t.trickname;
+                    return `<option value="${name}" ${name === item.trickName ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
+                  }).join('')}
+                </select>
+              </div>
+            ` : `
+              <div style="margin-bottom:12px;">
+                <label style="margin-bottom:6px;">Combo Sequence Slots</label>
+                ${(item.comboSlots || []).map((slot, sIdx) => {
+                  const slotSearchVal = (slot.searchFilter || '').toLowerCase();
+                  const slotFilteredTricks = allTricks.filter(t => {
+                    const matchCat = (!slot.categoryFilter || slot.categoryFilter === 'ALL' || t.category === slot.categoryFilter);
+                    const matchFam = (!slot.familyFilter || slot.familyFilter === 'ALL' || t.family === slot.familyFilter);
+                    const matchSearch = !slotSearchVal || (t.name || t.trickname || '').toLowerCase().includes(slotSearchVal);
+                    return matchCat && matchFam && matchSearch;
+                  });
+
+                  return `
+                    <div style="padding:10px; background:var(--bg-container-high); border-radius:var(--radius-sm); margin-bottom:8px; border:1px solid var(--border-razor);">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <span style="font-size:0.75rem; font-weight:700; color:var(--primary);">Combo Slot #${sIdx + 1}</span>
+                        ${(item.comboSlots.length > 1) ? `<button type="button" onclick="removeComboItemSlot(${idx}, ${sIdx})" style="background:none; border:none; color:#f87171; font-weight:700; font-size:0.7rem; cursor:pointer;">✕ Remove Slot</button>` : ''}
+                      </div>
+
+                      <div class="row-2" style="margin-bottom:6px;">
+                        <div class="form-group" style="margin-bottom:0;">
+                          <select style="font-size:0.75rem; padding:6px;" onchange="appState.sessionItems[${idx}].comboSlots[${sIdx}].categoryFilter = this.value; renderSessionItems();">
+                            <option value="ALL" ${slot.categoryFilter === 'ALL' ? 'selected' : ''}>All Categories</option>
+                            <option value="OTHERS" ${slot.categoryFilter === 'OTHERS' ? 'selected' : ''}>Others</option>
+                            <option value="SITTING" ${slot.categoryFilter === 'SITTING' ? 'selected' : ''}>Sitting</option>
+                            <option value="JUMPING" ${slot.categoryFilter === 'JUMPING' ? 'selected' : ''}>Jumping</option>
+                            <option value="WHEELING" ${slot.categoryFilter === 'WHEELING' ? 'selected' : ''}>Wheeling</option>
+                            <option value="SPINNING" ${slot.categoryFilter === 'SPINNING' ? 'selected' : ''}>Spinning</option>
+                          </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                          <select style="font-size:0.75rem; padding:6px;" onchange="appState.sessionItems[${idx}].comboSlots[${sIdx}].familyFilter = this.value; renderSessionItems();">
+                            <option value="ALL" ${slot.familyFilter === 'ALL' ? 'selected' : ''}>All Families</option>
+                            <option value="A" ${slot.familyFilter === 'A' ? 'selected' : ''}>Family A</option>
+                            <option value="B" ${slot.familyFilter === 'B' ? 'selected' : ''}>Family B</option>
+                            <option value="C" ${slot.familyFilter === 'C' ? 'selected' : ''}>Family C</option>
+                            <option value="D" ${slot.familyFilter === 'D' ? 'selected' : ''}>Family D</option>
+                            <option value="E" ${slot.familyFilter === 'E' ? 'selected' : ''}>Family E</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <select style="font-size:0.8rem; padding:8px;" onchange="appState.sessionItems[${idx}].comboSlots[${sIdx}].selectedTrick = this.value; updateComboItemSequenceName(${idx});">
+                        <option value="">-- Select Trick for Slot #${sIdx + 1} --</option>
+                        ${slotFilteredTricks.map(t => {
+                          const name = t.name || t.trickname;
+                          return `<option value="${name}" ${name === slot.selectedTrick ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
+                        }).join('')}
+                      </select>
+                    </div>
+                  `;
+                }).join('')}
+
+                <button type="button" class="btn btn-secondary btn-sm" style="margin-bottom:10px;" onclick="addComboItemSlot(${idx})">+ Add Trick Slot to Combo</button>
+
+                <div class="form-group">
+                  <label>Generated Combo Sequence Name</label>
+                  <input type="text" value="${item.trickName}" oninput="appState.sessionItems[${idx}].trickName = this.value" placeholder="e.g. Crazy → Nelson → Mabrouk">
+                </div>
               </div>
             `}
 
@@ -133,8 +259,10 @@
 
       const allTricks = getAllTricks();
       const filteredTricks = allTricks.filter(t => {
+        const matchCat = (!item.categoryFilter || item.categoryFilter === 'ALL' || t.category === item.categoryFilter);
+        const matchFam = (!item.familyFilter || item.familyFilter === 'ALL' || t.family === item.familyFilter);
         const name = (t.name || t.trickname || '').toLowerCase();
-        return name.includes(searchVal);
+        return matchCat && matchFam && (!searchVal || name.includes(searchVal));
       });
 
       select.innerHTML = `
