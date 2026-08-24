@@ -116,51 +116,31 @@ async function handleAuthSubmit(e) {
       if (el) el.innerHTML = html;
     }
 
-
     function safeSetTextContent(id, text) {
       const el = document.getElementById(id);
       if (el) el.textContent = text;
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      const logDateEl = document.getElementById('logDate');
-      if (logDateEl) logDateEl.value = new Date().toISOString().split('T')[0];
-
-      const progMonthEl = document.getElementById('progMonth');
-      if (progMonthEl) progMonthEl.value = new Date().toISOString().slice(0, 7);
-      
       const savedTheme = localStorage.getItem('slalom_theme') || 'dark';
       applyTheme(savedTheme);
 
+      const loginForm = document.getElementById('loginForm');
+      if (loginForm) {
+        loginForm.addEventListener('submit', handleAuthSubmit);
+      }
+
       initSessionItems();
-      renderCalcSlots();
 
       const overlay = document.getElementById('authOverlay');
       if (overlay) overlay.style.display = 'flex';
     });
 
-window.addEventListener('DOMContentLoaded', async () => {
-  const savedTheme = localStorage.getItem('slalom_theme') || 'dark';
-  applyTheme(savedTheme);
-
-  const loginForm = document.getElementById('loginForm');
-  if (loginForm) {
-    loginForm.addEventListener('submit', handleAuthSubmit);
-  }
-
-  initSessionItems();
-
-  const overlay = document.getElementById('authOverlay');
-  if (overlay) overlay.style.display = 'flex';
-
-  await switchTab('dashboard');
-});
-
-window.handleAuthSubmit = handleAuthSubmit;
-window.switchAuthMode = switchAuthMode;
-window.togglePasswordVisibility = togglePasswordVisibility;
-window.logout = logout;
-window.toggleTheme = toggleTheme;
+    window.handleAuthSubmit = handleAuthSubmit;
+    window.switchAuthMode = switchAuthMode;
+    window.togglePasswordVisibility = togglePasswordVisibility;
+    window.logout = logout;
+    window.toggleTheme = toggleTheme;
 
 
     function applyTheme(theme) {
@@ -243,22 +223,6 @@ window.toggleTheme = toggleTheme;
       switchTab('dashboard');
     }
 
-    function onAuthSuccess() {
-      const overlay = document.getElementById('authOverlay');
-      if (overlay) overlay.style.display = 'none';
-
-      safeSetTextContent('headerSkaterName', appState.currentUser.skaterName);
-
-      const logSkater = document.getElementById('logSkater');
-      if (logSkater) logSkater.value = appState.currentUser.skaterName;
-
-      populateProgressTrickFilter();
-      renderSessionItems();
-
-      switchTab('dashboard');
-    }
-
-
     function logout() {
       appState.currentUser = null;
       appState.sessions = [];
@@ -270,6 +234,11 @@ window.toggleTheme = toggleTheme;
       if (p) p.value = '';
       const s = document.getElementById('authSkaterName');
       if (s) s.value = '';
+
+      const pageContainer = document.getElementById('pageContainer');
+      if (pageContainer) pageContainer.innerHTML = '';
+
+      safeSetTextContent('headerSkaterName', 'Skater: -');
 
       const overlay = document.getElementById('authOverlay');
       if (overlay) overlay.style.display = 'flex';
@@ -340,7 +309,7 @@ async function switchTab(tabId, el) {
     }
     if (tabId === 'history') renderHistory();
     if (tabId === 'tricks') renderCustomTricksList();
-    if (tabId === 'calc') updateComboCalculator();
+    if (tabId === 'calc') renderCalcSlots();
 
     // Re-apply theme after injecting page markup.
     const theme = document.documentElement.getAttribute('data-theme') || 'dark';
