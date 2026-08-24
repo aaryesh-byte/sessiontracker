@@ -8,8 +8,7 @@ let appState = {
       sessionItems: [],
       calcSlots: [],
       deletingTrickId: null,
-      charts: {},
-      tutorialStep: 0
+      charts: {}
     };
 
 async function handleAuthSubmit(e) {
@@ -47,7 +46,7 @@ async function handleAuthSubmit(e) {
 
       try {
         if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "YOUR_APPS_SCRIPT_WEB_APP_URL") {
-          throw new Error('Google Apps Script URL is not configured.');
+          throw new Error('Google Apps Script URL is not configured in config.js.');
         }
 
         const payload = { username: u, password: p, skaterName: skaterName };
@@ -70,31 +69,37 @@ async function handleAuthSubmit(e) {
             appState.sessions = (json.data && json.data.sessions) ? json.data.sessions : [];
             appState.customTricks = (json.data && json.data.customTricks) ? json.data.customTricks : [];
 
-            const userKey = `slalom_tutorial_completed_${String(u).toLowerCase().trim()}`;
-            localStorage.removeItem(userKey);
-
             showToast(`Registration complete: Welcome ${registeredUser.skaterName}!`, 'success');
-            onAuthSuccess(true);
+            onAuthSuccess();
           } else {
             appState.currentUser = json.user;
             appState.sessions = (json.data && json.data.sessions) ? json.data.sessions : [];
             appState.customTricks = (json.data && json.data.customTricks) ? json.data.customTricks : [];
 
             showToast(`Protocol initiated: Welcome ${appState.currentUser.skaterName}`, 'success');
-            onAuthSuccess(false);
+            onAuthSuccess();
           }
         } else {
-          const errMsg = json.message || '';
-          if (errMsg.toLowerCase().includes('already exists') || errMsg.toLowerCase().includes('duplicate')) {
+          const rawMsg = (json.message || '').toLowerCase();
+
+          if (rawMsg.includes('password') || rawMsg.includes('invalid credential') || rawMsg.includes('wrong pass')) {
+            showToast('Incorrect password. Please enter your password again.', 'error');
+            if (pEl) {
+              pEl.value = '';
+              pEl.focus();
+            }
+          } else if (rawMsg.includes('already exists') || rawMsg.includes('duplicate')) {
             showToast('Username already exists. Please choose a different username.', 'error');
+          } else if (rawMsg.includes('not found') || rawMsg.includes('no user') || rawMsg.includes('does not exist')) {
+            showToast('Account not found. Please verify username or register.', 'error');
           } else {
-            showToast(errMsg || 'Authentication failed. Check credentials.', 'error');
+            showToast(json.message || 'Authentication failed. Please try again.', 'error');
           }
         }
 
       } catch (err) {
         console.error('Auth Error:', err);
-        showToast(err.message || 'Error connecting to backend.', 'error');
+        showToast(err.message || 'Network error connecting to backend.', 'error');
       } finally {
         appState.isAuthenticating = false;
         if (btn) {
@@ -105,7 +110,6 @@ async function handleAuthSubmit(e) {
 
       return false;
     }
-
   
     function safeSetInnerHTML(id, html) {
       const el = document.getElementById(id);
@@ -141,9 +145,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   const loginForm = document.getElementById('loginForm');
   if (loginForm) {
-    loginForm.onsubmit = function(e) {
-      return handleAuthSubmit(e);
-    };
+    loginForm.addEventListener('submit', handleAuthSubmit);
   }
 
   initSessionItems();
@@ -224,12 +226,11 @@ window.toggleTheme = toggleTheme;
     }
 
 
-    function onAuthSuccess(isNewUser = false) {
+    function onAuthSuccess() {
       const overlay = document.getElementById('authOverlay');
       if (overlay) overlay.style.display = 'none';
 
-      const username = String(appState.currentUser.username || '').toLowerCase().trim();
-      const skaterName = appState.currentUser.skaterName || appState.currentUser.username || 'Skater';
+      const skaterName = (appState.currentUser && (appState.currentUser.skaterName || appState.currentUser.username)) || 'Skater';
 
       safeSetTextContent('headerSkaterName', skaterName);
 
@@ -240,133 +241,7 @@ window.toggleTheme = toggleTheme;
       renderSessionItems();
 
       switchTab('dashboard');
-
-      const userKey = `slalom_tutorial_completed_${username || String(skaterName).toLowerCase().trim()}`;
-      const hasCompleted = localStorage.getItem(userKey) === 'true';
-
-      if (isNewUser || !hasCompleted) {
-        setTimeout(() => {
-          startTutorial();
-        }, 200);
-      }
     }
-
-    const TUTORIAL_STEPS = [
-      {
-        title: 'Performance Dashboard',
-        category: 'Analytics',
-        body: 'Your central command view. Displays real-time total practice volume, average cone success rates, connected completion rates, and falls over time.',
-        tab: 'dashboard'
-      },
-      {
-        title: 'Log Training Session',
-        category: 'Training',
-        body: 'Log full practice sessions on any date. A single session can include multiple individual drills and multiple combo sequences together.',
-        tab: 'log'
-      },
-      {
-        title: 'Individual Trick Logging',
-        category: 'Training',
-        body: 'Track individual drills with precise Target Cones, Completed Cones, Missed/Kicked Cones, and Falls count.',
-        tab: 'log'
-      },
-      {
-        title: 'Combo Training Builder',
-        category: 'Training',
-        body: 'Build multi-slot combo sequences with independent category and family filters for each position, recording connected attempt rates.',
-        tab: 'log'
-      },
-      {
-        title: 'Combo Calculator & Matrix',
-        category: 'Matrix 2026',
-        body: 'Simulate combo combinations position-by-position to determine official estimated score ranges and get AI Matrix upgrade suggestions.',
-        tab: 'calc'
-      },
-      {
-        title: 'Progress Graphs & Metrics',
-        category: 'Analytics',
-        body: 'Interactive visual graphs for cone success rates over time, target vs completed cones, item progress, and fall frequency.',
-        tab: 'dashboard'
-      },
-      {
-        title: 'Training History & Date Filters',
-        category: 'History',
-        body: 'Filter and inspect past sessions by exact calendar date, month, practice category, or difficulty family.',
-        tab: 'history'
-      },
-      {
-        title: 'Custom Tricks Catalog',
-        category: 'Matrix',
-        body: 'Create custom tricks with intelligent duplicate and similarity detection against the official Matrix.',
-        tab: 'tricks'
-      },
-      {
-        title: 'Cloud Sync',
-        category: 'Data Protocol',
-        body: 'Keep all your practice logs and custom tricks synchronized with the Google Sheets backend at any time.',
-        tab: 'dashboard'
-      },
-      {
-        title: 'Navigation & Account',
-        category: 'Protocol',
-        body: 'Switch between dark and light themes, inspect live skater credentials, and navigate cleanly across all modules.',
-        tab: 'dashboard'
-      }
-    ];
-
-    function startTutorial() {
-      appState.tutorialStep = 0;
-      document.body.classList.add('tutorial-active');
-      const tutEl = document.getElementById('tutorialOverlay');
-      if (tutEl) tutEl.style.display = 'flex';
-      showTutorialStep(0);
-    }
-
-    function showTutorialStep(idx) {
-      const step = TUTORIAL_STEPS[idx];
-      if (!step) return;
-
-      safeSetTextContent('tutStepBadge', `Step ${idx + 1} of ${TUTORIAL_STEPS.length}`);
-      safeSetTextContent('tutCategoryBadge', step.category);
-      safeSetTextContent('tutTitle', step.title);
-      safeSetTextContent('tutBody', step.body);
-
-      const nextBtn = document.getElementById('tutNextBtn');
-      if (nextBtn) {
-        nextBtn.textContent = (idx === TUTORIAL_STEPS.length - 1) ? 'Finish Walkthrough 🚀' : 'Next Step →';
-      }
-
-      if (step.tab) {
-        switchTab(step.tab);
-      }
-    }
-
-    function nextTutorialStep() {
-      appState.tutorialStep++;
-      if (appState.tutorialStep >= TUTORIAL_STEPS.length) {
-        finishTutorial();
-      } else {
-        showTutorialStep(appState.tutorialStep);
-      }
-    }
-
-    function skipTutorial() {
-      finishTutorial();
-    }
-
-    function finishTutorial() {
-      document.body.classList.remove('tutorial-active');
-      const tutEl = document.getElementById('tutorialOverlay');
-      if (tutEl) tutEl.style.display = 'none';
-
-      if (appState.currentUser) {
-        const userKey = `slalom_tutorial_completed_${String(appState.currentUser.username || appState.currentUser.skaterName).toLowerCase().trim()}`;
-        localStorage.setItem(userKey, 'true');
-      }
-      showToast('Tutorial complete! Welcome to your protocol.', 'success');
-      switchTab('dashboard');
-    }
-
 
     function onAuthSuccess() {
       const overlay = document.getElementById('authOverlay');

@@ -15,24 +15,29 @@
 
   <div id="toastContainer"></div>
 
-  <!-- GUIDED ONBOARDING TUTORIAL MODAL -->
-  <!-- GUIDED ONBOARDING TUTORIAL MODAL -->
-  <div id="tutorialOverlay">
-    <div class="tutorial-card" style="max-width:440px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-        <span class="tutorial-step-badge" id="tutStepBadge">Step 1 of 10</span>
-        <span id="tutCategoryBadge" class="badge badge-combo" style="font-size:0.65rem;">Platform Walkthrough</span>
-      </div>
-      <h3 class="headline-lg" id="tutTitle" style="font-size:1.25rem; margin-bottom:8px;">Welcome to Liquid Glass</h3>
-      <p id="tutBody" style="font-size:0.875rem; color:var(--on-surface-muted); line-height:1.55; margin-bottom:22px;">
-        Master your freestyle slalom protocol with real-time analytics, drill tracking, and combo matrix scoring.
-      </p>
-      <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
-        <button type="button" class="btn btn-secondary btn-sm" onclick="skipTutorial()">Skip Walkthrough</button>
-        <button type="button" class="btn btn-sm" id="tutNextBtn" onclick="nextTutorialStep()">Next Step →</button>
-      </div>
-    </div>
-  </div>
+  <form id="loginForm" autocomplete="on">
+        <div class="form-group" style="text-align:left;">
+          <label for="authUsername">Username</label>
+          <input type="text" id="authUsername" name="username" placeholder="e.g. alex_chen" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required>
+        </div>
+
+        <div class="form-group" style="text-align:left;">
+          <label for="authPassword">Password</label>
+          <div class="password-wrap">
+            <input type="password" id="authPassword" name="password" placeholder="Enter password" autocomplete="current-password" autocapitalize="none" autocorrect="off" style="padding-right:48px;" required>
+            <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility()" title="Show/Hide Password">👁️</button>
+          </div>
+        </div>
+
+        <div class="form-group" style="text-align:left; display:none;" id="skaterNameField">
+          <label for="authSkaterName">Skater Full Name</label>
+          <input type="text" id="authSkaterName" name="skaterName" placeholder="e.g. Alex Chen" autocapitalize="words">
+        </div>
+
+        <button type="submit" id="authSubmitBtn" class="btn" style="margin-top:10px; width:100%; min-height:48px; touch-action:manipulation; cursor:pointer;">
+          <span>Log In</span>
+        </button>
+      </form>
 
   <!-- EDIT CUSTOM TRICK MODAL -->
   <div id="editCustomModal" class="modal-overlay">

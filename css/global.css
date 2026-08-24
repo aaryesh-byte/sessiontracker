@@ -74,68 +74,6 @@
       background: rgba(0, 168, 129, 0.1);
     }
 
-    /* TUTORIAL OVERLAY & COMPLETE SCREEN LOCK */
-    body.tutorial-active {
-      overflow: hidden !important;
-      touch-action: none !important;
-      user-select: none !important;
-      -webkit-user-select: none !important;
-    }
-
-    body.tutorial-active header,
-    body.tutorial-active main,
-    body.tutorial-active nav,
-    body.tutorial-active .modal-overlay:not(#tutorialOverlay) {
-      pointer-events: none !important;
-      filter: blur(4px) brightness(0.6);
-      transition: filter 0.25s ease;
-    }
-
-    #tutorialOverlay {
-      position: fixed;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(8, 10, 12, 0.88);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      z-index: 9999999 !important;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      pointer-events: auto !important;
-      touch-action: auto !important;
-    }
-
-    body.tutorial-active #tutorialOverlay,
-    body.tutorial-active #tutorialOverlay * {
-      pointer-events: auto !important;
-    }
-
-    .tutorial-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-razor);
-      border-radius: var(--radius-lg);
-      padding: 24px;
-      width: 100%;
-      max-width: 440px;
-      box-shadow: var(--card-shadow), var(--primary-glow);
-      position: relative;
-      animation: toastIn 0.3s ease;
-      pointer-events: auto !important;
-    }
-
-    .tutorial-step-badge {
-      font-family: var(--font-mono);
-      font-size: 0.6875rem;
-      font-weight: 700;
-      color: var(--primary);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 8px;
-    }
-
     html, body {
       width: 100%;
       max-width: 100vw;
@@ -184,21 +122,23 @@
       color: var(--on-surface-muted);
     }
 
-    /* AUTH OVERLAY SCREEN */
+    /* AUTH OVERLAY SCREEN — MOBILE OPTIMIZED */
     #authOverlay {
       position: fixed;
       inset: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(12, 14, 17, 0.92);
-      backdrop-filter: blur(28px) saturate(180%);
-      -webkit-backdrop-filter: blur(28px) saturate(180%);
+      width: 100%;
+      height: 100%;
+      background: rgba(12, 14, 17, 0.94);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
       z-index: 999999;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 16px;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
     }
 
     .auth-card {
@@ -211,6 +151,14 @@
       box-shadow: var(--card-shadow), var(--primary-glow);
       text-align: center;
       position: relative;
+      margin: auto;
+    }
+
+    /* 16px font on mobile prevents iOS Safari from automatically zooming into inputs */
+    #authOverlay input {
+      font-size: 16px;
+      -webkit-appearance: none;
+      border-radius: var(--radius-md);
     }
 
     .auth-card::before {
