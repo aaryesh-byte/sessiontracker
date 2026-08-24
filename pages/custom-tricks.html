@@ -1,0 +1,40 @@
+<div id="tab-tricks" class="tab-content">
+      <div class="glass-card">
+        <div class="card-title">Add Custom Trick</div>
+        <form id="customTrickForm" onsubmit="handleCustomTrickSubmit(event)">
+          <div class="form-group">
+            <label>Custom Trick Name</label>
+            <input type="text" id="custName" placeholder="e.g. Double Butterfly Spin Combo" required>
+          </div>
+          <div class="row-2">
+            <div class="form-group">
+              <label>Category</label>
+              <select id="custCat">
+                <option value="OTHERS">Others</option>
+                <option value="SITTING">Sitting</option>
+                <option value="JUMPING">Jumping</option>
+                <option value="WHEELING">Wheeling</option>
+                <option value="SPINNING">Spinning</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Family Metadata</label>
+              <select id="custFam">
+                <option value="Custom">Custom</option>
+                <option value="A">Family A</option>
+                <option value="B">Family B</option>
+                <option value="C">Family C</option>
+                <option value="D">Family D</option>
+                <option value="E">Family E</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn" style="margin-top:8px;">Create Custom Trick</button>
+        </form>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-title">My Custom Tricks Catalog</div>
+        <div id="customTricksList"></div>
+      </div>
+    </div>

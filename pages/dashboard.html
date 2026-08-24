@@ -1,0 +1,126 @@
+<div id="tab-dashboard" class="tab-content active">
+      
+      <div class="glass-card" style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px;">
+        <div>
+          <h2 class="headline-lg">Performance Analytics</h2>
+          <div class="label-caps" style="margin-top:2px;">Real-Time Protocol Metrics</div>
+        </div>
+        <button type="button" id="btnSyncDashboard" class="btn btn-secondary btn-sm" onclick="syncUserDataFromSheets()">
+          🔄 Sync Data
+        </button>
+      </div>
+
+      <!-- Filters Card -->
+      <div class="glass-card">
+        <div class="card-title">Dashboard Filters</div>
+        
+        <div class="row-2">
+          <div class="form-group">
+            <label>Time Range Filter</label>
+            <select id="progTimeRange" onchange="onTimeRangeFilterChange()">
+              <option value="THIS_MONTH">This Month</option>
+              <option value="TODAY">Today</option>
+              <option value="THIS_WEEK">This Week</option>
+              <option value="SPECIFIC_MONTH">Select Specific Month</option>
+              <option value="CUSTOM_RANGE">Custom Date Range</option>
+              <option value="ALL_TIME">All Time</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="groupSpecificMonth">
+            <label>Specific Month</label>
+            <input type="month" id="progMonth" onchange="renderAnalytics()">
+          </div>
+        </div>
+
+        <div class="row-2" id="groupCustomRange" style="display:none;">
+          <div class="form-group">
+            <label>Start Date</label>
+            <input type="date" id="progStartDate" onchange="renderAnalytics()">
+          </div>
+          <div class="form-group">
+            <label>End Date</label>
+            <input type="date" id="progEndDate" onchange="renderAnalytics()">
+          </div>
+        </div>
+
+        <div class="row-2">
+          <div class="form-group">
+            <label>Practice Item / Combo Filter</label>
+            <div class="search-bar-wrap">
+              <span class="search-icon">🔍</span>
+              <input type="text" class="search-input" id="progTrickSearch" placeholder="Search item..." oninput="populateProgressTrickFilter()">
+            </div>
+            <select id="progTrick" onchange="renderAnalytics()">
+              <option value="ALL">All Items & Combos</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Category Filter</label>
+            <select id="progCategory" onchange="renderAnalytics()">
+              <option value="ALL">All Categories</option>
+              <option value="SITTING">Sitting</option>
+              <option value="WHEELING">Wheeling</option>
+              <option value="SPINNING">Spinning</option>
+              <option value="JUMPING">Jumping</option>
+              <option value="OTHERS">Others</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard Metrics -->
+      <div id="dashboardMetricsContainer">
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-label">Sessions</div>
+            <div id="mSessions" class="metric-value">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Avg Cone %</div>
+            <div id="mSuccess" class="metric-value">0%</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Completed</div>
+            <div id="mCompleted" class="metric-value">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Impacts/Falls</div>
+            <div id="mFalls" class="metric-value">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Connected %</div>
+            <div id="mConnected" class="metric-value">0%</div>
+          </div>
+        </div>
+
+        <!-- Graph 1: Success Rate Over Time -->
+        <div class="glass-card">
+          <div class="card-title">Cone Success Rate % Over Time</div>
+          <div class="chart-container"><canvas id="chartSuccessRate"></canvas></div>
+        </div>
+
+        <!-- Graph 2: Target vs Completed Cones -->
+        <div class="glass-card">
+          <div class="card-title">Target vs Completed Cones</div>
+          <div class="chart-container"><canvas id="chartCones"></canvas></div>
+        </div>
+
+        <!-- Graph 3: Individual Trick & Combo Progress -->
+        <div class="glass-card">
+          <div class="card-title">Progress by Practice Item / Combo</div>
+          <div class="chart-container"><canvas id="chartTricks"></canvas></div>
+        </div>
+
+        <!-- Graph 4: Falls Over Time -->
+        <div class="glass-card">
+          <div class="card-title">Falls Count Over Time</div>
+          <div class="chart-container"><canvas id="chartFalls"></canvas></div>
+        </div>
+
+      </div>
+
+      </div>
+
+    </div>

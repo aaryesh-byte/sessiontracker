@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <title>Liquid Glass — Freestyle Slalom Protocol</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Hanken+Grotesk:ital,wght@0,500;0,600;0,700;0,800;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/global.css">
+</head>
+<body>
+  <script src="js/config.js"></script>
+
+  <div id="toastContainer"></div>
+
+  <!-- GUIDED ONBOARDING TUTORIAL MODAL -->
+  <div id="tutorialOverlay">
+    <div class="tutorial-card">
+      <div class="tutorial-step-badge" id="tutStepBadge">Step 1 of 6</div>
+      <h3 class="headline-lg" id="tutTitle" style="font-size:1.2rem; margin-bottom:8px;">Welcome to Liquid Glass</h3>
+      <p id="tutBody" style="font-size:0.875rem; color:var(--on-surface-muted); line-height:1.5; margin-bottom:20px;">
+        Track and analyze your freestyle slalom protocol with real-time analytics and combo matrix scoring.
+      </p>
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="skipTutorial()">Skip Tour</button>
+        <button type="button" class="btn btn-sm" id="tutNextBtn" onclick="nextTutorialStep()">Next Step →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT CUSTOM TRICK MODAL -->
+  <div id="editCustomModal" class="modal-overlay">
+    <div class="glass-card" style="max-width:380px; width:100%; margin:auto;">
+      <div class="card-title">
+        <span>Edit Custom Trick</span>
+        <button type="button" onclick="closeEditCustomModal()" style="border:none; background:none; font-size:1.1rem; cursor:pointer; color:var(--on-surface-muted);">✕</button>
+      </div>
+      <form id="editCustomForm" onsubmit="handleEditCustomTrickSubmit(event)">
+        <input type="hidden" id="editTrickId">
+        <div class="form-group">
+          <label>Trick Name</label>
+          <input type="text" id="editTrickName" required>
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select id="editTrickCategory">
+            <option value="OTHERS">Others</option>
+            <option value="SITTING">Sitting</option>
+            <option value="JUMPING">Jumping</option>
+            <option value="WHEELING">Wheeling</option>
+            <option value="SPINNING">Spinning</option>
+          </select>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:16px;">
+          <button type="button" class="btn btn-secondary" onclick="closeEditCustomModal()">Cancel</button>
+          <button type="submit" class="btn">Update Trick</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- CONFIRM DELETE MODAL -->
+  <div id="confirmDeleteModal" class="modal-overlay">
+    <div class="glass-card" style="max-width:360px; width:100%; margin:auto; text-align:center;">
+      <div class="card-title" style="justify-content:center; color:#f87171;">Delete Custom Trick</div>
+      <p id="deleteModalMessage" style="font-size:0.875rem; color:var(--on-surface-muted); margin-bottom:20px;">
+        Are you sure you want to delete this custom trick?
+      </p>
+      <div style="display:flex; gap:10px;">
+        <button type="button" class="btn btn-secondary" onclick="closeDeleteConfirmModal()">Cancel</button>
+        <button type="button" class="btn btn-danger" id="btnConfirmDelete">Delete Trick</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTHENTICATION OVERLAY SCREEN -->
+  <div id="authOverlay">
+    <div class="auth-card">
+      <div class="auth-logo">LIQUID GLASS</div>
+      <div class="auth-subtitle" id="authSubtitleText">Sign in to access your freestyle protocol</div>
+
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab-btn active" id="btnAuthLoginTab" onclick="switchAuthMode('login')">Sign In</button>
+        <button type="button" class="auth-tab-btn" id="btnAuthRegisterTab" onclick="switchAuthMode('register')">Register</button>
+      </div>
+
+      <form id="loginForm">
+        <div class="form-group" style="text-align:left;">
+          <label>Username</label>
+          <input type="text" id="authUsername" placeholder="e.g. alex_chen" autocomplete="username" required>
+        </div>
+
+        <div class="form-group" style="text-align:left;">
+          <label>Password</label>
+          <div class="password-wrap">
+            <input type="password" id="authPassword" placeholder="Enter password" autocomplete="current-password" required>
+            <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility()" title="Show/Hide Password">👁️</button>
+          </div>
+        </div>
+
+        <div class="form-group" style="text-align:left; display:none;" id="skaterNameField">
+          <label>Skater Full Name</label>
+          <input type="text" id="authSkaterName" placeholder="e.g. Alex Chen">
+        </div>
+
+        <button type="submit" id="authSubmitBtn" class="btn" style="margin-top:8px;">
+          <span>Log In</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOP HEADER BAR -->
+  <header>
+    <div class="brand">
+      <span>⚡</span> LIQUID GLASS
+    </div>
+    <div class="user-pill">
+      <div class="live-badge">
+        <span class="live-dot"></span>
+        <span id="headerSkaterName">Skater: -</span>
+      </div>
+      <button class="theme-toggle-btn" onclick="toggleTheme()">
+        <span id="themeBtnIcon">🌙</span>
+      </button>
+      <button class="btn-logout" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+
+
+  <!-- MAIN CONTENT: individual HTML modules are loaded here -->
+  <main class="main-viewport" id="pageContainer"></main>
+
+  <!-- LIQUID GLASS FLOATING BOTTOM NAVIGATION BAR -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab('dashboard', this)">
+      <span class="nav-icon">📊</span>
+      <span>Dash</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('log', this)">
+      <span class="nav-icon">📝</span>
+      <span>Train</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('calc', this)">
+      <span class="nav-icon">🛠️</span>
+      <span>Build</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('history', this)">
+      <span class="nav-icon">📜</span>
+      <span>History</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('tricks', this)">
+      <span class="nav-icon">💡</span>
+      <span>Matrix</span>
+    </div>
+  </nav>
+
+
+
+  <script src="data/tricks.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/training.js"></script>
+  <script src="js/history.js"></script>
+  <script src="js/custom-tricks.js"></script>
+  <script src="js/combo-calculator.js"></script>
+</body>
+</html>
