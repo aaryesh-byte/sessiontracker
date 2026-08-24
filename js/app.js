@@ -53,17 +53,24 @@ async function handleAuthSubmit(e) {
 
         if (json.status === 'success') {
           if (appState.authMode === 'register') {
-            showToast('Account registered successfully! Please sign in.', 'success');
-            localStorage.setItem(`slalom_is_new_${u.toLowerCase()}`, 'true');
-            switchAuthMode('login');
+            // Auto-authenticate immediately after successful registration
+            const registeredUser = json.user || { username: u, skaterName: skaterName, userId: u };
+            appState.currentUser = registeredUser;
+            appState.sessions = (json.data && json.data.sessions) ? json.data.sessions : [];
+            appState.customTricks = (json.data && json.data.customTricks) ? json.data.customTricks : [];
+
+            const userKey = `slalom_tutorial_completed_${String(u).toLowerCase().trim()}`;
+            localStorage.removeItem(userKey);
+
+            showToast(`Registration complete: Welcome ${registeredUser.skaterName}!`, 'success');
+            onAuthSuccess(true);
           } else {
             appState.currentUser = json.user;
             appState.sessions = (json.data && json.data.sessions) ? json.data.sessions : [];
             appState.customTricks = (json.data && json.data.customTricks) ? json.data.customTricks : [];
 
             showToast(`Protocol initiated: Welcome ${appState.currentUser.skaterName}`, 'success');
-            const isNew = localStorage.getItem(`slalom_is_new_${u.toLowerCase()}`) === 'true';
-            onAuthSuccess(isNew);
+            onAuthSuccess(false);
           }
         } else {
           const errMsg = json.message || '';
@@ -206,22 +213,23 @@ window.toggleTheme = toggleTheme;
       const overlay = document.getElementById('authOverlay');
       if (overlay) overlay.style.display = 'none';
 
-      safeSetTextContent('headerSkaterName', appState.currentUser.skaterName);
+      const skaterName = appState.currentUser.skaterName || appState.currentUser.username || 'Skater';
+      safeSetTextContent('headerSkaterName', skaterName);
 
       const logSkater = document.getElementById('logSkater');
-      if (logSkater) logSkater.value = appState.currentUser.skaterName;
+      if (logSkater) logSkater.value = skaterName;
 
       populateProgressTrickFilter();
       renderSessionItems();
 
-      switchTab('dashboard');
+      const userKey = `slalom_tutorial_completed_${String(appState.currentUser.username || skaterName).toLowerCase().trim()}`;
+      const hasCompleted = localStorage.getItem(userKey) === 'true';
 
-      const userKey = `slalom_tutorial_completed_${String(appState.currentUser.username || appState.currentUser.skaterName).toLowerCase()}`;
-      const hasCompleted = localStorage.getItem(userKey);
-
-      if (isNewUser && !hasCompleted) {
-        startTutorial();
-      }
+      switchTab('dashboard').then(() => {
+        if (isNewUser || !hasCompleted) {
+          setTimeout(() => startTutorial(), 350);
+        }
+      });
     }
 
     const TUTORIAL_STEPS = [
@@ -289,9 +297,10 @@ window.toggleTheme = toggleTheme;
 
     function startTutorial() {
       appState.tutorialStep = 0;
-      showTutorialStep(0);
+      document.body.classList.add('tutorial-active');
       const tutEl = document.getElementById('tutorialOverlay');
       if (tutEl) tutEl.style.display = 'flex';
+      showTutorialStep(0);
     }
 
     function showTutorialStep(idx) {
@@ -325,11 +334,12 @@ window.toggleTheme = toggleTheme;
     }
 
     function finishTutorial() {
+      document.body.classList.remove('tutorial-active');
       const tutEl = document.getElementById('tutorialOverlay');
       if (tutEl) tutEl.style.display = 'none';
 
       if (appState.currentUser) {
-        const userKey = `slalom_tutorial_completed_${String(appState.currentUser.username || appState.currentUser.skaterName).toLowerCase()}`;
+        const userKey = `slalom_tutorial_completed_${String(appState.currentUser.username || appState.currentUser.skaterName).toLowerCase().trim()}`;
         localStorage.setItem(userKey, 'true');
       }
       showToast('Tutorial complete! Welcome to your protocol.', 'success');
@@ -416,6 +426,14 @@ async function switchTab(tabId, el) {
     if (tabId === 'log') {
       const logDateEl = document.getElementById('logDate');
       if (logDateEl && !logDateEl.value) logDateEl.value = new Date().toISOString().split('T')[0];
+      const logSkater = document.getElementById('logSkater');
+      if (logSkater) {
+        if (appState.currentUser && (appState.currentUser.skaterName || appState.currentUser.username)) {
+          logSkater.value = appState.currentUser.skaterName || appState.currentUser.username;
+        } else {
+          logSkater.value = '';
+        }
+      }
       renderSessionItems();
     }
     if (tabId === 'dashboard') {

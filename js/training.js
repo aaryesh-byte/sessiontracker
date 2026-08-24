@@ -307,6 +307,14 @@
 
     async function handleMultiSessionSubmit(e) {
       e.preventDefault();
+
+      if (!appState.currentUser || (!appState.currentUser.skaterName && !appState.currentUser.username)) {
+        showToast('Error: No active skater profile found. Please sign in.', 'error');
+        return;
+      }
+
+      const activeSkater = appState.currentUser.skaterName || appState.currentUser.username;
+
       const dateEl = document.getElementById('logDate');
       const date = dateEl ? dateEl.value : new Date().toISOString().split('T')[0];
 
@@ -349,8 +357,8 @@
           sessionId: sessionId,
           date: date,
           sessionType: isCombo ? 'Combo' : 'Single',
-          skaterName: appState.currentUser.skaterName,
-          userId: appState.currentUser.skaterName,
+          skaterName: activeSkater,
+          userId: activeSkater,
           trickName: comboName || (isCombo ? 'Combo Sequence' : item.trickName),
           category: comboCat,
           family: comboFam,
