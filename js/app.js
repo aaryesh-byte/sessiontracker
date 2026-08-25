@@ -444,21 +444,20 @@ async function handleAuthSubmit(e) {
 
       safeSetTextContent('headerSkaterName', skaterName);
 
-      // Mount the Top-Right Hamburger Menu
+      // Clean up standalone header buttons
+      document.querySelectorAll('.theme-toggle-btn, .btn-logout, #themeToggleBtn, #logoutBtn, #btnHeaderProfileIcon, #btnOpenProfileModal').forEach(el => el.remove());
+
+      // Mount the single Top-Right Hamburger Menu
       const userPill = document.querySelector('.user-pill');
       if (userPill) {
         userPill.style.position = 'relative';
-
-        // Remove any obsolete direct buttons
-        const oldProfileBtn = document.getElementById('btnHeaderProfileIcon') || document.getElementById('btnOpenProfileModal');
-        if (oldProfileBtn) oldProfileBtn.remove();
 
         if (!document.getElementById('btnHeaderHamburger')) {
           const btnHamburger = document.createElement('button');
           btnHamburger.id = 'btnHeaderHamburger';
           btnHamburger.className = 'btn-hamburger';
           btnHamburger.type = 'button';
-          btnHamburger.title = 'Navigation Menu';
+          btnHamburger.title = 'Menu';
           btnHamburger.innerHTML = `<span></span><span></span><span></span>`;
           btnHamburger.onclick = toggleHeaderDropdown;
 
