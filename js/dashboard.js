@@ -2,6 +2,9 @@
 
 
     let isSyncingData = false;
+let calCurrentYear = new Date().getFullYear();
+let calCurrentMonth = new Date().getMonth();
+let calSelectedDate = null;
 
     async function syncUserDataFromSheets() {
       if (!appState.currentUser || isSyncingData) return;
@@ -177,10 +180,246 @@
       safeSetTextContent('mFalls', totalFalls);
       safeSetTextContent('mConnected', `${avgConnected}%`);
 
+      renderStreaks();
+      renderTrainingCalendar();
+      renderPersonalBests();
+
       renderChartSuccessRate(filtered);
       renderChartCones(filtered);
       renderChartTricks(filtered);
       renderChartFalls(filtered);
+    }
+
+    function calculateSkaterStreaks() {
+      if (!appState.currentUser || !appState.sessions || appState.sessions.length === 0) {
+        return { current: 0, longest: 0, uniqueDates: [] };
+      }
+
+      const skaterSessions = appState.sessions.filter(s =>
+        String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
+      );
+
+      const uniqueDateSet = new Set(skaterSessions.map(s => s.date).filter(Boolean));
+      const sortedDates = Array.from(uniqueDateSet).sort();
+
+      if (sortedDates.length === 0) return { current: 0, longest: 0, uniqueDates: [] };
+
+      let longest = 1;
+      let tempStreak = 1;
+
+      for (let i = 1; i < sortedDates.length; i++) {
+        const prev = new Date(sortedDates[i - 1]);
+        const curr = new Date(sortedDates[i]);
+        const diffTime = Math.abs(curr - prev);
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 1) {
+          tempStreak++;
+          if (tempStreak > longest) longest = tempStreak;
+        } else if (diffDays > 1) {
+          tempStreak = 1;
+        }
+      }
+
+      // Check current streak from today or yesterday
+      const now = new Date();
+      const todayStr = now.toISOString().split('T')[0];
+      now.setDate(now.getDate() - 1);
+      const yestStr = now.toISOString().split('T')[0];
+
+      let current = 0;
+      const lastSessionDate = sortedDates[sortedDates.length - 1];
+
+      if (lastSessionDate === todayStr || lastSessionDate === yestStr) {
+        let runner = new Date(lastSessionDate);
+        current = 1;
+        while (true) {
+          runner.setDate(runner.getDate() - 1);
+          const checkStr = runner.toISOString().split('T')[0];
+          if (uniqueDateSet.has(checkStr)) {
+            current++;
+          } else {
+            break;
+          }
+        }
+      }
+
+      return { current, longest, uniqueDates: sortedDates };
+    }
+
+    function renderStreaks() {
+      const streaks = calculateSkaterStreaks();
+      safeSetTextContent('streakCurrentVal', `${streaks.current} ${streaks.current === 1 ? 'Day' : 'Days'}`);
+      safeSetTextContent('streakLongestVal', `${streaks.longest} ${streaks.longest === 1 ? 'Day' : 'Days'}`);
+    }
+
+    function navCalendar(delta) {
+      calCurrentMonth += delta;
+      if (calCurrentMonth > 11) {
+        calCurrentMonth = 0;
+        calCurrentYear++;
+      } else if (calCurrentMonth < 0) {
+        calCurrentMonth = 11;
+        calCurrentYear--;
+      }
+      renderTrainingCalendar();
+    }
+
+    function renderTrainingCalendar() {
+      const grid = document.getElementById('calendarGridCells');
+      const title = document.getElementById('calMonthTitle');
+      if (!grid || !title || !appState.currentUser) return;
+
+      const dateObj = new Date(calCurrentYear, calCurrentMonth, 1);
+      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      title.textContent = `${monthNames[calCurrentMonth]} ${calCurrentYear}`;
+
+      const userSessions = appState.sessions.filter(s =>
+        String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
+      );
+
+      const sessionDateMap = {};
+      userSessions.forEach(s => {
+        if (!s.date) return;
+        if (!sessionDateMap[s.date]) sessionDateMap[s.date] = [];
+        sessionDateMap[s.date].push(s);
+      });
+
+      // Starting day of week (0: Mon - 6: Sun)
+      let firstDay = dateObj.getDay() - 1;
+      if (firstDay === -1) firstDay = 6;
+
+      const totalDays = new Date(calCurrentYear, calCurrentMonth + 1, 0).getDate();
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      let html = '';
+
+      for (let i = 0; i < firstDay; i++) {
+        html += `<div class="cal-cell empty"></div>`;
+      }
+
+      for (let d = 1; d <= totalDays; d++) {
+        const mm = String(calCurrentMonth + 1).padStart(2, '0');
+        const dd = String(d).padStart(2, '0');
+        const dateKey = `${calCurrentYear}-${mm}-${dd}`;
+        const hasTraining = !!sessionDateMap[dateKey];
+        const isToday = dateKey === todayStr;
+        const isSelected = dateKey === calSelectedDate;
+
+        let classes = ['cal-cell'];
+        if (hasTraining) classes.push('has-training');
+        if (isToday) classes.push('today');
+        if (isSelected) classes.push('selected');
+
+        html += `
+          <div class="${classes.join(' ')}" onclick="selectCalendarDate('${dateKey}')">
+            <span>${d}</span>
+            ${hasTraining ? '<div class="cal-dot"></div>' : ''}
+          </div>
+        `;
+      }
+
+      grid.innerHTML = html;
+    }
+
+    function selectCalendarDate(dateKey) {
+      calSelectedDate = dateKey;
+      renderTrainingCalendar();
+
+      const summary = document.getElementById('calendarDaySummary');
+      if (!summary || !appState.currentUser) return;
+
+      const daySessions = appState.sessions.filter(s =>
+        String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase() &&
+        s.date === dateKey
+      );
+
+      if (daySessions.length === 0) {
+        summary.style.display = 'block';
+        summary.innerHTML = `
+          <div style="font-size:0.8125rem; color:var(--on-surface-muted); text-align:center;">
+            No training sessions logged on <strong>${dateKey}</strong>. Rest Day.
+          </div>
+        `;
+        return;
+      }
+
+      const singleCount = daySessions.filter(s => (s.sessionType || s.sessiontype) !== 'Combo').length;
+      const comboCount = daySessions.filter(s => (s.sessionType || s.sessiontype) === 'Combo').length;
+      const totalCompleted = daySessions.reduce((acc, curr) => acc + Number(curr.completedCones || curr.completedcones || 0), 0);
+      const avgRate = (daySessions.reduce((acc, curr) => acc + parseFloat(curr.successRate || curr.successrate || 0), 0) / daySessions.length).toFixed(1);
+
+      summary.style.display = 'block';
+      summary.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <strong style="font-size:0.875rem; color:var(--primary);">🗓️ Summary for ${dateKey}</strong>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="filterHistoryToDate('${dateKey}')">View in History</button>
+        </div>
+        <div class="history-stats" style="margin-top:0;">
+          <span>🎯 Tricks: ${singleCount}</span>
+          <span>🔗 Combos: ${comboCount}</span>
+          <span>✅ Total Cones: ${totalCompleted}</span>
+          <span>⚡ Avg Success: ${avgRate}%</span>
+        </div>
+      `;
+    }
+
+    function filterHistoryToDate(dateKey) {
+      switchTab('history');
+      setTimeout(() => {
+        const histDate = document.getElementById('histDate');
+        if (histDate) {
+          histDate.value = dateKey;
+          renderHistory();
+        }
+      }, 100);
+    }
+
+    function renderPersonalBests() {
+      const tricksContainer = document.getElementById('pbTricksList');
+      const combosContainer = document.getElementById('pbCombosList');
+      if (!tricksContainer || !combosContainer || !appState.currentUser) return;
+
+      const userSessions = appState.sessions.filter(s =>
+        String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
+      );
+
+      const trickBests = {};
+      const comboBests = {};
+
+      userSessions.forEach(s => {
+        const name = s.trickName || s.trickname;
+        if (!name) return;
+        const completed = Number(s.completedCones || s.completedcones || 0);
+        const isCombo = (s.sessionType || s.sessiontype) === 'Combo';
+
+        if (!isCombo) {
+          if (!trickBests[name] || completed > trickBests[name]) {
+            trickBests[name] = completed;
+          }
+        } else {
+          if (!comboBests[name] || completed > comboBests[name]) {
+            comboBests[name] = completed;
+          }
+        }
+      });
+
+      const topTricks = Object.entries(trickBests).sort((a, b) => b[1] - a[1]).slice(0, 6);
+      const topCombos = Object.entries(comboBests).sort((a, b) => b[1] - a[1]).slice(0, 6);
+
+      tricksContainer.innerHTML = topTricks.length > 0 ? topTricks.map(([name, val]) => `
+        <div class="pb-item">
+          <span class="pb-name">${name}</span>
+          <span class="pb-value">${val} cones</span>
+        </div>
+      `).join('') : '<div class="empty-state" style="padding:10px 0;"><div class="empty-text">No trick records yet.</div></div>';
+
+      combosContainer.innerHTML = topCombos.length > 0 ? topCombos.map(([name, val]) => `
+        <div class="pb-item">
+          <span class="pb-name">${name}</span>
+          <span class="pb-value">${val} cones</span>
+        </div>
+      `).join('') : '<div class="empty-state" style="padding:10px 0;"><div class="empty-text">No combo records yet.</div></div>';
     }
 
 

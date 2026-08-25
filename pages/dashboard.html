@@ -10,6 +10,66 @@
         </button>
       </div>
 
+      <!-- Streak Widget -->
+      <div class="streak-banner">
+        <div class="streak-card active-streak">
+          <div class="streak-icon">🔥</div>
+          <div>
+            <div class="streak-info-title">Current Training Streak</div>
+            <div id="streakCurrentVal" class="streak-info-value">0 Days</div>
+          </div>
+        </div>
+        <div class="streak-card">
+          <div class="streak-icon">⚡</div>
+          <div>
+            <div class="streak-info-title">Longest Training Streak</div>
+            <div id="streakLongestVal" class="streak-info-value">0 Days</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Training Calendar Card -->
+      <div class="glass-card">
+        <div class="cal-header">
+          <div>
+            <span class="card-title" style="margin-bottom:0;" id="calMonthTitle">Calendar</span>
+            <div class="label-caps" style="margin-top:2px;">Training Activity Tracker</div>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button type="button" class="cal-nav-btn" onclick="navCalendar(-1)">‹</button>
+            <button type="button" class="cal-nav-btn" onclick="navCalendar(1)">›</button>
+          </div>
+        </div>
+
+        <div class="cal-grid-days">
+          <div class="cal-day-label">Mon</div>
+          <div class="cal-day-label">Tue</div>
+          <div class="cal-day-label">Wed</div>
+          <div class="cal-day-label">Thu</div>
+          <div class="cal-day-label">Fri</div>
+          <div class="cal-day-label">Sat</div>
+          <div class="cal-day-label">Sun</div>
+        </div>
+        <div id="calendarGridCells" class="cal-grid-cells"></div>
+
+        <div id="calendarDaySummary" class="cal-day-summary" style="display:none;"></div>
+      </div>
+
+      <!-- Personal Bests Card -->
+      <div class="glass-card">
+        <div class="card-title">🏆 Personal Bests</div>
+        <div class="pb-grid">
+          <div>
+            <div class="label-caps" style="margin-bottom:8px;">Top Trick Bests</div>
+            <div id="pbTricksList" class="pb-list"></div>
+          </div>
+          <div>
+            <div class="label-caps" style="margin-bottom:8px;">Top Combo Bests</div>
+            <div id="pbCombosList" class="pb-list"></div>
+          </div>
+        </div>
+      </div>
+
       <!-- Filters Card -->
       <div class="glass-card">
         <div class="card-title">Dashboard Filters</div>

@@ -440,7 +440,99 @@
 
       showToast(`Training session saved with ${formattedPayloadItems.length} practice item(s)!`, 'success');
       if (notesEl) notesEl.value = '';
+      
+      const summaryStats = calculateSessionSummary(formattedPayloadItems, date);
       initSessionItems();
       populateProgressTrickFilter();
+      showSessionSummaryModal(summaryStats);
+    }
+
+    function calculateSessionSummary(items, date) {
+      let totalTarget = 0;
+      let totalCompleted = 0;
+      let totalMissed = 0;
+      let singleCount = 0;
+      let comboCount = 0;
+      let bestItem = null;
+      let bestScore = -1;
+
+      items.forEach(it => {
+        totalTarget += it.targetCones;
+        totalCompleted += it.completedCones;
+        totalMissed += it.missedCones;
+
+        if (it.sessionType === 'Combo') comboCount++;
+        else singleCount++;
+
+        if (it.completedCones > bestScore) {
+          bestScore = it.completedCones;
+          bestItem = it.trickName;
+        }
+      });
+
+      const overallSuccess = totalTarget > 0 ? ((totalCompleted / totalTarget) * 100).toFixed(1) : 0;
+
+      return {
+        date,
+        totalItems: items.length,
+        singleCount,
+        comboCount,
+        totalTarget,
+        totalCompleted,
+        totalMissed,
+        overallSuccess,
+        bestItem: bestItem || 'N/A',
+        bestScore: Math.max(0, bestScore)
+      };
+    }
+
+    function showSessionSummaryModal(summary) {
+      let modal = document.getElementById('sessionSummaryModal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'sessionSummaryModal';
+        modal.className = 'modal-overlay';
+        document.body.appendChild(modal);
+      }
+
+      modal.innerHTML = `
+        <div class="glass-card" style="max-width:400px; width:100%; text-align:center;">
+          <div style="font-size:2.2rem; margin-bottom:4px;">🏁</div>
+          <div class="headline-lg" style="color:var(--primary); margin-bottom:4px;">SESSION COMPLETE ✓</div>
+          <div class="label-caps">${summary.date}</div>
+
+          <div class="metrics-grid" style="grid-template-columns:repeat(3, 1fr); margin:16px 0 14px 0;">
+            <div class="metric-card" style="padding:10px;">
+              <div class="metric-label">Tricks</div>
+              <div class="metric-value" style="font-size:1.25rem;">${summary.singleCount}</div>
+            </div>
+            <div class="metric-card" style="padding:10px;">
+              <div class="metric-label">Combos</div>
+              <div class="metric-value" style="font-size:1.25rem;">${summary.comboCount}</div>
+            </div>
+            <div class="metric-card" style="padding:10px;">
+              <div class="metric-label">Success</div>
+              <div class="metric-value" style="font-size:1.25rem;">${summary.overallSuccess}%</div>
+            </div>
+          </div>
+
+          <div style="background:var(--bg-container); border:1px solid var(--border-razor); border-radius:var(--radius-md); padding:12px; margin-bottom:16px; text-align:left;">
+            <div class="label-caps" style="color:var(--primary);">🌟 Best Performance</div>
+            <div style="font-size:0.95rem; font-weight:700; margin-top:2px;">${summary.bestItem}</div>
+            <div style="font-size:0.75rem; color:var(--on-surface-muted); margin-top:2px;">Completed: ${summary.bestScore} cones</div>
+          </div>
+
+          <button type="button" class="btn" onclick="closeSessionSummaryModal()">Go to Dashboard</button>
+        </div>
+      `;
+
+      modal.style.display = 'flex';
+    }
+
+    function closeSessionSummaryModal() {
+      const modal = document.getElementById('sessionSummaryModal');
+      if (modal) modal.style.display = 'none';
       switchTab('dashboard');
     }
+
+    window.closeSessionSummaryModal = closeSessionSummaryModal;

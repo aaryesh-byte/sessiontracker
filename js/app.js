@@ -138,6 +138,111 @@ async function handleAuthSubmit(e) {
     window.togglePasswordVisibility = togglePasswordVisibility;
     window.logout = logout;
     window.toggleTheme = toggleTheme;
+    window.openSkaterProfileModal = openSkaterProfileModal;
+    window.closeSkaterProfileModal = closeSkaterProfileModal;
+
+    function openSkaterProfileModal() {
+      if (!appState.currentUser) return;
+      let modal = document.getElementById('skaterProfileModal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'skaterProfileModal';
+        modal.className = 'modal-overlay';
+        document.body.appendChild(modal);
+      }
+
+      const skaterName = appState.currentUser.skaterName || appState.currentUser.username || 'Skater';
+      const userSessions = appState.sessions.filter(s =>
+        String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(skaterName).toLowerCase()
+      );
+
+      const totalSessions = userSessions.length;
+      const uniqueDays = new Set(userSessions.map(s => s.date).filter(Boolean)).size;
+      const totalTricks = userSessions.filter(s => (s.sessionType || s.sessiontype) !== 'Combo').length;
+      const totalCombos = userSessions.filter(s => (s.sessionType || s.sessiontype) === 'Combo').length;
+      const uniqueTricks = new Set(userSessions.map(s => s.trickName || s.trickname).filter(Boolean)).size;
+      const totalCompletedCones = userSessions.reduce((acc, curr) => acc + Number(curr.completedCones || curr.completedcones || 0), 0);
+
+      const streaks = typeof calculateSkaterStreaks === 'function' ? calculateSkaterStreaks() : { current: 0, longest: 0 };
+
+      // Calculate Milestones
+      const milestoneDefinitions = [
+        { id: 'm1', icon: '🎉', title: 'First Training Session', desc: 'Log your very first practice session', achieved: totalSessions >= 1 },
+        { id: 'm2', icon: '🏆', title: '10 Training Sessions', desc: 'Complete 10 logged sessions', achieved: totalSessions >= 10 },
+        { id: 'm3', icon: '🚀', title: '50 Training Sessions', desc: 'Reach 50 practice sessions milestone', achieved: totalSessions >= 50 },
+        { id: 'm4', icon: '🔥', title: '3-Day Streak', desc: 'Train for 3 consecutive days', achieved: streaks.longest >= 3 },
+        { id: 'm5', icon: '🔥', title: '7-Day Streak', desc: 'Maintain a 1-week continuous streak', achieved: streaks.longest >= 7 },
+        { id: 'm6', icon: '🔥', title: '30-Day Master Streak', desc: 'Log training for 30 consecutive days', achieved: streaks.longest >= 30 },
+        { id: 'm7', icon: '🛼', title: '10 Tricks Practiced', desc: 'Practice 10 unique trick drills', achieved: uniqueTricks >= 10 },
+        { id: 'm8', icon: '🛼', title: '25 Tricks Practiced', desc: 'Expand repertoire to 25 unique items', achieved: uniqueTricks >= 25 },
+        { id: 'm9', icon: '⚡', title: '100 Cones Conquered', desc: 'Accumulate 100 successfully completed cones', achieved: totalCompletedCones >= 100 },
+        { id: 'm10', icon: '⚡', title: '500 Cones Conquered', desc: 'Accumulate 500 successfully completed cones', achieved: totalCompletedCones >= 500 },
+        { id: 'm11', icon: '🎯', title: '10 Training Days', desc: 'Log practice across 10 unique days', achieved: uniqueDays >= 10 },
+        { id: 'm12', icon: '🎯', title: '30 Training Days', desc: 'Log practice across 30 unique days', achieved: uniqueDays >= 30 }
+      ];
+
+      const achievedCount = milestoneDefinitions.filter(m => m.achieved).length;
+
+      modal.innerHTML = `
+        <div class="glass-card" style="max-width:540px; width:100%;">
+          <div class="card-title">
+            <span>👤 Skater Profile</span>
+            <button type="button" onclick="closeSkaterProfileModal()" style="background:none; border:none; color:var(--on-surface-muted); font-size:1.2rem; cursor:pointer;">✕</button>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:14px; margin-bottom:16px;">
+            <div style="width:52px; height:52px; border-radius:50%; background:var(--primary-dark); border:2px solid var(--primary); display:flex; align-items:center; justify-content:center; font-size:1.6rem;">
+              🛼
+            </div>
+            <div>
+              <h3 style="font-size:1.2rem; font-weight:800;">${skaterName}</h3>
+              <div class="label-caps" style="color:var(--primary);">Protocol ID: ${appState.currentUser.username || skaterName}</div>
+            </div>
+          </div>
+
+          <div class="metrics-grid" style="grid-template-columns:repeat(3, 1fr); margin-bottom:16px;">
+            <div class="metric-card" style="padding:10px;">
+              <div class="metric-label">Sessions</div>
+              <div class="metric-value" style="font-size:1.2rem;">${totalSessions}</div>
+            </div>
+            <div class="metric-card" style="padding:10px;">
+              <div class="metric-label">Active Days</div>
+              <div class="metric-value" style="font-size:1.2rem;">${uniqueDays}</div>
+            </div>
+            <div class="metric-card" style="padding:10px;">
+              <div class="metric-label">Max Streak</div>
+              <div class="metric-value" style="font-size:1.2rem;">${streaks.longest}d</div>
+            </div>
+          </div>
+
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <span class="card-title" style="margin-bottom:0; font-size:0.95rem;">🎖️ Journey Milestones</span>
+              <span class="badge badge-combo">${achievedCount} / ${milestoneDefinitions.length} Unlocked</span>
+            </div>
+
+            <div class="milestones-grid">
+              ${milestoneDefinitions.map(m => `
+                <div class="milestone-card ${m.achieved ? 'achieved' : 'locked'}">
+                  <div class="milestone-badge">${m.icon}</div>
+                  <div>
+                    <div class="milestone-text-title">${m.title}</div>
+                    <div class="milestone-text-desc">${m.achieved ? '✓ Achieved' : m.desc}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+
+      modal.style.display = 'flex';
+    }
+
+    function closeSkaterProfileModal() {
+      const modal = document.getElementById('skaterProfileModal');
+      if (modal) modal.style.display = 'none';
+    }
 
 
     function applyTheme(theme) {
@@ -210,6 +315,18 @@ async function handleAuthSubmit(e) {
       const skaterName = (appState.currentUser && (appState.currentUser.skaterName || appState.currentUser.username)) || 'Skater';
 
       safeSetTextContent('headerSkaterName', skaterName);
+
+      // Setup Profile Trigger in Top-Right
+      const userPill = document.querySelector('.user-pill');
+      if (userPill && !document.getElementById('btnOpenProfileModal')) {
+        const btnProfile = document.createElement('button');
+        btnProfile.id = 'btnOpenProfileModal';
+        btnProfile.className = 'btn-profile-trigger';
+        btnProfile.innerHTML = '👤 Profile';
+        btnProfile.title = 'View Skater Profile & Milestones';
+        btnProfile.onclick = openSkaterProfileModal;
+        userPill.insertBefore(btnProfile, userPill.firstChild);
+      }
 
       const logSkater = document.getElementById('logSkater');
       if (logSkater) logSkater.value = skaterName;
