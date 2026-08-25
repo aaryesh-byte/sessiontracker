@@ -444,27 +444,82 @@ async function handleAuthSubmit(e) {
 
       safeSetTextContent('headerSkaterName', skaterName);
 
-      // Mount the profile icon button into the header user-pill
+      // Mount the Top-Right Hamburger Menu
       const userPill = document.querySelector('.user-pill');
-      if (userPill && !document.getElementById('btnHeaderProfileIcon')) {
-        const btnProfile = document.createElement('button');
-        btnProfile.id = 'btnHeaderProfileIcon';
-        btnProfile.className = 'btn-profile-icon';
-        btnProfile.type = 'button';
-        btnProfile.innerHTML = '👤';
-        btnProfile.title = 'Athlete Profile & Records';
-        btnProfile.onclick = openEditorialProfilePanel;
-        userPill.insertBefore(btnProfile, userPill.firstChild);
+      if (userPill) {
+        userPill.style.position = 'relative';
+
+        // Remove any obsolete direct buttons
+        const oldProfileBtn = document.getElementById('btnHeaderProfileIcon') || document.getElementById('btnOpenProfileModal');
+        if (oldProfileBtn) oldProfileBtn.remove();
+
+        if (!document.getElementById('btnHeaderHamburger')) {
+          const btnHamburger = document.createElement('button');
+          btnHamburger.id = 'btnHeaderHamburger';
+          btnHamburger.className = 'btn-hamburger';
+          btnHamburger.type = 'button';
+          btnHamburger.title = 'Navigation Menu';
+          btnHamburger.innerHTML = `<span></span><span></span><span></span>`;
+          btnHamburger.onclick = toggleHeaderDropdown;
+
+          const dropdown = document.createElement('div');
+          dropdown.id = 'headerDropdownMenu';
+          dropdown.className = 'header-dropdown-menu';
+          dropdown.innerHTML = `
+            <button type="button" class="dropdown-item" onclick="handleMenuAction('profile')">
+              <span>👤</span><span>Profile</span>
+            </button>
+            <button type="button" class="dropdown-item" onclick="handleMenuAction('theme')">
+              <span>🌓</span><span>Change Theme</span>
+            </button>
+            <div class="dropdown-divider"></div>
+            <button type="button" class="dropdown-item dropdown-item-danger" onclick="handleMenuAction('logout')">
+              <span>🚪</span><span>Logout</span>
+            </button>
+          `;
+
+          userPill.appendChild(btnHamburger);
+          userPill.appendChild(dropdown);
+
+          document.addEventListener('click', (e) => {
+            if (!userPill.contains(e.target)) {
+              dropdown.classList.remove('active');
+            }
+          });
+        }
       }
 
       const logSkater = document.getElementById('logSkater');
       if (logSkater) logSkater.value = skaterName;
 
       populateProgressTrickFilter();
-      renderSessionItems();
+      initSessionItems();
 
       switchTab('dashboard');
     }
+
+    function toggleHeaderDropdown(e) {
+      if (e) e.stopPropagation();
+      const menu = document.getElementById('headerDropdownMenu');
+      if (menu) menu.classList.toggle('active');
+    }
+
+    function handleMenuAction(action) {
+      const menu = document.getElementById('headerDropdownMenu');
+      if (menu) menu.classList.remove('active');
+
+      if (action === 'profile') {
+        if (typeof openEditorialProfilePanel === 'function') openEditorialProfilePanel();
+        else if (typeof openSkaterProfileModal === 'function') openSkaterProfileModal();
+      } else if (action === 'theme') {
+        toggleTheme();
+      } else if (action === 'logout') {
+        logout();
+      }
+    }
+
+    window.toggleHeaderDropdown = toggleHeaderDropdown;
+    window.handleMenuAction = handleMenuAction;
 
     function logout() {
       appState.currentUser = null;
@@ -536,6 +591,7 @@ async function switchTab(tabId, el) {
     if (tabContent) tabContent.classList.add('active');
 
     // Initialize controls belonging to the newly loaded page.
+    // Initialize controls belonging to the newly loaded page.
     if (tabId === 'log') {
       const todayIso = new Date().toISOString().split('T')[0];
       const logDateEl = document.getElementById('logDate');
@@ -556,7 +612,12 @@ async function switchTab(tabId, el) {
           logSkater.value = '';
         }
       }
-      renderSessionItems();
+
+      if (!appState.sessionItems || appState.sessionItems.length === 0) {
+        initSessionItems();
+      } else {
+        renderSessionItems();
+      }
     }
     if (tabId === 'dashboard') {
       const progMonthEl = document.getElementById('progMonth');

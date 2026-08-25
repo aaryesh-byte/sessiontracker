@@ -2,7 +2,21 @@
 
 
     function initSessionItems() {
-      appState.sessionItems = [];
+      appState.sessionItems = [
+        {
+          id: Date.now() + Math.random(),
+          type: 'single',
+          trickName: '',
+          category: '',
+          family: '',
+          target: '',
+          completed: '',
+          missed: '',
+          falls: 0,
+          notes: '',
+          searchFilter: ''
+        }
+      ];
       renderSessionItems();
     }
 
@@ -299,6 +313,7 @@
 
 
     function onSessionItemTrickChange(idx, selectedTrickName) {
+      if (!appState.sessionItems[idx]) return;
       const allTricks = getAllTricks();
       const trickObj = allTricks.find(t => (t.name || t.trickname) === selectedTrickName);
       if (trickObj) {
@@ -306,6 +321,8 @@
         appState.sessionItems[idx].category = trickObj.category;
         appState.sessionItems[idx].family = trickObj.family;
         renderSessionItems();
+      } else {
+        appState.sessionItems[idx].trickName = selectedTrickName;
       }
     }
 
@@ -543,6 +560,20 @@ async function handleMultiSessionSubmit(e) {
     }
 
     window.closeSessionSummaryModal = closeSessionSummaryModal;
+    window.handleRestDaySubmit = handleRestDaySubmit;
+    // Global bindings to ensure dynamically loaded HTML handlers execute reliably
+    window.initSessionItems = initSessionItems;
+    window.addSessionItem = addSessionItem;
+    window.removeSessionItem = removeSessionItem;
+    window.addComboSlot = addComboSlot;
+    window.removeComboSlot = removeComboSlot;
+    window.onComboSlotFilterChange = onComboSlotFilterChange;
+    window.onComboSlotSearchInput = onComboSlotSearchInput;
+    window.onComboSlotTrickChange = onComboSlotTrickChange;
+    window.onSessionItemSearchInput = onSessionItemSearchInput;
+    window.onSessionItemTrickChange = onSessionItemTrickChange;
+    window.autoCalcItemMissed = autoCalcItemMissed;
+    window.handleMultiSessionSubmit = handleMultiSessionSubmit;
 async function handleRestDaySubmit(e) {
       if (e) { e.preventDefault(); e.stopPropagation(); }
 
