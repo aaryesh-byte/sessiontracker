@@ -353,23 +353,30 @@ async function handleAuthSubmit(e) {
 
     async function handleRequestOtpSubmit(e) {
       if (e) { e.preventDefault(); e.stopPropagation(); }
+      if (appState.isAuthenticating) return false;
+
       const emailEl = document.getElementById('recoveryEmailInput');
-      const email = emailEl ? emailEl.value.trim() : '';
+      const email = emailEl ? emailEl.value.trim().toLowerCase() : (appState.recoveryEmail || '');
 
       if (!email) {
         showToast('Please enter your recovery email.', 'warning');
         return false;
       }
 
-      const btn = document.getElementById('btnSendOtp');
-      if (btn) { btn.disabled = true; btn.textContent = 'Sending OTP...'; }
+      appState.isAuthenticating = true;
+      const btnSend = document.getElementById('btnSendOtp');
+      const btnResend = document.getElementById('btnResendOtp');
+
+      if (btnSend) { btnSend.disabled = true; btnSend.textContent = 'Sending OTP...'; }
+      if (btnResend) { btnResend.disabled = true; btnResend.textContent = 'Sending...'; }
 
       try {
         const response = await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify({ action: 'requestOtp', payload: { email } })
+          body: JSON.stringify({ action: 'requestOtp', payload: { email: email } })
         });
+
         const json = await response.json();
 
         if (json.status === 'success') {
@@ -378,12 +385,18 @@ async function handleAuthSubmit(e) {
           startResendCountdown(60);
           showRecoveryStep('verify');
         } else {
-          showToast(json.message || 'Error requesting OTP.', 'error');
+          showToast(json.message || 'Unable to send verification code.', 'error');
         }
       } catch (err) {
+        console.error('OTP Request Error:', err);
         showToast('Failed to connect to backend server.', 'error');
       } finally {
-        if (btn) { btn.disabled = false; btn.textContent = 'Send OTP'; }
+        appState.isAuthenticating = false;
+        if (btnSend) { btnSend.disabled = false; btnSend.textContent = 'Send OTP'; }
+        if (btnResend && appState.resendCooldownSec <= 0) {
+          btnResend.disabled = false;
+          btnResend.textContent = 'Resend OTP';
+        }
       }
       return false;
     }
