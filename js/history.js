@@ -45,12 +45,32 @@
       }
 
       container.innerHTML = filtered.map(s => {
-        const success = s.successRate || s.successrate;
-        const target = s.targetCones || s.targetcones;
-        const completed = s.completedCones || s.completedcones;
-        const missed = s.missedCones || s.kickedmissedcones || s.missedcones;
+        const sType = s.sessionType || s.sessiontype || 'Single';
+        const isRest = sType === 'Rest' || (s.trickName || s.trickname) === 'Rest Day';
+        const isCombo = sType === 'Combo';
+        const success = s.successRate || s.successrate || 0;
+        const target = s.targetCones || s.targetcones || 0;
+        const completed = s.completedCones || s.completedcones || 0;
+        const missed = s.missedCones || s.kickedmissedcones || s.missedcones || 0;
         const connected = s.connectedCompletion || s.connectedcompletion || 'N/A';
-        const isCombo = (s.sessionType || s.sessiontype) === 'Combo';
+
+        if (isRest) {
+          return `
+            <div class="history-item" style="border-left:3px solid #f59e0b;">
+              <div class="history-header">
+                <div>
+                  <div class="history-title">🟡 Rest &amp; Recovery Day</div>
+                  <div style="font-size:0.75rem; color:var(--on-surface-muted); margin-top:2px;">
+                    ${s.date} • <span class="badge badge-rest">Rest Day</span>
+                  </div>
+                </div>
+              </div>
+              <div style="font-size:0.8125rem; color:var(--on-surface); font-style:italic; margin-top:4px;">
+                "${s.notes || 'Intentional Recovery'}"
+              </div>
+            </div>
+          `;
+        }
 
         return `
           <div class="history-item">

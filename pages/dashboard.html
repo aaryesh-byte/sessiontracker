@@ -29,15 +29,15 @@
       </div>
 
       <!-- Training Calendar Card -->
-      <div class="glass-card">
+      <div class="cal-container">
         <div class="cal-header">
-          <div>
-            <span class="card-title" style="margin-bottom:0;" id="calMonthTitle">Calendar</span>
-            <div class="label-caps" style="margin-top:2px;">Training Activity Tracker</div>
+          <div class="cal-title-wrap">
+            <span class="cal-month-title" id="calMonthTitle">Training Calendar</span>
+            <div class="label-caps" style="margin-top:2px;">Activity &amp; Recovery Tracker</div>
           </div>
-          <div style="display:flex; gap:6px;">
-            <button type="button" class="cal-nav-btn" onclick="navCalendar(-1)">‹</button>
-            <button type="button" class="cal-nav-btn" onclick="navCalendar(1)">›</button>
+          <div class="cal-nav-btn-group">
+            <button type="button" class="cal-nav-btn" onclick="navCalendar(-1)" title="Previous Month">‹</button>
+            <button type="button" class="cal-nav-btn" onclick="navCalendar(1)" title="Next Month">›</button>
           </div>
         </div>
 
@@ -51,6 +51,17 @@
           <div class="cal-day-label">Sun</div>
         </div>
         <div id="calendarGridCells" class="cal-grid-cells"></div>
+
+        <div class="cal-legend">
+          <div class="cal-legend-item">
+            <span class="cal-fire-green">🔥</span>
+            <span>Training Day</span>
+          </div>
+          <div class="cal-legend-item">
+            <span class="cal-fire-yellow">🔥</span>
+            <span>Rest Day</span>
+          </div>
+        </div>
 
         <div id="calendarDaySummary" class="cal-day-summary" style="display:none;"></div>
       </div>

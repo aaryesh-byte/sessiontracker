@@ -138,8 +138,136 @@ async function handleAuthSubmit(e) {
     window.togglePasswordVisibility = togglePasswordVisibility;
     window.logout = logout;
     window.toggleTheme = toggleTheme;
-    window.openSkaterProfileModal = openSkaterProfileModal;
-    window.closeSkaterProfileModal = closeSkaterProfileModal;
+
+    function openEditorialProfilePanel() {
+      if (!appState.currentUser) return;
+      let modal = document.getElementById('editorialProfileModal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'editorialProfileModal';
+        modal.className = 'modal-overlay';
+        document.body.appendChild(modal);
+      }
+
+      const skaterName = appState.currentUser.skaterName || appState.currentUser.username || 'Skater';
+      const userRecords = appState.sessions.filter(s =>
+        String(s.skaterName || s.skatername || s.userid || '').toLowerCase() === String(skaterName).toLowerCase()
+      );
+
+      const trainingSessions = userRecords.filter(s => (s.sessionType || s.sessiontype) !== 'Rest' && (s.trickName || s.trickname) !== 'Rest Day');
+      const restSessions = userRecords.filter(s => (s.sessionType || s.sessiontype) === 'Rest' || (s.trickName || s.trickname) === 'Rest Day');
+
+      const totalSessions = trainingSessions.length;
+      const totalRestDays = new Set(restSessions.map(s => s.date).filter(Boolean)).size;
+      const singleTricks = trainingSessions.filter(s => (s.sessionType || s.sessiontype) !== 'Combo').length;
+      const comboTricks = trainingSessions.filter(s => (s.sessionType || s.sessiontype) === 'Combo').length;
+      const totalFalls = trainingSessions.reduce((acc, curr) => acc + Number(curr.falls || 0), 0);
+
+      // Best performances
+      let bestTrickName = 'None';
+      let bestTrickCones = 0;
+      let bestComboName = 'None';
+      let bestComboCones = 0;
+      let highestConeSingleAttempt = 0;
+      let bestSuccessRate = 0;
+
+      trainingSessions.forEach(s => {
+        const cones = Number(s.completedCones || s.completedcones || 0);
+        const rate = parseFloat(s.successRate || s.successrate || 0);
+        const isCombo = (s.sessionType || s.sessiontype) === 'Combo';
+
+        if (cones > highestConeSingleAttempt) highestConeSingleAttempt = cones;
+        if (rate > bestSuccessRate) bestSuccessRate = rate;
+
+        if (!isCombo) {
+          if (cones > bestTrickCones) {
+            bestTrickCones = cones;
+            bestTrickName = s.trickName || s.trickname;
+          }
+        } else {
+          if (cones > bestComboCones) {
+            bestComboCones = cones;
+            bestComboName = s.trickName || s.trickname;
+          }
+        }
+      });
+
+      const streakData = typeof calculateSkaterStreaks === 'function' ? calculateSkaterStreaks() : { current: 0, longest: 0, trainingDays: 0, thisMonthDays: 0, mostRecentDate: 'None' };
+
+      modal.innerHTML = `
+        <div class="profile-editorial-wrap">
+          <div class="profile-editorial-header">
+            <div style="display:flex; align-items:center; gap:14px;">
+              <div class="profile-editorial-avatar">🛼</div>
+              <div>
+                <h2 style="font-family:var(--font-display); font-size:1.4rem; font-weight:800; line-height:1.2;">${skaterName}</h2>
+                <div class="label-caps" style="color:var(--primary); margin-top:2px;">ATHLETE PROTOCOL • ID: ${appState.currentUser.username || skaterName}</div>
+              </div>
+            </div>
+            <button type="button" class="cal-nav-btn" onclick="closeEditorialProfilePanel()" style="width:36px; height:36px;" title="Close Profile">✕</button>
+          </div>
+
+          <div class="profile-editorial-grid">
+            <!-- Hero Streak Card -->
+            <div class="mag-card mag-col-6 mag-hero-card">
+              <div class="mag-card-label">🔥 Current Training Streak</div>
+              <div class="mag-card-value">${streakData.current} <span style="font-size:1rem; font-weight:600;">Days</span></div>
+              <div class="mag-card-sub">Longest Record: <strong>${streakData.longest} Consecutive Days</strong></div>
+            </div>
+
+            <!-- Active Training Days -->
+            <div class="mag-card mag-col-6">
+              <div class="mag-card-label">🗓️ Training Volume</div>
+              <div class="mag-card-value">${streakData.trainingDays} <span style="font-size:1rem; font-weight:600;">Days</span></div>
+              <div class="mag-card-sub">This Month: <strong>${streakData.thisMonthDays} days</strong> • Rest Days: <strong>${totalRestDays} logged</strong></div>
+            </div>
+
+            <!-- Best Trick -->
+            <div class="mag-card mag-col-6">
+              <div class="mag-card-label">🎯 Best Trick Record</div>
+              <div style="font-family:var(--font-display); font-weight:700; font-size:1.1rem; color:var(--on-surface); margin-top:4px;">${bestTrickName}</div>
+              <div class="mag-card-sub" style="color:var(--primary); font-weight:700;">${bestTrickCones} cones completed</div>
+            </div>
+
+            <!-- Best Combo -->
+            <div class="mag-card mag-col-6">
+              <div class="mag-card-label">🔗 Best Combo Record</div>
+              <div style="font-family:var(--font-display); font-weight:700; font-size:1.1rem; color:var(--on-surface); margin-top:4px;">${bestComboName}</div>
+              <div class="mag-card-sub" style="color:var(--primary); font-weight:700;">${bestComboCones} cones completed</div>
+            </div>
+
+            <!-- Metrics Column -->
+            <div class="mag-card mag-col-4">
+              <div class="mag-card-label">Total Drills</div>
+              <div class="mag-card-value" style="font-size:1.3rem;">${totalSessions}</div>
+              <div class="mag-card-sub">${singleTricks} single / ${comboTricks} combo</div>
+            </div>
+
+            <div class="mag-card mag-col-4">
+              <div class="mag-card-label">Peak Success</div>
+              <div class="mag-card-value" style="font-size:1.3rem;">${bestSuccessRate}%</div>
+              <div class="mag-card-sub">Best attempt rate</div>
+            </div>
+
+            <div class="mag-card mag-col-4">
+              <div class="mag-card-label">Falls / Impacts</div>
+              <div class="mag-card-value" style="font-size:1.3rem; color:#f87171;">${totalFalls}</div>
+              <div class="mag-card-sub">Recorded impacts</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      modal.style.display = 'flex';
+    }
+
+    function closeEditorialProfilePanel() {
+      const modal = document.getElementById('editorialProfileModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    window.openEditorialProfilePanel = openEditorialProfilePanel;
+    window.closeEditorialProfilePanel = closeEditorialProfilePanel;
 
     function openSkaterProfileModal() {
       if (!appState.currentUser) return;
@@ -316,15 +444,16 @@ async function handleAuthSubmit(e) {
 
       safeSetTextContent('headerSkaterName', skaterName);
 
-      // Setup Profile Trigger in Top-Right
+      // Mount the profile icon button into the header user-pill
       const userPill = document.querySelector('.user-pill');
-      if (userPill && !document.getElementById('btnOpenProfileModal')) {
+      if (userPill && !document.getElementById('btnHeaderProfileIcon')) {
         const btnProfile = document.createElement('button');
-        btnProfile.id = 'btnOpenProfileModal';
-        btnProfile.className = 'btn-profile-trigger';
-        btnProfile.innerHTML = '👤 Profile';
-        btnProfile.title = 'View Skater Profile & Milestones';
-        btnProfile.onclick = openSkaterProfileModal;
+        btnProfile.id = 'btnHeaderProfileIcon';
+        btnProfile.className = 'btn-profile-icon';
+        btnProfile.type = 'button';
+        btnProfile.innerHTML = '👤';
+        btnProfile.title = 'Athlete Profile & Records';
+        btnProfile.onclick = openEditorialProfilePanel;
         userPill.insertBefore(btnProfile, userPill.firstChild);
       }
 
@@ -371,6 +500,11 @@ async function switchTab(tabId, el) {
   const page = pageMap[tabId];
   if (!page) return;
 
+  // Enforce instant scroll to top on every page transition
+  window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+
   document.querySelectorAll('.bottom-nav .nav-item').forEach(n => n.classList.remove('active'));
   const indexMap = { dashboard: 0, log: 1, calc: 2, history: 3, tricks: 4 };
   const navItems = document.querySelectorAll('.bottom-nav .nav-item');
@@ -403,8 +537,17 @@ async function switchTab(tabId, el) {
 
     // Initialize controls belonging to the newly loaded page.
     if (tabId === 'log') {
+      const todayIso = new Date().toISOString().split('T')[0];
       const logDateEl = document.getElementById('logDate');
-      if (logDateEl && !logDateEl.value) logDateEl.value = new Date().toISOString().split('T')[0];
+      if (logDateEl) {
+        logDateEl.max = todayIso;
+        if (!logDateEl.value) logDateEl.value = todayIso;
+      }
+      const logRestDateEl = document.getElementById('logRestDate');
+      if (logRestDateEl) {
+        logRestDateEl.max = todayIso;
+        if (!logRestDateEl.value) logRestDateEl.value = todayIso;
+      }
       const logSkater = document.getElementById('logSkater');
       if (logSkater) {
         if (appState.currentUser && (appState.currentUser.skaterName || appState.currentUser.username)) {

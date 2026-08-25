@@ -320,7 +320,7 @@
     }
 
 
-    async function handleMultiSessionSubmit(e) {
+async function handleMultiSessionSubmit(e) {
       e.preventDefault();
 
       if (!appState.currentUser || (!appState.currentUser.skaterName && !appState.currentUser.username)) {
@@ -332,6 +332,13 @@
 
       const dateEl = document.getElementById('logDate');
       const date = dateEl ? dateEl.value : new Date().toISOString().split('T')[0];
+
+      // Strict validation: Prevent future dates
+      const todayStr = new Date().toISOString().split('T')[0];
+      if (date > todayStr) {
+        showToast('You cannot log training for a future date.', 'warning');
+        return;
+      }
 
       const notesEl = document.getElementById('logSessionGlobalNotes');
       const globalNotes = notesEl ? notesEl.value.trim() : '';
@@ -536,3 +543,77 @@
     }
 
     window.closeSessionSummaryModal = closeSessionSummaryModal;
+async function handleRestDaySubmit(e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+
+      if (!appState.currentUser) {
+        showToast('Please sign in to log activity.', 'error');
+        return false;
+      }
+
+      const activeSkater = appState.currentUser.skaterName || appState.currentUser.username;
+      const dateEl = document.getElementById('logRestDate');
+      const notesEl = document.getElementById('logRestNotes');
+
+      const date = dateEl ? dateEl.value : '';
+      const notes = notesEl ? notesEl.value.trim() : '';
+
+      if (!date) {
+        showToast('Please select a date for your rest day.', 'warning');
+        return false;
+      }
+
+      // Strict validation: Prevent future dates
+      const todayStr = new Date().toISOString().split('T')[0];
+      if (date > todayStr) {
+        showToast('You cannot log training for a future date.', 'warning');
+        return false;
+      }
+
+      const restPayload = {
+        sessionId: 'REST-' + Date.now(),
+        date: date,
+        sessionType: 'Rest',
+        skaterName: activeSkater,
+        userId: activeSkater,
+        trickName: 'Rest Day',
+        category: 'REST',
+        family: '-',
+        targetCones: 0,
+        completedCones: 0,
+        missedCones: 0,
+        falls: 0,
+        successRate: 0,
+        connectedCompletion: 'N/A',
+        notes: notes || 'Intentional Recovery'
+      };
+
+      appState.sessions.unshift(restPayload);
+
+      if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== "YOUR_APPS_SCRIPT_WEB_APP_URL") {
+        try {
+          fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({
+              action: 'logSession',
+              payload: {
+                sessionId: restPayload.sessionId,
+                date: date,
+                skaterName: activeSkater,
+                userId: activeSkater,
+                sessionNotes: notes || 'Rest Day',
+                items: [restPayload]
+              }
+            })
+          });
+        } catch(err) { console.error('API Error:', err); }
+      }
+
+      showToast(`Rest day recorded for ${date}!`, 'success');
+      if (notesEl) notesEl.value = '';
+      switchTab('dashboard');
+      return false;
+    }
+
+    window.handleRestDaySubmit = handleRestDaySubmit;

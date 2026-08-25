@@ -192,26 +192,53 @@ let calSelectedDate = null;
 
     function calculateSkaterStreaks() {
       if (!appState.currentUser || !appState.sessions || appState.sessions.length === 0) {
-        return { current: 0, longest: 0, uniqueDates: [] };
+        return { current: 0, longest: 0, trainingDays: 0, restDays: 0, thisMonthDays: 0, mostRecentDate: 'None' };
       }
 
-      const skaterSessions = appState.sessions.filter(s =>
-        String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
+      const activeSkater = String(appState.currentUser.skaterName || appState.currentUser.username || '').toLowerCase();
+      const skaterRecords = appState.sessions.filter(s =>
+        String(s.skaterName || s.skatername || s.userid || '').toLowerCase() === activeSkater
       );
 
-      const uniqueDateSet = new Set(skaterSessions.map(s => s.date).filter(Boolean));
-      const sortedDates = Array.from(uniqueDateSet).sort();
+      // Distinguish real training sessions from rest days
+      const trainingSessions = skaterRecords.filter(s => {
+        const sType = String(s.sessionType || s.sessiontype || '').trim().toLowerCase();
+        return sType !== 'rest' && (s.trickName || s.trickname) !== 'Rest Day';
+      });
 
-      if (sortedDates.length === 0) return { current: 0, longest: 0, uniqueDates: [] };
+      const restSessions = skaterRecords.filter(s => {
+        const sType = String(s.sessionType || s.sessiontype || '').trim().toLowerCase();
+        return sType === 'rest' || (s.trickName || s.trickname) === 'Rest Day';
+      });
+
+      const trainingDateSet = new Set(trainingSessions.map(s => s.date).filter(Boolean));
+      const restDateSet = new Set(restSessions.map(s => s.date).filter(Boolean));
+      const sortedTrainingDates = Array.from(trainingDateSet).sort();
+
+      const currentMonthStr = new Date().toISOString().slice(0, 7);
+      let thisMonthDays = 0;
+      trainingDateSet.forEach(d => {
+        if (d.startsWith(currentMonthStr)) thisMonthDays++;
+      });
+
+      if (sortedTrainingDates.length === 0) {
+        return {
+          current: 0,
+          longest: 0,
+          trainingDays: 0,
+          restDays: restDateSet.size,
+          thisMonthDays: 0,
+          mostRecentDate: 'None'
+        };
+      }
 
       let longest = 1;
       let tempStreak = 1;
 
-      for (let i = 1; i < sortedDates.length; i++) {
-        const prev = new Date(sortedDates[i - 1]);
-        const curr = new Date(sortedDates[i]);
-        const diffTime = Math.abs(curr - prev);
-        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+      for (let i = 1; i < sortedTrainingDates.length; i++) {
+        const prev = new Date(sortedTrainingDates[i - 1]);
+        const curr = new Date(sortedTrainingDates[i]);
+        const diffDays = Math.round(Math.abs(curr - prev) / (1000 * 60 * 60 * 24));
 
         if (diffDays === 1) {
           tempStreak++;
@@ -221,22 +248,22 @@ let calSelectedDate = null;
         }
       }
 
-      // Check current streak from today or yesterday
+      // Calculate current active streak from today or yesterday
       const now = new Date();
       const todayStr = now.toISOString().split('T')[0];
       now.setDate(now.getDate() - 1);
       const yestStr = now.toISOString().split('T')[0];
 
       let current = 0;
-      const lastSessionDate = sortedDates[sortedDates.length - 1];
+      const lastTrainingDate = sortedTrainingDates[sortedTrainingDates.length - 1];
 
-      if (lastSessionDate === todayStr || lastSessionDate === yestStr) {
-        let runner = new Date(lastSessionDate);
+      if (lastTrainingDate === todayStr || lastTrainingDate === yestStr) {
+        let runner = new Date(lastTrainingDate);
         current = 1;
         while (true) {
           runner.setDate(runner.getDate() - 1);
           const checkStr = runner.toISOString().split('T')[0];
-          if (uniqueDateSet.has(checkStr)) {
+          if (trainingDateSet.has(checkStr)) {
             current++;
           } else {
             break;
@@ -244,7 +271,14 @@ let calSelectedDate = null;
         }
       }
 
-      return { current, longest, uniqueDates: sortedDates };
+      return {
+        current,
+        longest,
+        trainingDays: trainingDateSet.size,
+        restDays: restDateSet.size,
+        thisMonthDays,
+        mostRecentDate: lastTrainingDate || 'None'
+      };
     }
 
     function renderStreaks() {
@@ -280,7 +314,75 @@ let calSelectedDate = null;
 
       const sessionDateMap = {};
       userSessions.forEach(s => {
+        if (!s.date) return;function renderTrainingCalendar() {
+      const grid = document.getElementById('calendarGridCells');
+      const title = document.getElementById('calMonthTitle');
+      if (!grid || !title || !appState.currentUser) return;
+
+      const dateObj = new Date(calCurrentYear, calCurrentMonth, 1);
+      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      title.textContent = `${monthNames[calCurrentMonth]} ${calCurrentYear}`;
+
+      const activeSkater = String(appState.currentUser.skaterName || appState.currentUser.username || '').toLowerCase();
+      const userSessions = appState.sessions.filter(s =>
+        String(s.skaterName || s.skatername || s.userid || '').toLowerCase() === activeSkater
+      );
+
+      const sessionDateMap = {};
+      userSessions.forEach(s => {
         if (!s.date) return;
+        if (!sessionDateMap[s.date]) sessionDateMap[s.date] = [];
+        sessionDateMap[s.date].push(s);
+      });
+
+      // Starting day of week (0: Mon - 6: Sun)
+      let firstDay = dateObj.getDay() - 1;
+      if (firstDay === -1) firstDay = 6;
+
+      const totalDays = new Date(calCurrentYear, calCurrentMonth + 1, 0).getDate();
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      let html = '';
+
+      for (let i = 0; i < firstDay; i++) {
+        html += `<div class="cal-cell empty"></div>`;
+      }
+
+      for (let d = 1; d <= totalDays; d++) {
+        const mm = String(calCurrentMonth + 1).padStart(2, '0');
+        const dd = String(d).padStart(2, '0');
+        const dateKey = `${calCurrentYear}-${mm}-${dd}`;
+        const dayRecords = sessionDateMap[dateKey] || [];
+
+        const isRest = dayRecords.some(r => (r.sessionType || r.sessiontype) === 'Rest' || (r.trickName || r.trickname) === 'Rest Day');
+        const hasTraining = dayRecords.some(r => (r.sessionType || r.sessiontype) !== 'Rest' && (r.trickName || r.trickname) !== 'Rest Day');
+        const isToday = dateKey === todayStr;
+        const isSelected = dateKey === calSelectedDate;
+
+        let classes = ['cal-cell'];
+        if (hasTraining) classes.push('has-training');
+        else if (isRest) classes.push('has-rest');
+
+        if (isToday) classes.push('today');
+        if (isSelected) classes.push('selected');
+
+        let indicator = '';
+        if (hasTraining) {
+          indicator = `<span class="cal-fire-green" title="Training Day">🔥</span>`;
+        } else if (isRest) {
+          indicator = `<span class="cal-fire-yellow" title="Rest Day">🔥</span>`;
+        }
+
+        html += `
+          <div class="${classes.join(' ')}" onclick="selectCalendarDate('${dateKey}')">
+            <span>${d}</span>
+            ${indicator}
+          </div>
+        `;
+      }
+
+      grid.innerHTML = html;
+    }
         if (!sessionDateMap[s.date]) sessionDateMap[s.date] = [];
         sessionDateMap[s.date].push(s);
       });
@@ -339,6 +441,30 @@ let calSelectedDate = null;
         summary.innerHTML = `
           <div style="font-size:0.8125rem; color:var(--on-surface-muted); text-align:center;">
             No training sessions logged on <strong>${dateKey}</strong>. Rest Day.
+          </div>
+        `;
+        return;
+      }if (daySessions.length === 0) {
+        summary.style.display = 'block';
+        summary.innerHTML = `
+          <div style="font-size:0.8125rem; color:var(--on-surface-muted); text-align:center; padding:6px 0;">
+            No activity logged on <strong>${dateKey}</strong>. Unlogged Date.
+          </div>
+        `;
+        return;
+      }
+
+      const isExplicitRest = daySessions.some(s => (s.sessionType || s.sessiontype) === 'Rest' || (s.trickName || s.trickname) === 'Rest Day');
+      if (isExplicitRest) {
+        const restRec = daySessions.find(s => (s.sessionType || s.sessiontype) === 'Rest' || (s.trickName || s.trickname) === 'Rest Day');
+        summary.style.display = 'block';
+        summary.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <strong style="font-size:0.875rem; color:#fbbf24;">🟡 Rest &amp; Recovery Day (${dateKey})</strong>
+            <span class="badge badge-rest">Logged Rest</span>
+          </div>
+          <div style="font-size:0.8125rem; color:var(--on-surface); font-style:italic;">
+            Note: "${restRec.notes || 'Intentional Recovery'}"
           </div>
         `;
         return;
