@@ -234,6 +234,29 @@
       color: var(--on-surface-muted);
     }
 
+    .forgot-link {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--primary);
+      text-decoration: none;
+      margin-top: 10px;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    .forgot-link:hover {
+      text-decoration: underline;
+    }
+
+    .otp-input {
+      letter-spacing: 6px;
+      font-size: 1.25rem !important;
+      text-align: center;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+
     /* TOP HEADER BAR */
     header {
       background: rgba(17, 20, 22, 0.85);

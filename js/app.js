@@ -3,6 +3,11 @@ let appState = {
       currentUser: null,
       authMode: 'login',
       isAuthenticating: false,
+      recoveryStep: 'request', // 'request' | 'verify' | 'reset'
+      recoveryEmail: '',
+      resetToken: '',
+      resendCooldownSec: 0,
+      resendInterval: null,
       sessions: [],
       customTricks: [],
       sessionItems: [],
@@ -129,12 +134,122 @@ async function handleAuthSubmit(e) {
 
       initSessionItems();
 
+      // Attach Forgot Password UI dynamically inside #authOverlay card
+      const authCard = document.querySelector('.auth-card');
+      if (authCard && !document.getElementById('recoveryWrap')) {
+        const recoveryWrap = document.createElement('div');
+        recoveryWrap.id = 'recoveryWrap';
+        recoveryWrap.style.display = 'none';
+        recoveryWrap.innerHTML = `
+          <!-- STEP 1: Request OTP -->
+          <div id="recoveryStepRequest">
+            <form onsubmit="return handleRequestOtpSubmit(event)">
+              <div class="form-group">
+                <label>Recovery Email</label>
+                <input type="email" id="recoveryEmailInput" placeholder="email@example.com" required>
+              </div>
+              <button type="submit" id="btnSendOtp" class="btn" style="margin-top:8px;">Send OTP</button>
+              <a class="forgot-link" onclick="switchAuthMode('login')">← Back to Login</a>
+            </form>
+          </div>
+
+          <!-- STEP 2: Verify OTP -->
+          <div id="recoveryStepVerify" style="display:none;">
+            <form onsubmit="return handleVerifyOtpSubmit(event)">
+              <div class="form-group">
+                <label>Enter 6-Digit Code</label>
+                <input type="text" id="recoveryOtpInput" class="otp-input" maxlength="6" pattern="\\d{6}" placeholder="••••••" required>
+              </div>
+              <button type="submit" id="btnVerifyOtp" class="btn" style="margin-top:8px;">Verify OTP</button>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                <a class="forgot-link" onclick="switchAuthMode('login')">Cancel</a>
+                <button type="button" id="btnResendOtp" class="btn btn-secondary btn-sm" onclick="handleRequestOtpSubmit(event)">Resend OTP</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- STEP 3: Reset Password -->
+          <div id="recoveryStepReset" style="display:none;">
+            <form onsubmit="return handleResetPasswordSubmit(event)">
+              <div class="form-group">
+                <label>New Password</label>
+                <input type="password" id="recoveryNewPassword" placeholder="Enter new password" required>
+              </div>
+              <div class="form-group">
+                <label>Confirm New Password</label>
+                <input type="password" id="recoveryConfirmPassword" placeholder="Confirm new password" required>
+              </div>
+              <button type="submit" id="btnResetPassword" class="btn" style="margin-top:8px;">Reset Password</button>
+            </form>
+          </div>
+        `;
+        authCard.appendChild(recoveryWrap);
+
+        // Append Forgot Password button to the login form
+        if (loginForm && !document.getElementById('linkForgotPassword')) {
+          const forgotLink = document.createElement('a');
+          forgotLink.id = 'linkForgotPassword';
+          forgotLink.className = 'forgot-link';
+          forgotLink.textContent = 'Forgot Password?';
+          forgotLink.onclick = () => switchAuthMode('recovery');
+          loginForm.appendChild(forgotLink);
+        }
+      }
+
+      // Add Recovery Email Modal to document body
+      if (!document.getElementById('recoveryEmailModal')) {
+        const recModal = document.createElement('div');
+        recModal.id = 'recoveryEmailModal';
+        recModal.className = 'modal-overlay';
+        recModal.innerHTML = `
+          <div class="glass-card" style="max-width:380px; width:100%;">
+            <div class="card-title">
+              <span>✉️ Recovery Email</span>
+              <button type="button" onclick="closeRecoveryEmailModal()" style="background:none; border:none; color:var(--on-surface-muted); font-size:1.2rem; cursor:pointer;">✕</button>
+            </div>
+            <p style="font-size:0.8125rem; color:var(--on-surface-muted); margin-bottom:14px;">
+              Associate a recovery email with your account to securely reset your password if you ever forget it.
+            </p>
+            <form onsubmit="return handleSaveRecoveryEmail(event)">
+              <div class="form-group">
+                <label>Recovery Email</label>
+                <input type="email" id="userRecoveryEmailInput" placeholder="name@example.com" required>
+              </div>
+              <div style="display:flex; gap:10px; margin-top:14px;">
+                <button type="button" class="btn btn-secondary" onclick="closeRecoveryEmailModal()">Cancel</button>
+                <button type="submit" id="btnSaveRecoveryEmail" class="btn">Save Recovery Email</button>
+              </div>
+            </form>
+          </div>
+        `;
+        document.body.appendChild(recModal);
+      }
+
+      // Add Settings / Recovery Email button to user header pill
+      const userPill = document.querySelector('.user-pill');
+      if (userPill && !document.getElementById('btnOpenRecoverySettings')) {
+        const btnSetting = document.createElement('button');
+        btnSetting.id = 'btnOpenRecoverySettings';
+        btnSetting.className = 'btn btn-secondary btn-sm';
+        btnSetting.innerHTML = '⚙️ Email';
+        btnSetting.title = 'Configure Recovery Email';
+        btnSetting.onclick = openRecoveryEmailModal;
+        userPill.insertBefore(btnSetting, userPill.firstChild);
+      }
+
       const overlay = document.getElementById('authOverlay');
       if (overlay) overlay.style.display = 'flex';
     });
 
     window.handleAuthSubmit = handleAuthSubmit;
     window.switchAuthMode = switchAuthMode;
+    window.showRecoveryStep = showRecoveryStep;
+    window.handleRequestOtpSubmit = handleRequestOtpSubmit;
+    window.handleVerifyOtpSubmit = handleVerifyOtpSubmit;
+    window.handleResetPasswordSubmit = handleResetPasswordSubmit;
+    window.openRecoveryEmailModal = openRecoveryEmailModal;
+    window.closeRecoveryEmailModal = closeRecoveryEmailModal;
+    window.handleSaveRecoveryEmail = handleSaveRecoveryEmail;
     window.togglePasswordVisibility = togglePasswordVisibility;
     window.logout = logout;
     window.toggleTheme = toggleTheme;
@@ -186,8 +301,23 @@ async function handleAuthSubmit(e) {
 
     function switchAuthMode(mode) {
       appState.authMode = mode;
-      const isReg = mode === 'register';
+      const authTabs = document.querySelector('.auth-tabs');
+      const loginForm = document.getElementById('loginForm');
+      const recoveryWrap = document.getElementById('recoveryWrap');
 
+      if (mode === 'recovery') {
+        if (authTabs) authTabs.style.display = 'none';
+        if (loginForm) loginForm.style.display = 'none';
+        if (recoveryWrap) recoveryWrap.style.display = 'block';
+        showRecoveryStep('request');
+        return;
+      }
+
+      if (authTabs) authTabs.style.display = 'flex';
+      if (loginForm) loginForm.style.display = 'block';
+      if (recoveryWrap) recoveryWrap.style.display = 'none';
+
+      const isReg = mode === 'register';
       const btnLogin = document.getElementById('btnAuthLoginTab');
       if (btnLogin) btnLogin.classList.toggle('active', !isReg);
 
@@ -200,6 +330,226 @@ async function handleAuthSubmit(e) {
       if (skaterField) skaterField.style.display = isReg ? 'block' : 'none';
 
       safeSetInnerHTML('authSubmitBtn', `<span>${isReg ? 'Create Protocol' : 'Log In'}</span>`);
+    }
+
+    function showRecoveryStep(step) {
+      appState.recoveryStep = step;
+      const reqView = document.getElementById('recoveryStepRequest');
+      const verView = document.getElementById('recoveryStepVerify');
+      const rstView = document.getElementById('recoveryStepReset');
+
+      if (reqView) reqView.style.display = step === 'request' ? 'block' : 'none';
+      if (verView) verView.style.display = step === 'verify' ? 'block' : 'none';
+      if (rstView) rstView.style.display = step === 'reset' ? 'block' : 'none';
+
+      if (step === 'request') {
+        safeSetTextContent('authSubtitleText', 'Enter recovery email to receive a code');
+      } else if (step === 'verify') {
+        safeSetTextContent('authSubtitleText', 'Enter the 6-digit code sent to your email');
+      } else if (step === 'reset') {
+        safeSetTextContent('authSubtitleText', 'Create and confirm your new password');
+      }
+    }
+
+    async function handleRequestOtpSubmit(e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      const emailEl = document.getElementById('recoveryEmailInput');
+      const email = emailEl ? emailEl.value.trim() : '';
+
+      if (!email) {
+        showToast('Please enter your recovery email.', 'warning');
+        return false;
+      }
+
+      const btn = document.getElementById('btnSendOtp');
+      if (btn) { btn.disabled = true; btn.textContent = 'Sending OTP...'; }
+
+      try {
+        const response = await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({ action: 'requestOtp', payload: { email } })
+        });
+        const json = await response.json();
+
+        if (json.status === 'success') {
+          appState.recoveryEmail = email;
+          showToast(json.message, 'success');
+          startResendCountdown(60);
+          showRecoveryStep('verify');
+        } else {
+          showToast(json.message || 'Error requesting OTP.', 'error');
+        }
+      } catch (err) {
+        showToast('Failed to connect to backend server.', 'error');
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = 'Send OTP'; }
+      }
+      return false;
+    }
+
+    function startResendCountdown(seconds) {
+      appState.resendCooldownSec = seconds;
+      const resendBtn = document.getElementById('btnResendOtp');
+      if (appState.resendInterval) clearInterval(appState.resendInterval);
+
+      if (resendBtn) {
+        resendBtn.disabled = true;
+        resendBtn.textContent = `Resend Code (${appState.resendCooldownSec}s)`;
+      }
+
+      appState.resendInterval = setInterval(() => {
+        appState.resendCooldownSec--;
+        if (resendBtn) {
+          if (appState.resendCooldownSec > 0) {
+            resendBtn.textContent = `Resend Code (${appState.resendCooldownSec}s)`;
+          } else {
+            resendBtn.disabled = false;
+            resendBtn.textContent = 'Resend OTP';
+            clearInterval(appState.resendInterval);
+          }
+        }
+      }, 1000);
+    }
+
+    async function handleVerifyOtpSubmit(e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      const otpEl = document.getElementById('recoveryOtpInput');
+      const otp = otpEl ? otpEl.value.trim() : '';
+
+      if (!otp || otp.length < 6) {
+        showToast('Please enter the 6-digit verification code.', 'warning');
+        return false;
+      }
+
+      const btn = document.getElementById('btnVerifyOtp');
+      if (btn) { btn.disabled = true; btn.textContent = 'Verifying...'; }
+
+      try {
+        const response = await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({
+            action: 'verifyOtp',
+            payload: { email: appState.recoveryEmail, otp: otp }
+          })
+        });
+        const json = await response.json();
+
+        if (json.status === 'success') {
+          appState.resetToken = json.resetToken;
+          showToast('Code verified!', 'success');
+          showRecoveryStep('reset');
+        } else {
+          showToast(json.message || 'Verification failed.', 'error');
+        }
+      } catch (err) {
+        showToast('Verification failed due to network error.', 'error');
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = 'Verify OTP'; }
+      }
+      return false;
+    }
+
+    async function handleResetPasswordSubmit(e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      const p1 = (document.getElementById('recoveryNewPassword') || {}).value || '';
+      const p2 = (document.getElementById('recoveryConfirmPassword') || {}).value || '';
+
+      if (!p1) {
+        showToast('Password cannot be empty.', 'warning');
+        return false;
+      }
+      if (p1 !== p2) {
+        showToast('Passwords do not match.', 'error');
+        return false;
+      }
+
+      const btn = document.getElementById('btnResetPassword');
+      if (btn) { btn.disabled = true; btn.textContent = 'Updating Password...'; }
+
+      try {
+        const response = await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({
+            action: 'resetPassword',
+            payload: { resetToken: appState.resetToken, newPassword: p1 }
+          })
+        });
+        const json = await response.json();
+
+        if (json.status === 'success') {
+          showToast('Password reset successfully. You can now sign in with your new password.', 'success');
+          appState.resetToken = '';
+          appState.recoveryEmail = '';
+          switchAuthMode('login');
+        } else {
+          showToast(json.message || 'Error updating password.', 'error');
+        }
+      } catch (err) {
+        showToast('Error connecting to backend.', 'error');
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = 'Reset Password'; }
+      }
+      return false;
+    }
+
+    function openRecoveryEmailModal() {
+      const modal = document.getElementById('recoveryEmailModal');
+      const input = document.getElementById('userRecoveryEmailInput');
+      if (input && appState.currentUser) {
+        input.value = appState.currentUser.recoveryEmail || '';
+      }
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeRecoveryEmailModal() {
+      const modal = document.getElementById('recoveryEmailModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    async function handleSaveRecoveryEmail(e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      const input = document.getElementById('userRecoveryEmailInput');
+      const email = input ? input.value.trim() : '';
+
+      if (!email) {
+        showToast('Please enter an email address.', 'warning');
+        return false;
+      }
+
+      const btn = document.getElementById('btnSaveRecoveryEmail');
+      if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+
+      try {
+        const response = await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({
+            action: 'updateRecoveryEmail',
+            payload: {
+              username: appState.currentUser.username,
+              skaterName: appState.currentUser.skaterName,
+              email: email
+            }
+          })
+        });
+        const json = await response.json();
+
+        if (json.status === 'success') {
+          appState.currentUser.recoveryEmail = email;
+          showToast('Recovery email saved successfully!', 'success');
+          closeRecoveryEmailModal();
+        } else {
+          showToast(json.message || 'Failed to save recovery email.', 'error');
+        }
+      } catch (err) {
+        showToast('Network error saving recovery email.', 'error');
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = 'Save Recovery Email'; }
+      }
+      return false;
     }
 
 
