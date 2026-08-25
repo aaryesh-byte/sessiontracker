@@ -1103,6 +1103,73 @@
       width: 100%;
       word-break: break-word;
     }
+    /* REST DAY COMPONENT LAYOUT */
+    .rest-day-card {
+      border-left: 4px solid #f59e0b !important;
+      margin-bottom: 16px;
+      padding: 16px 18px;
+    }
+
+    .rest-day-header {
+      margin-bottom: 12px;
+    }
+
+    .rest-day-title {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fbbf24;
+      line-height: 1.2;
+    }
+
+    .rest-day-subtitle {
+      font-size: 0.75rem;
+      color: var(--on-surface-muted);
+      margin-top: 2px;
+    }
+
+    .rest-day-form {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr auto;
+      gap: 10px;
+      align-items: flex-end;
+      width: 100%;
+    }
+
+    .rest-day-form .form-group {
+      margin-bottom: 0;
+    }
+
+    .btn-rest-submit {
+      min-height: 44px;
+      padding: 0 18px;
+      border-color: rgba(245, 158, 11, 0.45);
+      color: #fbbf24;
+      white-space: nowrap;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      width: auto;
+    }
+
+    .btn-rest-submit:hover {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: #fbbf24;
+    }
+
+    @media (max-width: 680px) {
+      .rest-day-form {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+        align-items: stretch !important;
+      }
+
+      .btn-rest-submit {
+        width: 100% !important;
+        min-height: 40px !important;
+        margin-top: 2px !important;
+      }
+    }
     .badge-rest {
       background: rgba(245, 158, 11, 0.15);
       color: #fbbf24;
@@ -1552,24 +1619,25 @@
       transform: translateX(-50%);
       width: calc(100% - 32px);
       max-width: 520px;
-      background: rgba(26, 28, 30, 0.85);
+      background: rgba(26, 28, 30, 0.9);
       backdrop-filter: var(--glass-blur);
       -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid var(--border-razor);
       border-radius: var(--radius-pill);
-      box-shadow: var(--card-shadow), 0 0 20px rgba(0,0,0,0.5);
+      box-shadow: var(--card-shadow), 0 0 24px rgba(0,0,0,0.6);
       display: flex;
-      justify-content: space-around;
+      justify-content: space-between;
       align-items: center;
-      padding: 6px;
+      padding: 4px 6px;
       z-index: 20000;
-      transition: all 0.25s ease;
+      overflow: visible;
     }
 
     .nav-item {
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       font-family: var(--font-mono);
       font-size: 0.625rem;
       font-weight: 600;
@@ -1579,7 +1647,7 @@
       flex: 1;
       padding: 6px 0;
       border-radius: var(--radius-pill);
-      transition: all 0.2s ease;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       position: relative;
     }
 
@@ -1591,7 +1659,7 @@
     .nav-item.active::after {
       content: '';
       position: absolute;
-      bottom: 3px;
+      bottom: 2px;
       width: 4px;
       height: 4px;
       border-radius: 50%;
@@ -1600,8 +1668,52 @@
     }
 
     .nav-icon {
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       margin-bottom: 2px;
+      transition: transform 0.2s ease;
+    }
+
+    /* CENTER RAISED TRAIN ACTION BUTTON */
+    .nav-item-train-center {
+      position: relative;
+      top: -10px;
+      flex: 1.15;
+      padding: 6px 0 4px 0 !important;
+      background: linear-gradient(180deg, var(--bg-container-highest), var(--bg-container-high));
+      border: 1.5px solid var(--primary-dim);
+      border-radius: var(--radius-pill);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.65), 0 0 12px var(--primary-glow);
+      color: var(--primary) !important;
+      font-weight: 700;
+      z-index: 20001;
+      transform: scale(1.02);
+    }
+
+    .nav-item-train-center .nav-icon {
+      font-size: 1.25rem;
+      margin-bottom: 1px;
+      filter: drop-shadow(0 0 6px var(--primary-glow));
+    }
+
+    .nav-item-train-center:hover {
+      transform: translateY(-2px) scale(1.06);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.7), 0 0 18px var(--primary-glow);
+      border-color: var(--primary);
+    }
+
+    .nav-item-train-center.active {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dim)) !important;
+      color: var(--primary-dark) !important;
+      border-color: #ffffff !important;
+      box-shadow: 0 8px 24px var(--primary-glow), 0 0 14px var(--primary);
+    }
+
+    .nav-item-train-center.active .nav-icon {
+      filter: none;
+    }
+
+    .nav-item-train-center.active::after {
+      display: none;
     }
 /* COMPACT MOBILE RESPONSIVE REFINEMENTS */
     @media (max-width: 600px) {

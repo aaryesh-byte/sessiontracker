@@ -1,22 +1,20 @@
 <div id="tab-log" class="tab-content active">
       <!-- Quick Rest Day Logger -->
-      <div class="glass-card" style="border-left:4px solid #f59e0b; margin-bottom:16px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-          <div>
-            <div style="font-family:var(--font-display); font-size:1rem; font-weight:700; color:#fbbf24;">🛋️ Log Rest Day</div>
-            <div style="font-size:0.75rem; color:var(--on-surface-muted);">Record an intentional recovery day to keep your training timeline accurate.</div>
-          </div>
+      <div class="glass-card rest-day-card">
+        <div class="rest-day-header">
+          <div class="rest-day-title">🛋️ Log Rest Day</div>
+          <div class="rest-day-subtitle">Record an intentional recovery day to keep your training timeline accurate.</div>
         </div>
-        <form onsubmit="return handleRestDaySubmit(event)" style="display:grid; grid-template-columns:1fr 1.5fr auto; gap:10px; align-items:flex-end;">
-          <div class="form-group" style="margin-bottom:0;">
+        <form onsubmit="return handleRestDaySubmit(event)" class="rest-day-form">
+          <div class="form-group rest-day-date-group">
             <label>Rest Date</label>
             <input type="date" id="logRestDate" required>
           </div>
-          <div class="form-group" style="margin-bottom:0;">
+          <div class="form-group rest-day-notes-group">
             <label>Reason / Note (Optional)</label>
             <input type="text" id="logRestNotes" placeholder="e.g. Active recovery, Travel, Fatigue">
           </div>
-          <button type="submit" class="btn btn-secondary" style="min-height:44px; padding:0 16px; border-color:rgba(245,158,11,0.4); color:#fbbf24; white-space:nowrap;">
+          <button type="submit" class="btn btn-secondary btn-rest-submit">
             Log Rest Day
           </button>
         </form>

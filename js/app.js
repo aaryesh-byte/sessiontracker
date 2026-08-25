@@ -546,10 +546,10 @@ async function handleAuthSubmit(e) {
 async function switchTab(tabId, el) {
   const pageMap = {
     dashboard: 'dashboard',
+    calc: 'combo-calculator',
     log: 'training',
     history: 'history',
-    tricks: 'custom-tricks',
-    calc: 'combo-calculator'
+    tricks: 'custom-tricks'
   };
   const page = pageMap[tabId];
   if (!page) return;
@@ -560,7 +560,8 @@ async function switchTab(tabId, el) {
   document.body.scrollTop = 0;
 
   document.querySelectorAll('.bottom-nav .nav-item').forEach(n => n.classList.remove('active'));
-  const indexMap = { dashboard: 0, log: 1, calc: 2, history: 3, tricks: 4 };
+  // Layout: Dash (0) | Build (1) | Train (2) | History (3) | Matrix (4)
+  const indexMap = { dashboard: 0, calc: 1, log: 2, history: 3, tricks: 4 };
   const navItems = document.querySelectorAll('.bottom-nav .nav-item');
   if (navItems[indexMap[tabId]]) navItems[indexMap[tabId]].classList.add('active');
 
