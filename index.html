@@ -66,7 +66,8 @@
       <!-- Left: Interactive Form Side -->
       <div class="auth-form-side">
         <div class="auth-brand-wrap">
-          <div class="auth-logo">ROLLSYNC</div>
+          <img src="assets/rollsync-logo.png" class="brand-logo-img auth-logo-img" alt="RollSync Logo" onerror="this.style.display='none'; document.getElementById('authTextFallback').style.display='block';">
+          <div id="authTextFallback" class="auth-logo" style="display:none;">ROLLSYNC</div>
         </div>
         <div id="authSubtitleText" class="auth-subtitle">Sign in to access your freestyle protocol</div>
         
@@ -100,7 +101,7 @@
       <!-- Right: Dynamic Profile Visual Panel -->
       <div class="auth-visual-side">
         <div class="auth-avatar-container">
-          <img id="authDynamicAvatarImg" class="auth-dynamic-avatar" src="profile1.png" alt="Athlete Profile" onerror="this.onerror=null;">
+          <img id="authDynamicAvatarImg" class="auth-dynamic-avatar" src="assets/profile1.png" alt="Athlete Profile" onerror="this.onerror=null;">
         </div>
         <div class="auth-visual-tagline">Inline Freestyle Tracker</div>
         <div class="auth-visual-sub" id="authVisualUserLabel">Skater Protocol</div>

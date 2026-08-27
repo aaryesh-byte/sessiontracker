@@ -10,10 +10,10 @@ let appState = {
       deletingTrickId: null,
       charts: {}
     };
-// Deterministic profile picture calculator: stable index 1 to 5
+// Deterministic profile picture calculator: stable index 1 to 5 from assets folder
 function getDeterministicProfilePic(identifier) {
   const str = String(identifier || '').trim().toLowerCase();
-  if (!str) return 'profile1.png';
+  if (!str) return 'assets/profile1.png';
 
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -21,7 +21,7 @@ function getDeterministicProfilePic(identifier) {
     hash |= 0;
   }
   const index = (Math.abs(hash) % 5) + 1;
-  return `profile${index}.png`;
+  return `assets/profile${index}.png`;
 }
 
 function handleUsernameAvatarInput(val) {
