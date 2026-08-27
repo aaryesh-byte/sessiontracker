@@ -182,6 +182,27 @@
               </div>
             ` : `
               <div style="margin-bottom:12px;">
+                <!-- User's Past Combos Suggestions -->
+                ${(() => {
+                  const pastCombos = getUserPastCombos();
+                  if (pastCombos.length === 0) return '';
+                  return `
+                    <div class="combo-suggestions-wrap">
+                      <div class="combo-suggestions-header">
+                        <div class="combo-suggestions-title">💡 Previously Logged Combos</div>
+                        <span style="font-size:0.65rem; color:var(--on-surface-muted);">Tap to load</span>
+                      </div>
+                      <div class="combo-suggestions-chips">
+                        ${pastCombos.map(comboName => `
+                          <button type="button" class="combo-chip" onclick="applySuggestedCombo(${idx}, '${comboName.replace(/'/g, "\\'")}')" title="Load: ${comboName}">
+                            <span>🔗</span> ${comboName}
+                          </button>
+                        `).join('')}
+                      </div>
+                    </div>
+                  `;
+                })()}
+
                 <div class="label-caps" style="margin-bottom:8px; color:var(--primary);">Combo Independent Trick Slots</div>
                 
                 ${(item.slots || []).map((slot, sIdx) => {
@@ -574,6 +595,50 @@ async function handleMultiSessionSubmit(e) {
     window.onSessionItemTrickChange = onSessionItemTrickChange;
     window.autoCalcItemMissed = autoCalcItemMissed;
     window.handleMultiSessionSubmit = handleMultiSessionSubmit;
+    // Extract unique saved combos exclusively for the active logged-in user
+    function getUserPastCombos() {
+      if (!appState.currentUser || !appState.sessions) return [];
+      const activeSkater = String(appState.currentUser.skaterName || appState.currentUser.username || '').toLowerCase();
+      
+      const userComboSessions = appState.sessions.filter(s => {
+        const skaterMatch = String(s.skaterName || s.skatername || s.userid || '').toLowerCase() === activeSkater;
+        const isCombo = (s.sessionType || s.sessiontype) === 'Combo';
+        const name = s.trickName || s.trickname || '';
+        return skaterMatch && isCombo && name && name.includes(' → ');
+      });
+
+      const uniqueNames = [...new Set(userComboSessions.map(s => s.trickName || s.trickname))];
+      return uniqueNames.slice(0, 10);
+    }
+
+    // Apply a clicked past combo into the active combo builder slots
+    function applySuggestedCombo(itemIdx, comboSequenceStr) {
+      const item = appState.sessionItems[itemIdx];
+      if (!item || !comboSequenceStr) return;
+
+      const trickNames = comboSequenceStr.split(' → ').map(s => s.trim()).filter(Boolean);
+      if (trickNames.length === 0) return;
+
+      const allTricks = getAllTricks();
+      item.slots = trickNames.map(name => {
+        const found = allTricks.find(t => (t.name || t.trickname) === name);
+        return {
+          categoryFilter: 'ALL',
+          familyFilter: 'ALL',
+          searchFilter: '',
+          selectedTrick: name,
+          category: found ? found.category : 'OTHERS',
+          family: found ? found.family : 'Custom'
+        };
+      });
+
+      item.trickName = comboSequenceStr;
+      renderSessionItems();
+      showToast(`Loaded combo: ${comboSequenceStr}`, 'success');
+    }
+
+    window.getUserPastCombos = getUserPastCombos;
+    window.applySuggestedCombo = applySuggestedCombo;
 async function handleRestDaySubmit(e) {
       if (e) { e.preventDefault(); e.stopPropagation(); }
 

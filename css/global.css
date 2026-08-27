@@ -1376,6 +1376,66 @@
       height: 1px;
       background: linear-gradient(90deg, rgba(56, 189, 248, 0.4), transparent);
     }
+/* COMBO SUGGESTIONS IN TRAINING LOG */
+    .combo-suggestions-wrap {
+      background: var(--bg-surface);
+      border: 1px dashed rgba(0, 255, 194, 0.3);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      margin-bottom: 12px;
+    }
+
+    .combo-suggestions-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .combo-suggestions-title {
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .combo-suggestions-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      max-height: 110px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .combo-chip {
+      background: var(--bg-container-high);
+      border: 1px solid var(--border-razor);
+      border-radius: var(--radius-pill);
+      padding: 4px 10px;
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+      color: var(--on-surface-variant);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      text-align: left;
+    }
+
+    .combo-chip:hover {
+      background: rgba(0, 255, 194, 0.12);
+      border-color: var(--primary-dim);
+      color: var(--primary);
+      transform: translateY(-1px);
+    }
     
     .rest-day-header {
       margin-bottom: 12px;
