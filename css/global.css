@@ -1360,7 +1360,23 @@
       margin-bottom: 16px;
       padding: 16px 18px;
     }
+/* TRAINING SESSION COMPONENT ACCENT */
+    .training-session-card {
+      border-left: 4px solid #38bdf8 !important;
+      box-shadow: var(--card-shadow), 0 0 16px rgba(56, 189, 248, 0.08) !important;
+      position: relative;
+    }
 
+    .training-session-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(56, 189, 248, 0.4), transparent);
+    }
+    
     .rest-day-header {
       margin-bottom: 12px;
     }
