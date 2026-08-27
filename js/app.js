@@ -5,6 +5,8 @@ let appState = {
       isAuthenticating: false,
       sessions: [],
       customTricks: [],
+      masterPerformances: {}, // Keyed by username/skaterName
+      sessionPerformance: null, // Temporary session performance snapshot
       sessionItems: [],
       calcSlots: [],
       deletingTrickId: null,
@@ -107,6 +109,17 @@ async function handleAuthSubmit(e) {
           appState.currentUser = authenticatedUser;
           appState.sessions = (json.data && Array.isArray(json.data.sessions)) ? json.data.sessions : [];
           appState.customTricks = (json.data && Array.isArray(json.data.customTricks)) ? json.data.customTricks : [];
+          
+          // Load Master Performance Routine from local/cloud storage
+          const userKey = (authenticatedUser.skaterName || authenticatedUser.username || '').toLowerCase();
+          try {
+            const savedPerf = localStorage.getItem(`rollsync_master_perf_${userKey}`);
+            if (savedPerf) {
+              appState.masterPerformances[userKey] = JSON.parse(savedPerf);
+            } else if (json.data && json.data.masterPerformance) {
+              appState.masterPerformances[userKey] = json.data.masterPerformance;
+            }
+          } catch(e) { console.error('Error loading master performance:', e); }
 
           if (appState.authMode === 'register') {
             showToast(`Registration complete: Welcome ${authenticatedUser.skaterName}!`, 'success');
@@ -193,14 +206,16 @@ async function handleAuthSubmit(e) {
         String(s.skaterName || s.skatername || s.userid || '').toLowerCase() === String(skaterName).toLowerCase()
       );
 
-      const trainingSessions = userRecords.filter(s => (s.sessionType || s.sessiontype) !== 'Rest' && (s.trickName || s.trickname) !== 'Rest Day');
+      const trainingRecords = userRecords.filter(s => (s.sessionType || s.sessiontype) !== 'Rest' && (s.trickName || s.trickname) !== 'Rest Day');
       const restSessions = userRecords.filter(s => (s.sessionType || s.sessiontype) === 'Rest' || (s.trickName || s.trickname) === 'Rest Day');
 
-      const totalSessions = trainingSessions.length;
+      // Group by calendar date: 1 calendar day = 1 training session
+      const totalTrainingSessions = new Set(trainingRecords.map(s => s.date).filter(Boolean)).size;
       const totalRestDays = new Set(restSessions.map(s => s.date).filter(Boolean)).size;
-      const singleTricks = trainingSessions.filter(s => (s.sessionType || s.sessiontype) !== 'Combo').length;
-      const comboTricks = trainingSessions.filter(s => (s.sessionType || s.sessiontype) === 'Combo').length;
-      const totalFalls = trainingSessions.reduce((acc, curr) => acc + Number(curr.falls || 0), 0);
+      const singleTricks = trainingRecords.filter(s => (s.sessionType || s.sessiontype) === 'Single').length;
+      const comboTricks = trainingRecords.filter(s => (s.sessionType || s.sessiontype) === 'Combo').length;
+      const perfSessions = trainingRecords.filter(s => (s.sessionType || s.sessiontype) === 'Performance').length;
+      const totalFalls = trainingRecords.reduce((acc, curr) => acc + Number(curr.falls || 0), 0);
 
       // Best performances
       let bestTrickName = 'None';
@@ -277,9 +292,9 @@ async function handleAuthSubmit(e) {
 
             <!-- Metrics Column -->
             <div class="mag-card mag-col-4">
-              <div class="mag-card-label">Total Drills</div>
-              <div class="mag-card-value" style="font-size:1.3rem;">${totalSessions}</div>
-              <div class="mag-card-sub">${singleTricks} single / ${comboTricks} combo</div>
+              <div class="mag-card-label">Training Sessions</div>
+              <div class="mag-card-value" style="font-size:1.3rem;">${totalTrainingSessions}</div>
+              <div class="mag-card-sub">${singleTricks} single / ${comboTricks} combo / ${perfSessions} perf</div>
             </div>
 
             <div class="mag-card mag-col-4">
@@ -504,9 +519,9 @@ async function handleAuthSubmit(e) {
         String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(skaterName).toLowerCase()
       );
 
-      const totalSessions = userSessions.length;
+      const trainingDays = new Set(userSessions.filter(s => (s.sessionType || s.sessiontype) !== 'Rest' && (s.trickName || s.trickname) !== 'Rest Day').map(s => s.date).filter(Boolean)).size;
       const uniqueDays = new Set(userSessions.map(s => s.date).filter(Boolean)).size;
-      const totalTricks = userSessions.filter(s => (s.sessionType || s.sessiontype) !== 'Combo').length;
+      const totalTricks = userSessions.filter(s => (s.sessionType || s.sessiontype) === 'Single').length;
       const totalCombos = userSessions.filter(s => (s.sessionType || s.sessiontype) === 'Combo').length;
       const uniqueTricks = new Set(userSessions.map(s => s.trickName || s.trickname).filter(Boolean)).size;
       const totalCompletedCones = userSessions.reduce((acc, curr) => acc + Number(curr.completedCones || curr.completedcones || 0), 0);
@@ -551,7 +566,7 @@ async function handleAuthSubmit(e) {
           <div class="metrics-grid" style="grid-template-columns:repeat(3, 1fr); margin-bottom:16px;">
             <div class="metric-card" style="padding:10px;">
               <div class="metric-label">Sessions</div>
-              <div class="metric-value" style="font-size:1.2rem;">${totalSessions}</div>
+              <div class="metric-value" style="font-size:1.2rem;">${trainingDays}</div>
             </div>
             <div class="metric-card" style="padding:10px;">
               <div class="metric-label">Active Days</div>

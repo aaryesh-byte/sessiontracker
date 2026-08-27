@@ -47,12 +47,54 @@
       container.innerHTML = filtered.map(s => {
         const sType = s.sessionType || s.sessiontype || 'Single';
         const isRest = sType === 'Rest' || (s.trickName || s.trickname) === 'Rest Day';
+        const isPerformance = sType === 'Performance' || (s.category || '') === 'PERFORMANCE';
         const isCombo = sType === 'Combo';
         const success = s.successRate || s.successrate || 0;
         const target = s.targetCones || s.targetcones || 0;
         const completed = s.completedCones || s.completedcones || 0;
         const missed = s.missedCones || s.kickedmissedcones || s.missedcones || 0;
         const connected = s.connectedCompletion || s.connectedcompletion || 'N/A';
+
+        if (isPerformance) {
+          const snapshot = s.performanceSnapshot || { items: [] };
+          const completedTricks = (snapshot.items || []).filter(it => it.completed).length;
+          const totalTricks = (snapshot.items || []).length;
+          const isValid = completedTricks >= 9;
+
+          return `
+            <div class="history-item" style="border-left:3px solid #fb7185;">
+              <div class="history-header">
+                <div>
+                  <div class="history-title">🎭 ${s.trickName || 'Performance Routine'}</div>
+                  <div style="font-size:0.75rem; color:var(--on-surface-muted); margin-top:2px;">
+                    ${s.date} • <span class="badge badge-perf">Performance</span> 
+                    <span class="badge ${isValid ? 'badge-combo' : 'badge-danger'}">
+                      ${completedTricks}/${totalTricks} Completed ${isValid ? '✓' : '(Min 9 Req.)'}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <span class="badge badge-combo">${s.performanceScore || 0} pts</span>
+                </div>
+              </div>
+              <div class="history-stats">
+                <span>🎯 Base Completed: ${completedTricks}</span>
+                <span>✨ Smoothness: ${s.smoothnessScore || 0}</span>
+                <span>⚡ Footwork: ${s.footworkScore || 0}</span>
+              </div>
+              ${snapshot.items && snapshot.items.length > 0 ? `
+                <div class="history-perf-pills">
+                  ${snapshot.items.map(it => `
+                    <span class="history-perf-pill ${it.completed ? 'is-done' : 'is-missed'}">
+                      ${it.completed ? '✓' : '✗'} ${it.name || 'Trick'}
+                    </span>
+                  `).join('')}
+                </div>
+              ` : ''}
+              ${s.notes ? `<div style="font-size:0.8125rem; color:var(--on-surface); margin-top:8px; font-style:italic; border-top:1px solid var(--border-razor); padding-top:6px;">"${s.notes}"</div>` : ''}
+            </div>
+          `;
+        }
 
         if (isRest) {
           return `

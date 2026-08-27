@@ -212,7 +212,192 @@
       renderCustomTricksList();
       renderSessionItems();
     }
+// =======================================================
+    // MASTER PERFORMANCE ROUTINE MANAGER (CUSTOM TRICKS PAGE)
+    // =======================================================
+    function getMasterPerformance() {
+      if (!appState.currentUser) {
+        return { title: 'Master Performance', items: [], smoothness: 0, footwork: 0 };
+      }
+      const userKey = (appState.currentUser.skaterName || appState.currentUser.username || '').toLowerCase();
+      if (!appState.masterPerformances[userKey]) {
+        try {
+          const stored = localStorage.getItem(`rollsync_master_perf_${userKey}`);
+          if (stored) {
+            appState.masterPerformances[userKey] = JSON.parse(stored);
+          } else {
+            appState.masterPerformances[userKey] = {
+              title: '2-Minute Performance Routine',
+              items: [],
+              smoothness: 0,
+              footwork: 0
+            };
+          }
+        } catch(e) {
+          appState.masterPerformances[userKey] = { title: '2-Minute Performance Routine', items: [], smoothness: 0, footwork: 0 };
+        }
+      }
+      return appState.masterPerformances[userKey];
+    }
 
+    function saveMasterPerformance(perfObj) {
+      if (!appState.currentUser) return;
+      const userKey = (appState.currentUser.skaterName || appState.currentUser.username || '').toLowerCase();
+      appState.masterPerformances[userKey] = perfObj;
+      try {
+        localStorage.setItem(`rollsync_master_perf_${userKey}`, JSON.stringify(perfObj));
+      } catch(e) { console.error('LocalStorage error saving performance:', e); }
+
+      if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== "YOUR_APPS_SCRIPT_WEB_APP_URL") {
+        try {
+          fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({
+              action: 'saveMasterPerformance',
+              payload: {
+                skaterName: appState.currentUser.skaterName,
+                masterPerformance: perfObj
+              }
+            })
+          });
+        } catch(err) { console.error('API master performance error:', err); }
+      }
+    }
+
+    function addMasterPerfTrick(type) {
+      const master = getMasterPerformance();
+      const allTricks = getAllTricks();
+      const defaultTrick = allTricks[0] || { name: 'Butterfly', category: 'OTHERS', family: 'B' };
+
+      if (type === 'combo') {
+        master.items.push({
+          id: 'mp-' + Date.now(),
+          type: 'combo',
+          name: 'New Combo Sequence',
+          category: 'OTHERS',
+          family: 'Custom',
+          basePoints: 8,
+          completed: true
+        });
+      } else {
+        master.items.push({
+          id: 'mp-' + Date.now(),
+          type: 'single',
+          name: defaultTrick.name || defaultTrick.trickname,
+          category: defaultTrick.category,
+          family: defaultTrick.family,
+          basePoints: PERFORMANCE_SCORING_CONFIG.basePointsByFamily[defaultTrick.family] || 2,
+          completed: true
+        });
+      }
+      saveMasterPerformance(master);
+      renderMasterPerformancePanel();
+    }
+
+    function removeMasterPerfItem(idx) {
+      const master = getMasterPerformance();
+      master.items.splice(idx, 1);
+      saveMasterPerformance(master);
+      renderMasterPerformancePanel();
+    }
+
+    function moveMasterPerfItem(idx, direction) {
+      const master = getMasterPerformance();
+      const targetIdx = idx + direction;
+      if (targetIdx < 0 || targetIdx >= master.items.length) return;
+      const temp = master.items[idx];
+      master.items[idx] = master.items[targetIdx];
+      master.items[targetIdx] = temp;
+      saveMasterPerformance(master);
+      renderMasterPerformancePanel();
+    }
+
+    function onMasterPerfItemChange(idx, field, value) {
+      const master = getMasterPerformance();
+      if (!master.items[idx]) return;
+
+      if (field === 'name') {
+        const allTricks = getAllTricks();
+        const trickObj = allTricks.find(t => (t.name || t.trickname) === value);
+        master.items[idx].name = value;
+        if (trickObj) {
+          master.items[idx].category = trickObj.category;
+          master.items[idx].family = trickObj.family;
+          master.items[idx].basePoints = PERFORMANCE_SCORING_CONFIG.basePointsByFamily[trickObj.family] || 2;
+        }
+      } else {
+        master.items[idx][field] = value;
+      }
+      saveMasterPerformance(master);
+      renderMasterPerformancePanel();
+    }
+
+    function renderMasterPerformancePanel() {
+      const container = document.getElementById('masterPerformancePanelContainer');
+      if (!container || !appState.currentUser) return;
+
+      const master = getMasterPerformance();
+      const allTricks = getAllTricks();
+      const scoreData = PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore(master);
+
+      container.innerHTML = `
+        <div class="glass-card" style="border-left:4px solid #fb7185;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div>
+              <div class="card-title" style="margin-bottom:2px; color:#fb7185;">🎭 Master Performance Routine</div>
+              <div class="label-caps">Saved 2-Minute Competition Program Configuration</div>
+            </div>
+            <span class="badge ${scoreData.totalItems >= 9 ? 'badge-combo' : 'badge-warning'}">
+              ${scoreData.totalItems} / 9 Configured Tricks
+            </span>
+          </div>
+
+          <p style="font-size:0.8125rem; color:var(--on-surface-muted); margin-bottom:14px;">
+            Configure your master routine once. When logging daily training, you will get a session-specific copy that you can adapt without affecting this master setup.
+          </p>
+
+          <div id="masterPerfItemsList">
+            ${master.items.length === 0 ? `
+              <div class="empty-state" style="padding:16px 0;">
+                <div class="empty-text">No tricks configured in master performance routine. Add tricks below.</div>
+              </div>
+            ` : master.items.map((item, idx) => `
+              <div class="perf-master-row">
+                <div class="perf-order-controls">
+                  <button type="button" class="btn-icon-tiny" onclick="moveMasterPerfItem(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} title="Move Up">▲</button>
+                  <button type="button" class="btn-icon-tiny" onclick="moveMasterPerfItem(${idx}, 1)" ${idx === master.items.length - 1 ? 'disabled' : ''} title="Move Down">▼</button>
+                </div>
+                <div style="font-family:var(--font-mono); font-size:0.75rem; font-weight:700; width:28px;">#${idx + 1}</div>
+                <div style="flex:1; min-width:0;">
+                  <select style="font-size:0.8125rem; padding:6px 10px;" onchange="onMasterPerfItemChange(${idx}, 'name', this.value)">
+                    ${allTricks.map(t => {
+                      const name = t.name || t.trickname;
+                      return `<option value="${name}" ${name === item.name ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
+                    }).join('')}
+                  </select>
+                </div>
+                <span class="badge badge-family" style="font-size:0.65rem;">Fam ${item.family || 'E'}</span>
+                <button type="button" onclick="removeMasterPerfItem(${idx})" class="btn-icon-danger" title="Remove Trick">✕</button>
+              </div>
+            `).join('')}
+          </div>
+
+          <div style="display:flex; gap:10px; margin-top:14px;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="addMasterPerfTrick('single')">+ Add Performance Trick</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="addMasterPerfTrick('combo')">+ Add Performance Combo</button>
+          </div>
+        </div>
+      `;
+    }
+
+    window.getMasterPerformance = getMasterPerformance;
+    window.saveMasterPerformance = saveMasterPerformance;
+    window.addMasterPerfTrick = addMasterPerfTrick;
+    window.removeMasterPerfItem = removeMasterPerfItem;
+    window.moveMasterPerfItem = moveMasterPerfItem;
+    window.onMasterPerfItemChange = onMasterPerfItemChange;
+    window.renderMasterPerformancePanel = renderMasterPerformancePanel;
 
     function renderCustomTricksList() {
       const container = document.getElementById('customTricksList');
@@ -229,6 +414,8 @@
       const userCustom = appState.customTricks.filter(t => 
         String(t.skaterName || t.skatername).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
       );
+
+      renderMasterPerformancePanel();
 
       if (userCustom.length === 0) {
         container.innerHTML = `<div class="empty-state"><div class="empty-icon">💡</div><div class="empty-text">No custom tricks created yet. Use the form above to add personal tricks.</div></div>`;

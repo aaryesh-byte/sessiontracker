@@ -1289,6 +1289,185 @@
     .badge-category { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
     .badge-custom { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
     .badge-combo { background: rgba(0, 255, 194, 0.15); color: var(--primary); border: 1px solid var(--primary-dim); }
+    .badge-perf { background: rgba(244, 63, 94, 0.15); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.35); }
+    .badge-danger { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    /* COLLAPSIBLE SESSION ITEM STYLES */
+    .session-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .collapse-arrow {
+      font-size: 0.75rem;
+      color: var(--on-surface-muted);
+      transition: transform 0.2s ease;
+    }
+
+    .collapsed-item-preview {
+      font-size: 0.8125rem;
+      font-weight: 700;
+      color: var(--on-surface);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 140px;
+    }
+
+    .session-item-body {
+      margin-top: 12px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    /* PERFORMANCE CHECKLIST & SCORE STYLING */
+    .perf-session-card {
+      border-left: 4px solid #fb7185 !important;
+      background: linear-gradient(135deg, var(--bg-surface) 60%, rgba(244, 63, 94, 0.05));
+    }
+
+    .perf-score-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      padding: 10px;
+      background: var(--bg-container);
+      border: 1px solid var(--border-razor);
+      border-radius: var(--radius-md);
+      text-align: center;
+    }
+
+    .perf-strip-val {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--on-surface);
+      margin-top: 2px;
+    }
+
+    .perf-item-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 10px;
+      background: var(--bg-container);
+      border: 1px solid var(--border-razor);
+      border-radius: var(--radius-md);
+      margin-bottom: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .perf-item-row.is-complete {
+      border-color: rgba(0, 255, 194, 0.3);
+      background: rgba(0, 255, 194, 0.04);
+    }
+
+    .perf-item-row.is-incomplete {
+      border-color: rgba(244, 63, 94, 0.25);
+    }
+
+    .perf-checkbox-label {
+      position: relative;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      margin-top: 2px;
+    }
+
+    .perf-checkbox-label input {
+      display: none;
+    }
+
+    .perf-custom-check {
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--border-razor);
+      border-radius: var(--radius-sm);
+      display: inline-block;
+      transition: all 0.2s ease;
+    }
+
+    .perf-checkbox-label input:checked + .perf-custom-check {
+      background: var(--primary);
+      border-color: var(--primary);
+      box-shadow: 0 0 8px var(--primary-glow);
+    }
+
+    /* MASTER PERFORMANCE ORDER LIST */
+    .perf-master-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      background: var(--bg-container);
+      border: 1px solid var(--border-razor);
+      border-radius: var(--radius-md);
+      margin-bottom: 6px;
+    }
+
+    .perf-order-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .btn-icon-tiny {
+      background: var(--bg-container-high);
+      border: 1px solid var(--border-razor);
+      color: var(--on-surface-muted);
+      border-radius: var(--radius-sm);
+      width: 20px;
+      height: 18px;
+      font-size: 0.55rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .btn-icon-tiny:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+
+    .btn-icon-danger {
+      background: none;
+      border: none;
+      color: #f87171;
+      font-size: 0.85rem;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .history-perf-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 8px;
+    }
+
+    .history-perf-pill {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-razor);
+    }
+
+    .history-perf-pill.is-done {
+      background: rgba(0, 255, 194, 0.1);
+      color: var(--primary);
+      border-color: var(--primary-dim);
+    }
+
+    .history-perf-pill.is-missed {
+      background: rgba(239, 68, 68, 0.1);
+      color: #f87171;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
 
     /* DASHBOARD METRICS GRID */
     .metrics-grid {

@@ -181,3 +181,45 @@ const FAMILY_POINTS = {
       'E': { min: 10, max: 20 },
       'Custom': { min: 15, max: 35 }
     };
+// Modular Performance Scoring Registry (Base points placeholder; configurable)
+const PERFORMANCE_SCORING_CONFIG = {
+  minCompletedTricksRequired: 9,
+  basePointsByFamily: {
+    'A': 10,
+    'B': 8,
+    'C': 6,
+    'D': 4,
+    'E': 2,
+    'Custom': 3
+  },
+  calculatePerformanceScore: function(perfData) {
+    if (!perfData || !perfData.items) {
+      return { totalScore: 0, completedCount: 0, isValid: false, basePoints: 0, smoothness: 0, footwork: 0 };
+    }
+    let basePoints = 0;
+    let completedCount = 0;
+
+    perfData.items.forEach(it => {
+      if (it.completed) {
+        completedCount++;
+        const pts = this.basePointsByFamily[it.family] || (it.type === 'combo' ? 5 : 2);
+        basePoints += (it.basePoints !== undefined ? Number(it.basePoints) : pts);
+      }
+    });
+
+    const smoothness = Number(perfData.smoothness || 0);
+    const footwork = Number(perfData.footwork || 0);
+    const totalScore = parseFloat((basePoints + smoothness + footwork).toFixed(2));
+    const isValid = completedCount >= this.minCompletedTricksRequired;
+
+    return {
+      basePoints,
+      smoothness,
+      footwork,
+      totalScore,
+      completedCount,
+      totalItems: perfData.items.length,
+      isValid
+    };
+  }
+};

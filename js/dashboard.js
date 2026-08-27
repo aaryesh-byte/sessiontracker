@@ -165,10 +165,15 @@ let calSelectedDate = null;
         return true;
       });
 
-      const totalSessions = filtered.length;
-      const totalTarget = filtered.reduce((acc, curr) => acc + Number(curr.targetCones || curr.targetcones), 0);
-      const totalCompleted = filtered.reduce((acc, curr) => acc + Number(curr.completedCones || curr.completedcones), 0);
-      const totalFalls = filtered.reduce((acc, curr) => acc + Number(curr.falls), 0);
+      // 1 calendar day = 1 training session count
+      const uniqueTrainingDays = new Set(
+        filtered.filter(s => (s.sessionType || s.sessiontype) !== 'Rest' && (s.trickName || s.trickname) !== 'Rest Day')
+                .map(s => s.date).filter(Boolean)
+      ).size;
+
+      const totalTarget = filtered.reduce((acc, curr) => acc + Number(curr.targetCones || curr.targetcones || 0), 0);
+      const totalCompleted = filtered.reduce((acc, curr) => acc + Number(curr.completedCones || curr.completedcones || 0), 0);
+      const totalFalls = filtered.reduce((acc, curr) => acc + Number(curr.falls || 0), 0);
       const avgSuccess = totalTarget > 0 ? ((totalCompleted / totalTarget) * 100).toFixed(1) : '0';
 
       const comboSessions = filtered.filter(s => (s.sessionType === 'Combo' || s.sessiontype === 'Combo') && s.connectedCompletion && s.connectedCompletion !== 'N/A');
@@ -178,7 +183,7 @@ let calSelectedDate = null;
         avgConnected = (sumConn / comboSessions.length).toFixed(1);
       }
 
-      safeSetTextContent('mSessions', totalSessions);
+      safeSetTextContent('mSessions', uniqueTrainingDays);
       safeSetTextContent('mSuccess', `${avgSuccess}%`);
       safeSetTextContent('mCompleted', totalCompleted);
       safeSetTextContent('mFalls', totalFalls);
