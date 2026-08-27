@@ -460,13 +460,10 @@ async function handleAuthSubmit(e) {
       appState.authMode = mode;
       const isReg = mode === 'register';
 
-      const btnLogin = document.getElementById('btnAuthLoginTab');
-      if (btnLogin) btnLogin.classList.toggle('active', !isReg);
-
-      const btnReg = document.getElementById('btnAuthRegisterTab');
-      if (btnReg) btnReg.classList.toggle('active', isReg);
-
-      safeSetTextContent('authSubtitleText', isReg ? 'Create a new skater protocol account' : 'Sign in to access your freestyle protocol');
+      safeSetTextContent('authHeadingText', isReg ? 'Create Account' : 'Sign In');
+      safeSetTextContent('authSubtitleText', isReg ? 'Register a new skater protocol profile' : 'Access your inline freestyle protocol & records');
+      safeSetTextContent('authSwitchPrompt', isReg ? 'Already have an account?' : "Don't have an account?");
+      safeSetTextContent('authSwitchBtn', isReg ? 'Log In' : 'Sign Up');
 
       const skaterField = document.getElementById('skaterNameField');
       if (skaterField) skaterField.style.display = isReg ? 'block' : 'none';
