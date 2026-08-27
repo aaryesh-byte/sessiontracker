@@ -1238,11 +1238,14 @@
       position: relative;
       margin-bottom: 8px;
       width: 100%;
+      display: flex;
+      align-items: center;
     }
 
     .search-input {
-      padding-left: 36px;
+      padding-left: 38px !important;
       font-size: 0.8125rem;
+      width: 100%;
     }
 
     .search-icon {
@@ -1252,6 +1255,20 @@
       transform: translateY(-50%);
       font-size: 0.875rem;
       color: var(--on-surface-muted);
+      pointer-events: none;
+      z-index: 2;
+      line-height: 1;
+    }
+
+    /* DATE INPUT MOBILE BOUNDS & OVERFLOW PREVENTION */
+    input[type="date"] {
+      max-width: 100% !important;
+      min-width: 0 !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+      -webkit-appearance: none;
+      appearance: none;
+      display: block;
     }
 
     /* BADGES & CHIPS */
@@ -1951,6 +1968,12 @@
       input, select, textarea {
         padding: 8px 10px !important;
         font-size: 0.8125rem !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+
+      .search-input {
+        padding-left: 38px !important;
       }
 
       .btn {
