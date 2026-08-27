@@ -307,7 +307,85 @@ async function handleAuthSubmit(e) {
 
     window.openEditorialProfilePanel = openEditorialProfilePanel;
     window.closeEditorialProfilePanel = closeEditorialProfilePanel;
+// INLINE FREESTYLE RULEBOOK & MATRIX 2026 MODAL
+    function openRulebookModal() {
+      let modal = document.getElementById('rulebookModal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'rulebookModal';
+        modal.className = 'modal-overlay';
+        document.body.appendChild(modal);
+      }
 
+      modal.innerHTML = `
+        <div class="rulebook-modal-wrap">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; border-bottom:1px solid var(--border-razor); padding-bottom:12px;">
+            <div>
+              <h2 style="font-family:var(--font-display); font-size:1.3rem; font-weight:800; color:var(--primary);">📜 Inline Freestyle Classic Rules (2026)</h2>
+              <div class="label-caps" style="margin-top:2px;">Official Appendix A Freestyle Slalom Tricks Matrix</div>
+            </div>
+            <button type="button" class="cal-nav-btn" onclick="closeRulebookModal()" style="width:34px; height:34px;">✕</button>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
+            <div style="background:var(--bg-container); padding:12px; border-radius:var(--radius-md); border:1px solid var(--border-razor);">
+              <div class="label-caps" style="color:var(--primary);">Competition Lines</div>
+              <div style="font-size:0.8125rem; margin-top:4px; line-height:1.5;">
+                • <strong>50 cm Line</strong>: 20 Cones<br>
+                • <strong>80 cm Line</strong>: 20 Cones (Base execution)<br>
+                • <strong>120 cm Line</strong>: 14 Cones<br>
+                • <strong>Distance</strong>: 2m between lines
+              </div>
+            </div>
+
+            <div style="background:var(--bg-container); padding:12px; border-radius:var(--radius-md); border:1px solid var(--border-razor);">
+              <div class="label-caps" style="color:var(--primary);">Timing &amp; Scoring</div>
+              <div style="font-size:0.8125rem; margin-top:4px; line-height:1.5;">
+                • <strong>Allowed Time</strong>: 105s – 120s (1m45s – 2m)<br>
+                • <strong>Technique Score</strong>: 10 – 60 Points<br>
+                • <strong>Artistic Score</strong>: 0 – 70 Points<br>
+                • <strong>Penalties</strong>: -1 pt / moved cone, -10 pts timing
+              </div>
+            </div>
+          </div>
+
+          <div class="card-title" style="font-size:0.95rem; margin-bottom:8px;">Appendix A: Tricks Matrix Ratings</div>
+          <div style="max-height:280px; overflow-y:auto; border:1px solid var(--border-razor); border-radius:var(--radius-md);">
+            <table class="rulebook-table">
+              <thead>
+                <tr>
+                  <th>Trick Name</th>
+                  <th>Family</th>
+                  <th>Grade</th>
+                  <th>Matrix Score</th>
+                </tr>
+              </thead>
+              <tbody id="rulebookMatrixTableBody">
+                ${(typeof PREDEFINED_TRICKS !== 'undefined' ? PREDEFINED_TRICKS.slice(0, 30) : []).map(t => `
+                  <tr>
+                    <td><strong>${t.name}</strong></td>
+                    <td>${t.category}</td>
+                    <td><span class="badge badge-family">Fam ${t.family}</span></td>
+                    <td style="font-family:var(--font-mono); color:var(--primary); font-weight:700;">${FAMILY_POINTS[t.family] ? FAMILY_POINTS[t.family].min + ' - ' + FAMILY_POINTS[t.family].max : '10-60'}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+
+      modal.style.display = 'flex';
+    }
+
+    function closeRulebookModal() {
+      const modal = document.getElementById('rulebookModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    window.openRulebookModal = openRulebookModal;
+    window.closeRulebookModal = closeRulebookModal;
+    
     function openSkaterProfileModal() {
       if (!appState.currentUser) return;
       let modal = document.getElementById('skaterProfileModal');
@@ -582,8 +660,8 @@ async function handleAuthSubmit(e) {
 async function switchTab(tabId, el) {
   const pageMap = {
     dashboard: 'dashboard',
-    calc: 'combo-calculator',
     log: 'training',
+    calc: 'combo-calculator',
     history: 'history',
     tricks: 'custom-tricks'
   };
@@ -596,8 +674,8 @@ async function switchTab(tabId, el) {
   document.body.scrollTop = 0;
 
   document.querySelectorAll('.bottom-nav .nav-item').forEach(n => n.classList.remove('active'));
-  // Layout: Dash (0) | Build (1) | Train (2) | History (3) | Matrix (4)
-  const indexMap = { dashboard: 0, calc: 1, log: 2, history: 3, tricks: 4 };
+  // Standard Layout: Dash (0) | Train (1) | Build (2) | History (3) | Custom Tricks (4)
+  const indexMap = { dashboard: 0, log: 1, calc: 2, history: 3, tricks: 4 };
   const navItems = document.querySelectorAll('.bottom-nav .nav-item');
   if (navItems[indexMap[tabId]]) navItems[indexMap[tabId]].classList.add('active');
 

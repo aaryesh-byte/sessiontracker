@@ -140,48 +140,33 @@
       </div>
 
       <div class="footer-links-grid">
-        <div class="footer-col">
-          <div class="footer-col-title">Product</div>
-          <ul class="footer-nav-list">
-            <li><a href="javascript:void(0)" onclick="switchTab('dashboard')">Performance Dash</a></li>
-            <li><a href="javascript:void(0)" onclick="switchTab('log')">Training Session</a></li>
-            <li><a href="javascript:void(0)" onclick="switchTab('calc')">Combo Builder</a></li>
-            <li><a href="javascript:void(0)" onclick="switchTab('history')">Session History</a></li>
-            <li><a href="javascript:void(0)" onclick="switchTab('tricks')">Trick Matrix</a></li>
-          </ul>
-        </div>
-
-        <div class="footer-col">
-          <div class="footer-col-title">Company</div>
-          <ul class="footer-nav-list">
-            <li><a href="javascript:void(0)">About Protocol</a></li>
-            <li><a href="javascript:void(0)">Skater Registry</a></li>
-            <li><a href="javascript:void(0)">Engineering</a></li>
-            <li><a href="javascript:void(0)">Release Notes</a></li>
-          </ul>
-        </div>
-
-        <div class="footer-col">
-          <div class="footer-col-title">Resources</div>
-          <ul class="footer-nav-list">
-            <li><a href="javascript:void(0)">Matrix 2026 Rules</a></li>
-            <li><a href="javascript:void(0)">Family A–E Scoring</a></li>
-            <li><a href="javascript:void(0)">Cone Spacing Specs</a></li>
-            <li><a href="javascript:void(0)">AI Combo Guide</a></li>
-          </ul>
-        </div>
-
-        <div class="footer-col">
-          <div class="footer-col-title">Legal</div>
-          <ul class="footer-nav-list">
-            <li><a href="javascript:void(0)">Privacy Policy</a></li>
-            <li><a href="javascript:void(0)">Terms of Protocol</a></li>
-            <li><a href="javascript:void(0)">Data Security</a></li>
-            <li><a href="javascript:void(0)">Open Source</a></li>
-          </ul>
-        </div>
-      </div>
-    </div>
+            <div>
+              <div class="footer-col-title">Product</div>
+              <ul class="footer-nav-list">
+                <li><a href="javascript:void(0)" onclick="switchTab('dashboard')">Analytics Dash</a></li>
+                <li><a href="javascript:void(0)" onclick="switchTab('log')">Training Log</a></li>
+                <li><a href="javascript:void(0)" onclick="switchTab('calc')">Combo Calculator</a></li>
+                <li><a href="javascript:void(0)" onclick="switchTab('history')">Session History</a></li>
+                <li><a href="javascript:void(0)" onclick="switchTab('tricks')">Custom Tricks</a></li>
+              </ul>
+            </div>
+            <div>
+              <div class="footer-col-title">Resources</div>
+              <ul class="footer-nav-list">
+                <li><a href="javascript:void(0)" onclick="openRulebookModal()">Matrix 2026 Rules</a></li>
+                <li><a href="javascript:void(0)" onclick="openRulebookModal()">World Skate Standard</a></li>
+                <li><a href="javascript:void(0)" onclick="openRulebookModal()">Scoring Guide</a></li>
+              </ul>
+            </div>
+            <div>
+              <div class="footer-col-title">Legal</div>
+              <ul class="footer-nav-list">
+                <li><a href="javascript:void(0)">Privacy Protocol</a></li>
+                <li><a href="javascript:void(0)">Terms of Service</a></li>
+                <li><a href="javascript:void(0)">System Security</a></li>
+              </ul>
+            </div>
+          </div>
 
     <div class="footer-bottom-bar">
       <div class="footer-copy-text">
@@ -199,13 +184,13 @@
         <span class="nav-icon">📊</span>
         <span>Dash</span>
       </a>
+      <a class="nav-item" onclick="switchTab('log', this)">
+        <span class="nav-icon">⏱️</span>
+        <span>Train</span>
+      </a>
       <a class="nav-item" onclick="switchTab('calc', this)">
         <span class="nav-icon">🧮</span>
         <span>Build</span>
-      </a>
-      <a class="nav-item nav-item-train-center" onclick="switchTab('log', this)">
-        <span class="nav-icon">⏱️</span>
-        <span>Train</span>
       </a>
       <a class="nav-item" onclick="switchTab('history', this)">
         <span class="nav-icon">📜</span>
@@ -213,7 +198,7 @@
       </a>
       <a class="nav-item" onclick="switchTab('tricks', this)">
         <span class="nav-icon">🛹</span>
-        <span>Matrix</span>
+        <span>Custom Tricks</span>
       </a>
     </nav>
 

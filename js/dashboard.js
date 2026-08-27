@@ -10,11 +10,13 @@ let calSelectedDate = null;
       if (!appState.currentUser || isSyncingData) return;
 
       const btn = document.getElementById('btnSyncDashboard');
+      const label = document.getElementById('btnSyncDashboardLabel');
       isSyncingData = true;
 
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '🔄 Syncing...';
+        btn.classList.add('is-syncing');
+        if (label) label.textContent = 'Syncing...';
       }
 
       try {
@@ -68,7 +70,9 @@ let calSelectedDate = null;
         isSyncingData = false;
         if (btn) {
           btn.disabled = false;
-          btn.innerHTML = '🔄 Sync Data';
+          btn.classList.remove('is-syncing');
+          const label = document.getElementById('btnSyncDashboardLabel');
+          if (label) label.textContent = 'Sync Data';
         }
       }
     }
