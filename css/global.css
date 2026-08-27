@@ -122,7 +122,7 @@
       color: var(--on-surface-muted);
     }
 
-    /* AUTH OVERLAY SCREEN — MOBILE OPTIMIZED */
+    /* AUTH OVERLAY SCREEN — SPLIT-SCREEN LAYOUT */
     #authOverlay {
       position: fixed;
       inset: 0;
@@ -141,17 +141,110 @@
       touch-action: pan-y;
     }
 
-    .auth-card {
+    .auth-split-card {
       background: var(--bg-surface);
       border: 1px solid var(--border-razor);
       border-radius: var(--radius-lg);
-      padding: 32px 24px;
       width: 100%;
-      max-width: 380px;
-      box-shadow: var(--card-shadow), var(--primary-glow);
-      text-align: center;
+      max-width: 760px;
+      box-shadow: var(--card-shadow), 0 0 32px var(--primary-glow);
       position: relative;
       margin: auto;
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      overflow: hidden;
+    }
+
+    .auth-split-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 10%;
+      right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--primary), transparent);
+      z-index: 2;
+    }
+
+    .auth-form-side {
+      padding: 36px 28px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* RIGHT-SIDE VISUAL PANEL */
+    .auth-visual-side {
+      background: linear-gradient(145deg, var(--bg-container-highest), var(--bg-container-high));
+      border-left: 1px solid var(--border-razor);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 24px;
+      position: relative;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .auth-visual-side::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, var(--primary-glow) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .auth-avatar-container {
+      width: 130px;
+      height: 130px;
+      border-radius: var(--radius-pill);
+      padding: 4px;
+      background: linear-gradient(135deg, var(--primary), rgba(0, 255, 194, 0.2));
+      box-shadow: 0 0 24px var(--primary-glow);
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .auth-dynamic-avatar {
+      width: 100%;
+      height: 100%;
+      border-radius: var(--radius-pill);
+      object-fit: cover;
+      background: var(--bg-base);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+      opacity: 1;
+    }
+
+    .auth-dynamic-avatar.avatar-fading {
+      opacity: 0.2;
+      transform: scale(0.94);
+    }
+
+    .auth-visual-tagline {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--on-surface);
+      margin-top: 4px;
+      z-index: 1;
+      letter-spacing: -0.01em;
+    }
+
+    .auth-visual-sub {
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 4px;
+      z-index: 1;
+      font-weight: 700;
     }
 
     /* 16px font on mobile prevents iOS Safari from automatically zooming into inputs */
@@ -162,14 +255,32 @@
       border-radius: var(--radius-md);
     }
 
-    .auth-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 10%;
-      right: 10%;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--primary), transparent);
+    @media (max-width: 680px) {
+      .auth-split-card {
+        grid-template-columns: 1fr !important;
+        max-width: 390px;
+      }
+
+      .auth-visual-side {
+        border-left: none;
+        border-bottom: 1px solid var(--border-razor);
+        padding: 20px 16px;
+        order: -1;
+      }
+
+      .auth-avatar-container {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 8px;
+      }
+
+      .auth-visual-tagline {
+        font-size: 0.9rem;
+      }
+
+      .auth-form-side {
+        padding: 24px 18px;
+      }
     }
 
     .auth-logo {

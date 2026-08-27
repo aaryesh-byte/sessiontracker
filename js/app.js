@@ -10,6 +10,45 @@ let appState = {
       deletingTrickId: null,
       charts: {}
     };
+// Deterministic profile picture calculator: stable index 1 to 5
+function getDeterministicProfilePic(identifier) {
+  const str = String(identifier || '').trim().toLowerCase();
+  if (!str) return 'profile1.png';
+
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
+  }
+  const index = (Math.abs(hash) % 5) + 1;
+  return `profile${index}.png`;
+}
+
+function handleUsernameAvatarInput(val) {
+  const img = document.getElementById('authDynamicAvatarImg');
+  const label = document.getElementById('authVisualUserLabel');
+  if (!img) return;
+
+  const targetSrc = getDeterministicProfilePic(val);
+  const trimmed = (val || '').trim();
+
+  if (label) {
+    label.textContent = trimmed ? trimmed.toUpperCase() : 'SKATER PROTOCOL';
+  }
+
+  // Smooth transition when the image source changes
+  if (img.getAttribute('data-current') !== targetSrc) {
+    img.classList.add('avatar-fading');
+    setTimeout(() => {
+      img.src = targetSrc;
+      img.setAttribute('data-current', targetSrc);
+      img.classList.remove('avatar-fading');
+    }, 120);
+  }
+}
+
+window.handleUsernameAvatarInput = handleUsernameAvatarInput;
+window.getDeterministicProfilePic = getDeterministicProfilePic;
 
 async function handleAuthSubmit(e) {
       if (e) {

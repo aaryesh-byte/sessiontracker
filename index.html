@@ -62,40 +62,49 @@
 
   <!-- AUTHENTICATION OVERLAY SCREEN -->
   <div id="authOverlay">
-    <div class="auth-card">
-      <div class="auth-brand-wrap">
-        <img src="assets/rollsync-logo.png" alt="RollSync" class="brand-logo-img auth-logo-img">
-      </div>
-      <div class="auth-subtitle" id="authSubtitleText">Sign in to access your freestyle protocol</div>
-
-      <div class="auth-tabs">
-        <button type="button" class="auth-tab-btn active" id="btnAuthLoginTab" onclick="switchAuthMode('login')">Sign In</button>
-        <button type="button" class="auth-tab-btn" id="btnAuthRegisterTab" onclick="switchAuthMode('register')">Register</button>
-      </div>
-
-      <form id="loginForm" autocomplete="on">
-        <div class="form-group" style="text-align:left;">
-          <label for="authUsername">Username</label>
-          <input type="text" id="authUsername" name="username" placeholder="e.g. alex_chen" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required>
+    <div class="auth-split-card">
+      <!-- Left: Interactive Form Side -->
+      <div class="auth-form-side">
+        <div class="auth-brand-wrap">
+          <div class="auth-logo">ROLLSYNC</div>
+        </div>
+        <div id="authSubtitleText" class="auth-subtitle">Sign in to access your freestyle protocol</div>
+        
+        <div class="auth-tabs">
+          <button type="button" id="btnAuthLoginTab" class="auth-tab-btn active" onclick="switchAuthMode('login')">Log In</button>
+          <button type="button" id="btnAuthRegisterTab" class="auth-tab-btn" onclick="switchAuthMode('register')">Register</button>
         </div>
 
-        <div class="form-group" style="text-align:left;">
-          <label for="authPassword">Password</label>
-          <div class="password-wrap">
-            <input type="password" id="authPassword" name="password" placeholder="Enter password" autocomplete="current-password" autocapitalize="none" autocorrect="off" style="padding-right:48px;" required>
-            <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility()" title="Show/Hide Password">👁️</button>
+        <form id="loginForm" onsubmit="return handleAuthSubmit(event)">
+          <div class="form-group" id="skaterNameField" style="display:none;">
+            <label>Skater Name</label>
+            <input type="text" id="authSkaterName" placeholder="e.g. Alex Skater">
           </div>
-        </div>
+          <div class="form-group">
+            <label>Username / Email</label>
+            <input type="text" id="authUsername" placeholder="Enter username or email" required autocomplete="username" oninput="handleUsernameAvatarInput(this.value)">
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <div class="password-wrap">
+              <input type="password" id="authPassword" placeholder="Enter password" required autocomplete="current-password">
+              <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility()">👁️</button>
+            </div>
+          </div>
+          <button type="submit" id="authSubmitBtn" class="btn" style="margin-top:10px;">
+            <span>Log In</span>
+          </button>
+        </form>
+      </div>
 
-        <div class="form-group" style="text-align:left; display:none;" id="skaterNameField">
-          <label for="authSkaterName">Skater Full Name</label>
-          <input type="text" id="authSkaterName" name="skaterName" placeholder="e.g. Alex Chen" autocapitalize="words">
+      <!-- Right: Dynamic Profile Visual Panel -->
+      <div class="auth-visual-side">
+        <div class="auth-avatar-container">
+          <img id="authDynamicAvatarImg" class="auth-dynamic-avatar" src="profile1.png" alt="Athlete Profile" onerror="this.onerror=null;">
         </div>
-
-        <button type="submit" id="authSubmitBtn" class="btn" style="margin-top:10px; width:100%; min-height:48px; touch-action:manipulation; cursor:pointer;">
-          <span>Log In</span>
-        </button>
-      </form>
+        <div class="auth-visual-tagline">Inline Freestyle Tracker</div>
+        <div class="auth-visual-sub" id="authVisualUserLabel">Skater Protocol</div>
+      </div>
     </div>
   </div>
 
