@@ -307,12 +307,12 @@ async function handleAuthSubmit(e) {
 
     window.openEditorialProfilePanel = openEditorialProfilePanel;
     window.closeEditorialProfilePanel = closeEditorialProfilePanel;
-// INLINE FREESTYLE RULEBOOK & MATRIX 2026 MODAL
-    function openRulebookModal() {
-      let modal = document.getElementById('rulebookModal');
+// 1. WORLD SKATE STANDARD — DETAILED RULES VIEWER
+    function openWorldSkateRulesModal(sectionAnchor) {
+      let modal = document.getElementById('worldSkateRulesModal');
       if (!modal) {
         modal = document.createElement('div');
-        modal.id = 'rulebookModal';
+        modal.id = 'worldSkateRulesModal';
         modal.className = 'modal-overlay';
         document.body.appendChild(modal);
       }
@@ -321,56 +321,157 @@ async function handleAuthSubmit(e) {
         <div class="rulebook-modal-wrap">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; border-bottom:1px solid var(--border-razor); padding-bottom:12px;">
             <div>
-              <h2 style="font-family:var(--font-display); font-size:1.3rem; font-weight:800; color:var(--primary);">📜 Inline Freestyle Classic Rules (2026)</h2>
-              <div class="label-caps" style="margin-top:2px;">Official Appendix A Freestyle Slalom Tricks Matrix</div>
+              <h2 style="font-family:var(--font-display); font-size:1.35rem; font-weight:800; color:var(--primary);">📖 World Skate Inline Freestyle Rules 2026</h2>
+              <div class="label-caps" style="margin-top:2px;">Freestyle Slalom Classic Official Regulations</div>
             </div>
-            <button type="button" class="cal-nav-btn" onclick="closeRulebookModal()" style="width:34px; height:34px;">✕</button>
+            <button type="button" class="cal-nav-btn" onclick="closeWorldSkateRulesModal()" style="width:34px; height:34px;">✕</button>
           </div>
 
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
-            <div style="background:var(--bg-container); padding:12px; border-radius:var(--radius-md); border:1px solid var(--border-razor);">
-              <div class="label-caps" style="color:var(--primary);">Competition Lines</div>
-              <div style="font-size:0.8125rem; margin-top:4px; line-height:1.5;">
-                • <strong>50 cm Line</strong>: 20 Cones<br>
-                • <strong>80 cm Line</strong>: 20 Cones (Base execution)<br>
-                • <strong>120 cm Line</strong>: 14 Cones<br>
-                • <strong>Distance</strong>: 2m between lines
-              </div>
-            </div>
-
-            <div style="background:var(--bg-container); padding:12px; border-radius:var(--radius-md); border:1px solid var(--border-razor);">
-              <div class="label-caps" style="color:var(--primary);">Timing &amp; Scoring</div>
-              <div style="font-size:0.8125rem; margin-top:4px; line-height:1.5;">
-                • <strong>Allowed Time</strong>: 105s – 120s (1m45s – 2m)<br>
-                • <strong>Technique Score</strong>: 10 – 60 Points<br>
-                • <strong>Artistic Score</strong>: 0 – 70 Points<br>
-                • <strong>Penalties</strong>: -1 pt / moved cone, -10 pts timing
-              </div>
+          <!-- Section 1: Competition Area -->
+          <div class="rule-block">
+            <div class="rule-block-title">🏟️ 1. Competition Area &amp; Course Requirements</div>
+            <div class="rule-text-content">
+              <ul>
+                <li><strong>3 Cone Lines</strong> parallel to each other, spaced <strong>2 meters</strong> apart.</li>
+                <li><strong>50 cm Line</strong>: 20 Cones (closest to judges).</li>
+                <li><strong>80 cm Line</strong>: 20 Cones (center line, base execution standard).</li>
+                <li><strong>120 cm Line</strong>: 14 Cones (furthest from judges).</li>
+                <li>The center of each cone line must align with the judges' table.</li>
+                <li><strong>Course Requirement</strong>: Skaters must perform in all three cone lines and cross every cone interval.</li>
+              </ul>
             </div>
           </div>
 
-          <div class="card-title" style="font-size:0.95rem; margin-bottom:8px;">Appendix A: Tricks Matrix Ratings</div>
-          <div style="max-height:280px; overflow-y:auto; border:1px solid var(--border-razor); border-radius:var(--radius-md);">
-            <table class="rulebook-table">
-              <thead>
-                <tr>
-                  <th>Trick Name</th>
-                  <th>Family</th>
-                  <th>Grade</th>
-                  <th>Matrix Score</th>
-                </tr>
-              </thead>
-              <tbody id="rulebookMatrixTableBody">
-                ${(typeof PREDEFINED_TRICKS !== 'undefined' ? PREDEFINED_TRICKS.slice(0, 30) : []).map(t => `
-                  <tr>
-                    <td><strong>${t.name}</strong></td>
-                    <td>${t.category}</td>
-                    <td><span class="badge badge-family">Fam ${t.family}</span></td>
-                    <td style="font-family:var(--font-mono); color:var(--primary); font-weight:700;">${FAMILY_POINTS[t.family] ? FAMILY_POINTS[t.family].min + ' - ' + FAMILY_POINTS[t.family].max : '10-60'}</td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
+          <!-- Section 2: Competition Regulations & Starting Order -->
+          <div class="rule-block">
+            <div class="rule-block-title">📋 2. Competition Regulations &amp; Starting Order</div>
+            <div class="rule-text-content">
+              <ul>
+                <li><strong>Rounds</strong>: Standard single round. Qualification rounds added when skater volume is high. Top-ranked skaters may be prequalified.</li>
+                <li><strong>Starting Order</strong>: Determined by latest International World Ranking, lowest ranked performing first. Unranked skaters perform first in random order.</li>
+                <li>Qualification and Final performance regulations and grading criteria are identical.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Section 3: Timing -->
+          <div class="rule-block">
+            <div class="rule-block-title">⏱️ 3. Timing Regulations</div>
+            <div class="rule-text-content">
+              <ul>
+                <li><strong>Allowed Duration</strong>: <strong>105 seconds – 120 seconds</strong> (1 min 45 sec to 2 min).</li>
+                <li><strong>Start</strong>: Timing begins when the music starts (music starts when the skater signals readiness).</li>
+                <li><strong>End</strong>: Timing stops when the skater signals completion or the music stops.</li>
+                <li><strong>Timing Penalty</strong>: Runs finishing under 105s or exceeding 120s receive a <strong>10-point penalty</strong>.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Section 4: Clothing & Performance Behaviour -->
+          <div class="rule-block">
+            <div class="rule-block-title">🥋 4. Clothing, Behaviour &amp; Music Regulations</div>
+            <div class="rule-text-content">
+              <ul>
+                <li><strong>Clothing</strong>: Must be dignified, appropriate for sport, and not overly revealing. Props are strictly prohibited (results in disqualification).</li>
+                <li><strong>Accessories</strong>: Integral costume accessories (hairbands, wristbands) permitted; deliberate removal or throwing constitutes a prop violation.</li>
+                <li><strong>Behaviour</strong>: Disrespectful, insulting, or unsportsmanlike movements toward judges result in penalties or disqualification.</li>
+                <li><strong>Music Neutrality</strong>: Must respect Olympic Charter Rule 50 (political and religious neutrality; no racist, political, violent, or offensive content). Late music submission incurs a 10-point penalty.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Section 5: Grading & Score (anchor: grading) -->
+          <div class="rule-block" id="ruleSectionGrading">
+            <div class="rule-block-title">🎯 5. Grading Components &amp; Score (Max 130 Points)</div>
+            <div class="rule-text-content">
+              <ul>
+                <li><strong>Technique Score (10 – 60 Points)</strong>: Evaluates slalom trick difficulty based on the Tricks Matrix, execution speed, continuity, variety across families, and freestyle footwork. Must successfully execute at least <strong>8 tricks</strong>.</li>
+                <li><strong>Artistic Score (0 – 70 Points)</strong>: Evaluates body performance/synchronization, musical expression/rhythm matching, and strategic trick management across lines. Guideline range: Technique Score ±10 pts.</li>
+                <li><strong>Final Score</strong>: (Technique + Artistic) − Penalty Deductions. Processed using the Victory Point System for judge rankings.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Section 6: Trick Standards & Execution -->
+          <div class="rule-block">
+            <div class="rule-block-title">⚡ 6. Trick Standard, Minimums &amp; Footwork</div>
+            <div class="rule-text-content">
+              <ul>
+                <li><strong>Minimum Execution</strong>: Non-spinning tricks require at least <strong>4 cones</strong>; spinning tricks require at least <strong>3 rotations</strong>.</li>
+                <li><strong>Baseline standard</strong> assumes smoothness and average speed on an <strong>80 cm cone line</strong>.</li>
+                <li>Transitions and foot switches between families must be continuous without pauses. Unclear execution, touching during jumps, or loss of trajectory invalidates the trick.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Section 7: Trick Families -->
+          <div class="rule-block">
+            <div class="rule-block-title">🛼 7. The Five Trick Families</div>
+            <div class="rule-text-content">
+              <ul>
+                <li><strong>Sitting</strong>: Squatting position with waist at or below knee level throughout the cone passage.</li>
+                <li><strong>Jumping</strong>: Both feet must be airborne simultaneously during the interval.</li>
+                <li><strong>Spinning</strong>: At least one wheel touching while rotating, remaining within the cone line.</li>
+                <li><strong>Wheeling</strong>: Linear forward or backward movement with only one wheel touching the ground.</li>
+                <li><strong>Others</strong>: Technical slalom patterns, eagles, and footwork outside the four main families.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Section 8: Penalties Reference -->
+          <div class="rule-block">
+            <div class="rule-block-title">⚠️ 8. Penalties &amp; Deductions Reference</div>
+            <div class="rule-text-content">
+              <ul>
+                <li><strong>Moved/Kicked Cone</strong>: <strong>−1 point</strong> for each cone moved enough to reveal its center point mark.</li>
+                <li><strong>Missed Intervals</strong>: <strong>−5 points</strong> if more than 5 intervals are missed during the run.</li>
+                <li><strong>Loss of Balance</strong>: <strong>−0.5 to −1.5 points</strong> per occurrence.</li>
+                <li><strong>Falls</strong>: <strong>−2 points</strong> (light fall) to <strong>−5 points</strong> (heavy impact fall).</li>
+                <li><strong>Missing Tricks / Families</strong>: <strong>−2 points</strong> per trick under 8; <strong>−3 points</strong> per missing required trick family.</li>
+                <li><strong>Internal Interruption</strong>: <strong>−5 points</strong> (performance judged up to stopping point).</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      `;
+
+      modal.style.display = 'flex';
+
+      if (sectionAnchor === 'grading') {
+        setTimeout(() => {
+          const el = document.getElementById('ruleSectionGrading');
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    }
+
+    function closeWorldSkateRulesModal() {
+      const modal = document.getElementById('worldSkateRulesModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    // 2. TRICKS MATRIX — OFFICIAL IMAGE VIEWER
+    function openMatrixImageModal() {
+      let modal = document.getElementById('matrixImageModal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'matrixImageModal';
+        modal.className = 'modal-overlay';
+        document.body.appendChild(modal);
+      }
+
+      modal.innerHTML = `
+        <div class="matrix-image-modal-wrap">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-razor); padding-bottom:12px;">
+            <div style="text-align:left;">
+              <h2 style="font-family:var(--font-display); font-size:1.25rem; font-weight:800; color:var(--primary);">📊 Freestyle Slalom Tricks Matrix 2026</h2>
+              <div class="label-caps" style="margin-top:2px;">Appendix A: Official Difficulty &amp; Family Ratings</div>
+            </div>
+            <button type="button" class="cal-nav-btn" onclick="closeMatrixImageModal()" style="width:34px; height:34px;">✕</button>
+          </div>
+
+          <div class="matrix-img-container">
+            <img src="assets/trickmatrix.png" class="matrix-full-img" alt="Official Freestyle Slalom Tricks Matrix 2026" onerror="this.alt='Matrix image not found at assets/trickmatrix.png';">
           </div>
         </div>
       `;
@@ -378,14 +479,16 @@ async function handleAuthSubmit(e) {
       modal.style.display = 'flex';
     }
 
-    function closeRulebookModal() {
-      const modal = document.getElementById('rulebookModal');
+    function closeMatrixImageModal() {
+      const modal = document.getElementById('matrixImageModal');
       if (modal) modal.style.display = 'none';
     }
 
-    window.openRulebookModal = openRulebookModal;
-    window.closeRulebookModal = closeRulebookModal;
-    
+    window.openWorldSkateRulesModal = openWorldSkateRulesModal;
+    window.closeWorldSkateRulesModal = closeWorldSkateRulesModal;
+    window.openMatrixImageModal = openMatrixImageModal;
+    window.closeMatrixImageModal = closeMatrixImageModal;
+
     function openSkaterProfileModal() {
       if (!appState.currentUser) return;
       let modal = document.getElementById('skaterProfileModal');
