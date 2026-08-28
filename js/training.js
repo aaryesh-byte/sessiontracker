@@ -13,6 +13,8 @@
           target: '',
           completed: '',
           missed: '',
+          targetAttempts: 10,
+          completedAttempts: 0,
           falls: 0,
           notes: '',
           searchFilter: ''
@@ -43,6 +45,8 @@
           target: '',
           completed: '',
           missed: '',
+          targetAttempts: 10,
+          completedAttempts: 0,
           falls: 0,
           notes: '',
           searchFilter: ''
@@ -60,14 +64,58 @@
           target: '',
           completed: '',
           missed: '',
-          totalAttempts: '',
-          connectedAttempts: '',
+          targetAttempts: 10,
+          completedAttempts: 0,
           falls: 0,
           notes: ''
         });
       }
       renderSessionItems();
     }
+
+    function onAttemptInputChange(idx, field, rawVal) {
+      const item = appState.sessionItems[idx];
+      if (!item) return;
+
+      let val = rawVal === '' ? 0 : Math.max(0, parseInt(rawVal, 10) || 0);
+
+      if (field === 'targetAttempts') {
+        item.targetAttempts = val;
+        if (item.completedAttempts > item.targetAttempts) {
+          item.completedAttempts = item.targetAttempts;
+          const compInput = document.getElementById(`itemCompAttempts_${idx}`);
+          if (compInput) compInput.value = item.completedAttempts;
+        }
+      } else if (field === 'completedAttempts') {
+        const maxTarget = item.targetAttempts || 0;
+        if (maxTarget > 0 && val > maxTarget) {
+          val = maxTarget;
+          const compInput = document.getElementById(`itemCompAttempts_${idx}`);
+          if (compInput) compInput.value = val;
+        }
+        item.completedAttempts = val;
+      }
+
+      updateAttemptProgressBar(idx);
+    }
+
+    function updateAttemptProgressBar(idx) {
+      const item = appState.sessionItems[idx];
+      if (!item) return;
+
+      const target = Number(item.targetAttempts) || 0;
+      const completed = Number(item.completedAttempts) || 0;
+      const percent = target > 0 ? Math.min(100, Math.round((completed / target) * 100)) : 0;
+
+      const fillEl = document.getElementById(`attemptProgressFill_${idx}`);
+      const textEl = document.getElementById(`attemptProgressText_${idx}`);
+
+      if (fillEl) fillEl.style.width = `${percent}%`;
+      if (textEl) textEl.textContent = `${completed} / ${target} completed (${percent}%)`;
+    }
+
+    window.onAttemptInputChange = onAttemptInputChange;
+    window.updateAttemptProgressBar = updateAttemptProgressBar;
 
     // Performance Session Handlers (Allows multiple Performance runs in 1 session)
     function addPerformanceToSession() {
@@ -380,30 +428,44 @@
                 <div class="row-3">
                   <div class="form-group">
                     <label>Target Cones</label>
-                    <input type="number" min="1" placeholder="Enter target cones" value="${item.target !== undefined && item.target !== '' ? item.target : ''}" oninput="appState.sessionItems[${idx}].target = this.value === '' ? '' : parseInt(this.value, 10); autoCalcItemMissed(${idx});">
+                    <input type="number" min="1" placeholder="Target cones" value="${item.target !== undefined && item.target !== '' ? item.target : ''}" oninput="appState.sessionItems[${idx}].target = this.value === '' ? '' : parseInt(this.value, 10); autoCalcItemMissed(${idx});">
                   </div>
                   <div class="form-group">
                     <label>Completed</label>
-                    <input type="number" min="0" placeholder="Enter completed cones" value="${item.completed !== undefined && item.completed !== '' ? item.completed : ''}" oninput="appState.sessionItems[${idx}].completed = this.value === '' ? '' : parseInt(this.value, 10); autoCalcItemMissed(${idx});">
+                    <input type="number" min="0" placeholder="Completed" value="${item.completed !== undefined && item.completed !== '' ? item.completed : ''}" oninput="appState.sessionItems[${idx}].completed = this.value === '' ? '' : parseInt(this.value, 10); autoCalcItemMissed(${idx});">
                   </div>
                   <div class="form-group">
                     <label>Kicked/Missed</label>
-                    <input type="number" id="itemMissed_${idx}" min="0" placeholder="Missed cones" value="${item.missed !== undefined && item.missed !== '' ? item.missed : ''}" oninput="appState.sessionItems[${idx}].missed = this.value === '' ? '' : parseInt(this.value, 10);">
+                    <input type="number" id="itemMissed_${idx}" min="0" placeholder="Missed" value="${item.missed !== undefined && item.missed !== '' ? item.missed : ''}" oninput="appState.sessionItems[${idx}].missed = this.value === '' ? '' : parseInt(this.value, 10);">
                   </div>
                 </div>
 
-                ${isCombo ? `
-                  <div class="row-2">
-                    <div class="form-group">
-                      <label>Total Attempts</label>
-                      <input type="number" min="1" placeholder="e.g. 10" value="${item.totalAttempts !== undefined && item.totalAttempts !== '' ? item.totalAttempts : ''}" oninput="appState.sessionItems[${idx}].totalAttempts = this.value === '' ? '' : parseInt(this.value, 10);">
+                <!-- Attempt Tracking with Dynamic Progress Bar -->
+                <div class="attempt-tracker-box">
+                  <div class="row-2" style="margin-bottom:8px;">
+                    <div class="form-group" style="margin-bottom:0;">
+                      <label>Target Attempts</label>
+                      <input type="number" min="1" id="itemTargetAttempts_${idx}" value="${item.targetAttempts !== undefined && item.targetAttempts !== '' ? item.targetAttempts : 10}" oninput="onAttemptInputChange(${idx}, 'targetAttempts', this.value)">
                     </div>
-                    <div class="form-group">
-                      <label>Connected Attempts</label>
-                      <input type="number" min="0" placeholder="e.g. 7" value="${item.connectedAttempts !== undefined && item.connectedAttempts !== '' ? item.connectedAttempts : ''}" oninput="appState.sessionItems[${idx}].connectedAttempts = this.value === '' ? '' : parseInt(this.value, 10);">
+                    <div class="form-group" style="margin-bottom:0;">
+                      <label>Completed Attempts</label>
+                      <input type="number" min="0" id="itemCompAttempts_${idx}" value="${item.completedAttempts !== undefined && item.completedAttempts !== '' ? item.completedAttempts : 0}" oninput="onAttemptInputChange(${idx}, 'completedAttempts', this.value)">
                     </div>
                   </div>
-                ` : ''}
+
+                  <!-- Live Progress Bar -->
+                  <div class="attempt-progress-wrap">
+                    <div class="attempt-progress-header">
+                      <span class="label-caps" style="font-size:0.625rem;">Attempt Completion</span>
+                      <span id="attemptProgressText_${idx}" class="attempt-progress-stat">
+                        ${item.completedAttempts || 0} / ${item.targetAttempts || 10} completed (${item.targetAttempts > 0 ? Math.min(100, Math.round(((item.completedAttempts || 0) / item.targetAttempts) * 100)) : 0}%)
+                      </span>
+                    </div>
+                    <div class="attempt-progress-track">
+                      <div id="attemptProgressFill_${idx}" class="attempt-progress-fill" style="width: ${item.targetAttempts > 0 ? Math.min(100, Math.round(((item.completedAttempts || 0) / item.targetAttempts) * 100)) : 0}%;"></div>
+                    </div>
+                  </div>
+                </div>
 
                 <div class="row-2">
                   <div class="form-group" style="margin-bottom:0;">
@@ -792,18 +854,29 @@ async function handleMultiSessionSubmit(e) {
 
       const overallSuccess = totalTarget > 0 ? ((totalCompleted / totalTarget) * 100).toFixed(1) : 0;
 
-      return {
-        date,
-        totalItems: items.length,
-        singleCount,
-        comboCount,
-        totalTarget,
-        totalCompleted,
-        totalMissed,
-        overallSuccess,
-        bestItem: bestItem || 'N/A',
-        bestScore: Math.max(0, bestScore)
-      };
+      const targetAttempts = Number(item.targetAttempts !== undefined && item.targetAttempts !== '' ? item.targetAttempts : 10);
+        const completedAttempts = Math.min(targetAttempts, Number(item.completedAttempts || 0));
+
+        return {
+          sessionId: sessionId,
+          date: date,
+          sessionType: isCombo ? 'Combo' : 'Single',
+          skaterName: activeSkater,
+          userId: activeSkater,
+          trickName: comboName || (isCombo ? 'Combo Sequence' : item.trickName),
+          category: comboCat,
+          family: comboFam,
+          targetCones: target,
+          completedCones: completed,
+          missedCones: missed,
+          targetAttempts: targetAttempts,
+          completedAttempts: completedAttempts,
+          attemptSuccessRate: targetAttempts > 0 ? parseFloat(((completedAttempts / targetAttempts) * 100).toFixed(1)) : 0,
+          falls: item.falls !== '' && item.falls !== undefined ? Number(item.falls) : 0,
+          successRate: target > 0 ? parseFloat(((completed / target) * 100).toFixed(1)) : 0,
+          connectedCompletion: connRate,
+          notes: item.notes || globalNotes
+        };
     }
 
     function showSessionSummaryModal(summary) {

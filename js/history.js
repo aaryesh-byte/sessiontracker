@@ -114,6 +114,10 @@
           `;
         }
 
+        const tAttempts = Number(s.targetAttempts || s.targetattempts || 0);
+        const cAttempts = Number(s.completedAttempts || s.completedattempts || 0);
+        const attRate = tAttempts > 0 ? Math.min(100, Math.round((cAttempts / tAttempts) * 100)) : null;
+
         return `
           <div class="history-item">
             <div class="history-header">
@@ -134,7 +138,8 @@
               <span>✅ Completed: ${completed}</span>
               <span>⚠️ Missed: ${missed}</span>
               <span>🚨 Falls: ${s.falls}</span>
-              ${isCombo ? `<span style="font-weight:700; color:var(--primary);">🔗 Connected: ${connected}</span>` : ''}
+              ${tAttempts > 0 ? `<span style="color:var(--primary); font-weight:700;">🔄 Attempts: ${cAttempts}/${tAttempts} (${attRate}%)</span>` : ''}
+              ${isCombo && connected !== 'N/A' ? `<span style="font-weight:700; color:var(--primary);">🔗 Connected: ${connected}</span>` : ''}
             </div>
             ${s.notes ? `<div style="font-size:0.8125rem; color:var(--on-surface); margin-top:8px; font-style:italic; border-top:1px solid var(--border-razor); padding-top:6px;">"${s.notes}"</div>` : ''}
           </div>

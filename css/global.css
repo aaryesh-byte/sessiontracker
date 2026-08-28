@@ -1468,6 +1468,55 @@
       color: #f87171;
       border-color: rgba(239, 68, 68, 0.3);
     }
+
+/* ATTEMPT TRACKER & DYNAMIC PROGRESS BAR */
+    .attempt-tracker-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-razor);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .attempt-progress-wrap {
+      margin-top: 6px;
+      width: 100%;
+    }
+
+    .attempt-progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .attempt-progress-stat {
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .attempt-progress-track {
+      width: 100%;
+      height: 6px;
+      background: var(--bg-container-high);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+      border: 1px solid var(--border-razor);
+    }
+
+    .attempt-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary-dim), var(--primary));
+      border-radius: var(--radius-pill);
+      box-shadow: 0 0 8px var(--primary-glow);
+      transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
 /* CUSTOM TRICKS RIGHT-SIDE ACCENT */
     .custom-tricks-card {
       position: relative;
