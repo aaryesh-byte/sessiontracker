@@ -343,6 +343,28 @@
       renderMasterPerformancePanel();
     }
 
+    function onMasterPerfSingleSearch(idx, query) {
+      const searchVal = (query || '').toLowerCase().trim();
+      const select = document.getElementById(`masterPerfSingleSelect_${idx}`);
+      if (!select) return;
+
+      const allTricks = getAllTricks();
+      const filtered = allTricks.filter(t => {
+        const name = (t.name || t.trickname || '').toLowerCase();
+        return !searchVal || name.includes(searchVal);
+      });
+
+      const currentSelected = (tempMasterPerformanceDraft && tempMasterPerformanceDraft.items[idx]) ? tempMasterPerformanceDraft.items[idx].name : '';
+
+      select.innerHTML = `
+        <option value="" disabled ${!currentSelected ? 'selected' : ''}>-- Choose Trick --</option>
+        ${filtered.map(t => {
+          const name = t.name || t.trickname;
+          return `<option value="${name}" ${name === currentSelected ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
+        }).join('')}
+      `;
+    }
+
     function onMasterPerfSingleChange(idx, trickName) {
       if (!tempMasterPerformanceDraft || !tempMasterPerformanceDraft.items[idx]) return;
       const allTricks = getAllTricks();
@@ -388,6 +410,29 @@
       item.comboTricks[target] = temp;
       item.name = item.comboTricks.filter(Boolean).join(' → ');
       renderMasterPerformancePanel();
+    }
+
+    function onMasterComboSubTrickSearch(perfItemIdx, subIdx, query) {
+      const searchVal = (query || '').toLowerCase().trim();
+      const select = document.getElementById(`masterComboSubSelect_${perfItemIdx}_${subIdx}`);
+      if (!select) return;
+
+      const allTricks = getAllTricks();
+      const filtered = allTricks.filter(t => {
+        const name = (t.name || t.trickname || '').toLowerCase();
+        return !searchVal || name.includes(searchVal);
+      });
+
+      const currentItem = tempMasterPerformanceDraft && tempMasterPerformanceDraft.items[perfItemIdx];
+      const currentSelected = (currentItem && currentItem.comboTricks) ? currentItem.comboTricks[subIdx] : '';
+
+      select.innerHTML = `
+        <option value="" disabled ${!currentSelected ? 'selected' : ''}>-- Choose Trick --</option>
+        ${filtered.map(t => {
+          const name = t.name || t.trickname;
+          return `<option value="${name}" ${name === currentSelected ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
+        }).join('')}
+      `;
     }
 
     function onMasterComboSubTrickChange(perfItemIdx, subIdx, trickName) {
@@ -500,20 +545,24 @@
                 return `
                   <div class="perf-master-row">
                     <div class="perf-order-controls">
-                      <button type="button" class="btn-icon-tiny" onclick="moveMasterPerfItem(${idx}, -1)" ${idx === 0 ? 'disabled' : ''}>▲</button>
-                      <button type="button" class="btn-icon-tiny" onclick="moveMasterPerfItem(${idx}, 1)" ${idx === master.items.length - 1 ? 'disabled' : ''}>▼</button>
+                      <button type="button" class="btn-icon-tiny" onclick="moveMasterPerfItem(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} title="Move Up">▲</button>
+                      <button type="button" class="btn-icon-tiny" onclick="moveMasterPerfItem(${idx}, 1)" ${idx === master.items.length - 1 ? 'disabled' : ''} title="Move Down">▼</button>
                     </div>
-                    <div style="font-family:var(--font-mono); font-size:0.75rem; font-weight:700; width:28px;">#${idx + 1}</div>
-                    <div style="flex:1; min-width:0;">
-                      <select style="font-size:0.8125rem; padding:6px 10px;" onchange="onMasterPerfSingleChange(${idx}, this.value)">
+                    <div style="font-family:var(--font-mono); font-size:0.75rem; font-weight:700; width:26px; flex-shrink:0;">#${idx + 1}</div>
+                    <div class="perf-slot-controls-wrap">
+                      <div class="perf-search-input-wrap">
+                        <span class="perf-search-icon">🔍</span>
+                        <input type="text" class="perf-search-input" placeholder="Search trick..." oninput="onMasterPerfSingleSearch(${idx}, this.value)">
+                      </div>
+                      <select id="masterPerfSingleSelect_${idx}" class="perf-select" onchange="onMasterPerfSingleChange(${idx}, this.value)">
                         ${allTricks.map(t => {
                           const name = t.name || t.trickname;
                           return `<option value="${name}" ${name === item.name ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
                         }).join('')}
                       </select>
                     </div>
-                    <span class="badge badge-family" style="font-size:0.65rem;">Fam ${item.family || 'E'}</span>
-                    <button type="button" onclick="removeMasterPerfItem(${idx})" class="btn-icon-danger">✕</button>
+                    <span class="badge badge-family" style="font-size:0.65rem; flex-shrink:0;">Fam ${item.family || 'E'}</span>
+                    <button type="button" onclick="removeMasterPerfItem(${idx})" class="btn-icon-danger" style="flex-shrink:0;" title="Remove Trick">✕</button>
                   </div>
                 `;
               }
@@ -525,8 +574,8 @@
                   <div class="perf-master-combo-header">
                     <div style="display:flex; align-items:center; gap:6px;">
                       <div class="perf-order-controls">
-                        <button type="button" class="btn-icon-tiny" onclick="moveMasterPerfItem(${idx}, -1)" ${idx === 0 ? 'disabled' : ''}>▲</button>
-                        <button type="button" class="btn-icon-tiny" onclick="moveMasterPerfItem(${idx}, 1)" ${idx === master.items.length - 1 ? 'disabled' : ''}>▼</button>
+                        <button type="button" class="btn-icon-tiny" onclick="moveMasterPerfItem(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} title="Move Up">▲</button>
+                        <button type="button" class="btn-icon-tiny" onclick="moveMasterPerfItem(${idx}, 1)" ${idx === master.items.length - 1 ? 'disabled' : ''} title="Move Down">▼</button>
                       </div>
                       <span style="font-family:var(--font-mono); font-size:0.75rem; font-weight:700;">#${idx + 1}</span>
                       <span class="badge badge-combo" style="font-size:0.65rem;">Performance Combo</span>
@@ -538,23 +587,29 @@
                     ${comboTricks.map((subName, sIdx) => `
                       <div class="perf-combo-subtrick-row">
                         <div class="perf-order-controls">
-                          <button type="button" class="btn-icon-tiny" onclick="moveSubTrickInMasterCombo(${idx}, ${sIdx}, -1)" ${sIdx === 0 ? 'disabled' : ''}>▲</button>
-                          <button type="button" class="btn-icon-tiny" onclick="moveSubTrickInMasterCombo(${idx}, ${sIdx}, 1)" ${sIdx === comboTricks.length - 1 ? 'disabled' : ''}>▼</button>
+                          <button type="button" class="btn-icon-tiny" onclick="moveSubTrickInMasterCombo(${idx}, ${sIdx}, -1)" ${sIdx === 0 ? 'disabled' : ''} title="Move Up">▲</button>
+                          <button type="button" class="btn-icon-tiny" onclick="moveSubTrickInMasterCombo(${idx}, ${sIdx}, 1)" ${sIdx === comboTricks.length - 1 ? 'disabled' : ''} title="Move Down">▼</button>
                         </div>
-                        <span style="font-family:var(--font-mono); font-size:0.7rem; color:var(--on-surface-muted); width:20px;">${sIdx + 1}.</span>
-                        <select style="font-size:0.75rem; padding:4px 8px; flex:1;" onchange="onMasterComboSubTrickChange(${idx}, ${sIdx}, this.value)">
-                          <option value="" disabled ${!subName ? 'selected' : ''}>-- Choose Trick --</option>
-                          ${allTricks.map(t => {
-                            const name = t.name || t.trickname;
-                            return `<option value="${name}" ${name === subName ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
-                          }).join('')}
-                        </select>
-                        ${comboTricks.length > 2 ? `<button type="button" onclick="removeSubTrickFromMasterCombo(${idx}, ${sIdx})" class="btn-icon-danger" style="font-size:0.75rem;">✕</button>` : ''}
+                        <span style="font-family:var(--font-mono); font-size:0.7rem; color:var(--on-surface-muted); width:18px; flex-shrink:0;">${sIdx + 1}.</span>
+                        <div class="perf-slot-controls-wrap">
+                          <div class="perf-search-input-wrap">
+                            <span class="perf-search-icon">🔍</span>
+                            <input type="text" class="perf-search-input" placeholder="Search combo position..." oninput="onMasterComboSubTrickSearch(${idx}, ${sIdx}, this.value)">
+                          </div>
+                          <select id="masterComboSubSelect_${idx}_${sIdx}" class="perf-select" onchange="onMasterComboSubTrickChange(${idx}, ${sIdx}, this.value)">
+                            <option value="" disabled ${!subName ? 'selected' : ''}>-- Choose Trick --</option>
+                            ${allTricks.map(t => {
+                              const name = t.name || t.trickname;
+                              return `<option value="${name}" ${name === subName ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
+                            }).join('')}
+                          </select>
+                        </div>
+                        ${comboTricks.length > 2 ? `<button type="button" onclick="removeSubTrickFromMasterCombo(${idx}, ${sIdx})" class="btn-icon-danger" style="font-size:0.75rem; flex-shrink:0;">✕</button>` : ''}
                       </div>
                     `).join('')}
                   </div>
 
-                  <button type="button" class="btn btn-secondary btn-sm" onclick="addSubTrickToMasterCombo(${idx})" style="font-size:0.6875rem; padding:3px 10px; margin-top:6px;">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="addSubTrickToMasterCombo(${idx})" style="font-size:0.6875rem; padding:4px 10px; margin-top:6px;">
                     + Add Trick to Combo
                   </button>
                 </div>
@@ -578,6 +633,8 @@
     window.moveSubTrickInMasterCombo = moveSubTrickInMasterCombo;
     window.onMasterComboSubTrickChange = onMasterComboSubTrickChange;
     window.onMasterPerfSingleChange = onMasterPerfSingleChange;
+    window.onMasterPerfSingleSearch = onMasterPerfSingleSearch;
+    window.onMasterComboSubTrickSearch = onMasterComboSubTrickSearch;
     window.getMasterPerformance = getMasterPerformance;
     window.saveMasterPerformance = saveMasterPerformance;
     window.addMasterPerfTrick = addMasterPerfTrick;

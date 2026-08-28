@@ -1534,11 +1534,78 @@
     .perf-combo-subtrick-row {
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 4px 8px;
+      gap: 8px;
+      padding: 8px 10px;
       background: var(--bg-surface);
       border: 1px solid var(--border-razor);
       border-radius: var(--radius-sm);
+      box-sizing: border-box;
+      width: 100%;
+      max-width: 100%;
+    }
+
+    /* PERFORMANCE SEARCH & SELECT WRAPPERS */
+    .perf-slot-controls-wrap {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      box-sizing: border-box;
+    }
+
+    .perf-search-input-wrap {
+      position: relative;
+      width: 100%;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+    }
+
+    .perf-search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.75rem;
+      line-height: 1;
+      pointer-events: none;
+      color: var(--on-surface-muted);
+      z-index: 2;
+    }
+
+    .perf-search-input {
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      font-size: 0.75rem !important;
+      padding: 6px 10px 6px 30px !important;
+      height: 30px !important;
+      min-height: 30px !important;
+      border-radius: var(--radius-sm) !important;
+      background: var(--bg-container-high) !important;
+      border: 1px solid var(--border-razor) !important;
+      color: var(--on-surface) !important;
+      outline: none !important;
+    }
+
+    .perf-search-input:focus {
+      border-color: var(--primary) !important;
+      background: var(--bg-container-highest) !important;
+    }
+
+    .perf-select {
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      font-size: 0.75rem !important;
+      padding: 5px 8px !important;
+      height: 32px !important;
+      min-height: 32px !important;
+      border-radius: var(--radius-sm) !important;
+      background: var(--bg-container) !important;
+      border: 1px solid var(--border-razor) !important;
+      color: var(--on-surface) !important;
     }
 
     /* DASHBOARD METRICS GRID */
