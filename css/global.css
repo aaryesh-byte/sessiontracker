@@ -1472,7 +1472,7 @@
     .custom-tricks-card {
       position: relative;
       border-left: 4px solid #fbbf24 !important;
-      box-shadow: var(--card-shadow), 0 0 16px rgba(251, 191, 36, 0.06) !important;
+      box-shadow: var(--card-shadow), 16 0 0px rgba(251, 191, 36, 0.06) !important;
     }
 
     .custom-tricks-card::after {
