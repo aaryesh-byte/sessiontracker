@@ -1471,7 +1471,7 @@
 /* CUSTOM TRICKS RIGHT-SIDE ACCENT */
     .custom-tricks-card {
       position: relative;
-      border-right: 4px solid #fbbf24 !important;
+      border-left: 4px solid #fbbf24 !important;
       box-shadow: var(--card-shadow), 0 0 16px rgba(251, 191, 36, 0.06) !important;
     }
 
