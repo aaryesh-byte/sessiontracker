@@ -298,16 +298,13 @@
 
     function addMasterPerfTrick(type) {
       if (!tempMasterPerformanceDraft) return;
-      const allTricks = getAllTricks();
-      const defaultTrick = allTricks[0] || { name: 'Butterfly', category: 'OTHERS', family: 'B' };
 
       if (type === 'combo') {
-        const comboTricks = [defaultTrick.name || 'Butterfly', allTricks[1] ? (allTricks[1].name || allTricks[1].trickname) : 'Nelson'];
         tempMasterPerformanceDraft.items.push({
           id: 'mpc-' + Date.now() + Math.random(),
           type: 'combo',
-          name: comboTricks.join(' → '),
-          comboTricks: comboTricks,
+          name: '',
+          comboTricks: ['', ''],
           category: 'OTHERS',
           family: 'Custom',
           basePoints: 6,
@@ -317,10 +314,10 @@
         tempMasterPerformanceDraft.items.push({
           id: 'mp-' + Date.now() + Math.random(),
           type: 'single',
-          name: defaultTrick.name || defaultTrick.trickname,
-          category: defaultTrick.category,
-          family: defaultTrick.family,
-          basePoints: PERFORMANCE_SCORING_CONFIG.basePointsByFamily[defaultTrick.family] || 2,
+          name: '',
+          category: 'OTHERS',
+          family: 'E',
+          basePoints: 2,
           completed: true
         });
       }
@@ -344,25 +341,32 @@
     }
 
     function onMasterPerfSingleSearch(idx, query) {
-      const searchVal = (query || '').toLowerCase().trim();
+      if (tempMasterPerformanceDraft && tempMasterPerformanceDraft.items[idx]) {
+        tempMasterPerformanceDraft.items[idx].searchQuery = query || '';
+      }
       const select = document.getElementById(`masterPerfSingleSelect_${idx}`);
       if (!select) return;
 
       const allTricks = getAllTricks();
-      const filtered = allTricks.filter(t => {
-        const name = (t.name || t.trickname || '').toLowerCase();
-        return !searchVal || name.includes(searchVal);
-      });
-
       const currentSelected = (tempMasterPerformanceDraft && tempMasterPerformanceDraft.items[idx]) ? tempMasterPerformanceDraft.items[idx].name : '';
 
-      select.innerHTML = `
-        <option value="" disabled ${!currentSelected ? 'selected' : ''}>-- Choose Trick --</option>
-        ${filtered.map(t => {
-          const name = t.name || t.trickname;
-          return `<option value="${name}" ${name === currentSelected ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
-        }).join('')}
-      `;
+      const filtered = allTricks.filter(t => matchTrickKeywords(t.name || t.trickname, query));
+
+      // Keep current selection option in list even if not matching search, so the browser doesn't auto-select the first match
+      let optionsHtml = `<option value="" ${!currentSelected ? 'selected' : ''} disabled>-- Choose Trick --</option>`;
+      
+      if (currentSelected && !filtered.some(t => (t.name || t.trickname) === currentSelected)) {
+        const selObj = allTricks.find(t => (t.name || t.trickname) === currentSelected) || { name: currentSelected, category: 'OTHERS', family: 'E' };
+        optionsHtml += `<option value="${currentSelected}" selected>${currentSelected} (${selObj.category} - Fam ${selObj.family})</option>`;
+      }
+
+      optionsHtml += filtered.map(t => {
+        const name = t.name || t.trickname;
+        return `<option value="${name}" ${name === currentSelected ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
+      }).join('');
+
+      select.innerHTML = optionsHtml;
+      select.value = currentSelected || '';
     }
 
     function onMasterPerfSingleChange(idx, trickName) {
@@ -382,9 +386,7 @@
       if (!tempMasterPerformanceDraft || !tempMasterPerformanceDraft.items[perfItemIdx]) return;
       const item = tempMasterPerformanceDraft.items[perfItemIdx];
       if (!item.comboTricks) item.comboTricks = [];
-      const allTricks = getAllTricks();
-      item.comboTricks.push(allTricks[0] ? (allTricks[0].name || allTricks[0].trickname) : 'Butterfly');
-      item.name = item.comboTricks.filter(Boolean).join(' → ');
+      item.comboTricks.push('');
       renderMasterPerformancePanel();
     }
 
@@ -413,26 +415,36 @@
     }
 
     function onMasterComboSubTrickSearch(perfItemIdx, subIdx, query) {
-      const searchVal = (query || '').toLowerCase().trim();
+      if (tempMasterPerformanceDraft && tempMasterPerformanceDraft.items[perfItemIdx]) {
+        if (!tempMasterPerformanceDraft.items[perfItemIdx].subSearchQueries) {
+          tempMasterPerformanceDraft.items[perfItemIdx].subSearchQueries = {};
+        }
+        tempMasterPerformanceDraft.items[perfItemIdx].subSearchQueries[subIdx] = query || '';
+      }
+
       const select = document.getElementById(`masterComboSubSelect_${perfItemIdx}_${subIdx}`);
       if (!select) return;
 
       const allTricks = getAllTricks();
-      const filtered = allTricks.filter(t => {
-        const name = (t.name || t.trickname || '').toLowerCase();
-        return !searchVal || name.includes(searchVal);
-      });
-
       const currentItem = tempMasterPerformanceDraft && tempMasterPerformanceDraft.items[perfItemIdx];
       const currentSelected = (currentItem && currentItem.comboTricks) ? currentItem.comboTricks[subIdx] : '';
 
-      select.innerHTML = `
-        <option value="" disabled ${!currentSelected ? 'selected' : ''}>-- Choose Trick --</option>
-        ${filtered.map(t => {
-          const name = t.name || t.trickname;
-          return `<option value="${name}" ${name === currentSelected ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
-        }).join('')}
-      `;
+      const filtered = allTricks.filter(t => matchTrickKeywords(t.name || t.trickname, query));
+
+      let optionsHtml = `<option value="" ${!currentSelected ? 'selected' : ''} disabled>-- Choose Trick --</option>`;
+
+      if (currentSelected && !filtered.some(t => (t.name || t.trickname) === currentSelected)) {
+        const selObj = allTricks.find(t => (t.name || t.trickname) === currentSelected) || { name: currentSelected, category: 'OTHERS', family: 'E' };
+        optionsHtml += `<option value="${currentSelected}" selected>${currentSelected} (${selObj.category} - Fam ${selObj.family})</option>`;
+      }
+
+      optionsHtml += filtered.map(t => {
+        const name = t.name || t.trickname;
+        return `<option value="${name}" ${name === currentSelected ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
+      }).join('');
+
+      select.innerHTML = optionsHtml;
+      select.value = currentSelected || '';
     }
 
     function onMasterComboSubTrickChange(perfItemIdx, subIdx, trickName) {
@@ -542,6 +554,10 @@
             ` : master.items.map((item, idx) => {
               const isCombo = item.type === 'combo';
               if (!isCombo) {
+                const sQuery = item.searchQuery || '';
+                const filtered = allTricks.filter(t => matchTrickKeywords(t.name || t.trickname, sQuery));
+                const hasMatch = filtered.some(t => (t.name || t.trickname) === item.name);
+
                 return `
                   <div class="perf-master-row">
                     <div class="perf-order-controls">
@@ -552,10 +568,12 @@
                     <div class="perf-slot-controls-wrap">
                       <div class="perf-search-input-wrap">
                         <span class="perf-search-icon">🔍</span>
-                        <input type="text" class="perf-search-input" placeholder="Search trick..." oninput="onMasterPerfSingleSearch(${idx}, this.value)">
+                        <input type="text" class="perf-search-input" placeholder="Search trick (e.g. Christie)..." value="${sQuery}" oninput="onMasterPerfSingleSearch(${idx}, this.value)">
                       </div>
                       <select id="masterPerfSingleSelect_${idx}" class="perf-select" onchange="onMasterPerfSingleChange(${idx}, this.value)">
-                        ${allTricks.map(t => {
+                        <option value="" disabled ${!item.name ? 'selected' : ''}>-- Choose Trick --</option>
+                        ${item.name && !hasMatch ? `<option value="${item.name}" selected>${item.name} (${item.category} - Fam ${item.family})</option>` : ''}
+                        ${filtered.map(t => {
                           const name = t.name || t.trickname;
                           return `<option value="${name}" ${name === item.name ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
                         }).join('')}
@@ -584,29 +602,36 @@
                   </div>
 
                   <div class="perf-combo-subtricks-list">
-                    ${comboTricks.map((subName, sIdx) => `
-                      <div class="perf-combo-subtrick-row">
-                        <div class="perf-order-controls">
-                          <button type="button" class="btn-icon-tiny" onclick="moveSubTrickInMasterCombo(${idx}, ${sIdx}, -1)" ${sIdx === 0 ? 'disabled' : ''} title="Move Up">▲</button>
-                          <button type="button" class="btn-icon-tiny" onclick="moveSubTrickInMasterCombo(${idx}, ${sIdx}, 1)" ${sIdx === comboTricks.length - 1 ? 'disabled' : ''} title="Move Down">▼</button>
-                        </div>
-                        <span style="font-family:var(--font-mono); font-size:0.7rem; color:var(--on-surface-muted); width:18px; flex-shrink:0;">${sIdx + 1}.</span>
-                        <div class="perf-slot-controls-wrap">
-                          <div class="perf-search-input-wrap">
-                            <span class="perf-search-icon">🔍</span>
-                            <input type="text" class="perf-search-input" placeholder="Search combo position..." oninput="onMasterComboSubTrickSearch(${idx}, ${sIdx}, this.value)">
+                    ${comboTricks.map((subName, sIdx) => {
+                      const subQuery = (item.subSearchQueries && item.subSearchQueries[sIdx]) || '';
+                      const filtered = allTricks.filter(t => matchTrickKeywords(t.name || t.trickname, subQuery));
+                      const hasMatch = filtered.some(t => (t.name || t.trickname) === subName);
+
+                      return `
+                        <div class="perf-combo-subtrick-row">
+                          <div class="perf-order-controls">
+                            <button type="button" class="btn-icon-tiny" onclick="moveSubTrickInMasterCombo(${idx}, ${sIdx}, -1)" ${sIdx === 0 ? 'disabled' : ''} title="Move Up">▲</button>
+                            <button type="button" class="btn-icon-tiny" onclick="moveSubTrickInMasterCombo(${idx}, ${sIdx}, 1)" ${sIdx === comboTricks.length - 1 ? 'disabled' : ''} title="Move Down">▼</button>
                           </div>
-                          <select id="masterComboSubSelect_${idx}_${sIdx}" class="perf-select" onchange="onMasterComboSubTrickChange(${idx}, ${sIdx}, this.value)">
-                            <option value="" disabled ${!subName ? 'selected' : ''}>-- Choose Trick --</option>
-                            ${allTricks.map(t => {
-                              const name = t.name || t.trickname;
-                              return `<option value="${name}" ${name === subName ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
-                            }).join('')}
-                          </select>
+                          <span style="font-family:var(--font-mono); font-size:0.7rem; color:var(--on-surface-muted); width:18px; flex-shrink:0;">${sIdx + 1}.</span>
+                          <div class="perf-slot-controls-wrap">
+                            <div class="perf-search-input-wrap">
+                              <span class="perf-search-icon">🔍</span>
+                              <input type="text" class="perf-search-input" placeholder="Search combo trick (e.g. Christie)..." value="${subQuery}" oninput="onMasterComboSubTrickSearch(${idx}, ${sIdx}, this.value)">
+                            </div>
+                            <select id="masterComboSubSelect_${idx}_${sIdx}" class="perf-select" onchange="onMasterComboSubTrickChange(${idx}, ${sIdx}, this.value)">
+                              <option value="" disabled ${!subName ? 'selected' : ''}>-- Choose Trick --</option>
+                              ${subName && !hasMatch ? `<option value="${subName}" selected>${subName}</option>` : ''}
+                              ${filtered.map(t => {
+                                const name = t.name || t.trickname;
+                                return `<option value="${name}" ${name === subName ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
+                              }).join('')}
+                            </select>
+                          </div>
+                          ${comboTricks.length > 2 ? `<button type="button" onclick="removeSubTrickFromMasterCombo(${idx}, ${sIdx})" class="btn-icon-danger" style="font-size:0.75rem; flex-shrink:0;">✕</button>` : ''}
                         </div>
-                        ${comboTricks.length > 2 ? `<button type="button" onclick="removeSubTrickFromMasterCombo(${idx}, ${sIdx})" class="btn-icon-danger" style="font-size:0.75rem; flex-shrink:0;">✕</button>` : ''}
-                      </div>
-                    `).join('')}
+                      `;
+                    }).join('')}
                   </div>
 
                   <button type="button" class="btn btn-secondary btn-sm" onclick="addSubTrickToMasterCombo(${idx})" style="font-size:0.6875rem; padding:4px 10px; margin-top:6px;">

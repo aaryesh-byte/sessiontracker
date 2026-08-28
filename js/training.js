@@ -195,7 +195,6 @@
       if (!item || !item.slots || !item.slots[slotIdx]) return;
       item.slots[slotIdx].searchFilter = value || '';
 
-      const searchVal = (value || '').toLowerCase().trim();
       const select = document.getElementById(`comboTrickSelect_${itemIdx}_${slotIdx}`);
       if (!select) return;
 
@@ -204,17 +203,22 @@
       const filtered = allTricks.filter(t => {
         const matchCat = (slot.categoryFilter === 'ALL' || t.category === slot.categoryFilter);
         const matchFam = (slot.familyFilter === 'ALL' || t.family === slot.familyFilter);
-        const name = (t.name || t.trickname || '').toLowerCase();
-        return matchCat && matchFam && (!searchVal || name.includes(searchVal));
+        return matchCat && matchFam && matchTrickKeywords(t.name || t.trickname, value);
       });
 
-      select.innerHTML = `
-        <option value="">-- Choose Trick --</option>
-        ${filtered.map(t => {
-          const name = t.name || t.trickname;
-          return `<option value="${name}" ${name === slot.selectedTrick ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
-        }).join('')}
-      `;
+      let optionsHtml = `<option value="" ${!slot.selectedTrick ? 'selected' : ''} disabled>-- Choose Trick --</option>`;
+
+      if (slot.selectedTrick && !filtered.some(t => (t.name || t.trickname) === slot.selectedTrick)) {
+        optionsHtml += `<option value="${slot.selectedTrick}" selected>${slot.selectedTrick} (${slot.category || 'OTHERS'} - Fam ${slot.family || 'Custom'})</option>`;
+      }
+
+      optionsHtml += filtered.map(t => {
+        const name = t.name || t.trickname;
+        return `<option value="${name}" ${name === slot.selectedTrick ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
+      }).join('');
+
+      select.innerHTML = optionsHtml;
+      select.value = slot.selectedTrick || '';
     }
 
     function onComboSlotTrickChange(itemIdx, slotIdx, trickName) {
@@ -249,14 +253,10 @@
       container.innerHTML = appState.sessionItems.map((item, idx) => {
         const isCombo = item.type === 'combo';
         const isCollapsed = !!item.isCollapsed;
-        const searchVal = (item.searchFilter || '').toLowerCase();
-
-        const filteredTricks = allTricks.filter(t => {
-          const name = (t.name || t.trickname || '').toLowerCase();
-          return name.includes(searchVal);
-        });
-
         const displayName = isCombo ? (item.trickName || 'Combo Sequence') : (item.trickName || 'Select Trick');
+
+        const filteredTricks = allTricks.filter(t => t && matchTrickKeywords(t.name || t.trickname, item.searchFilter || ''));
+        const hasMatch = item.trickName ? filteredTricks.some(t => t && (t.name || t.trickname) === item.trickName) : false;
 
         return `
           <div class="session-item-card ${isCollapsed ? 'is-collapsed' : ''}">
@@ -281,6 +281,7 @@
                       </div>
                       <select id="itemTrickSelect_${idx}" onchange="onSessionItemTrickChange(${idx}, this.value)">
                         <option value="" disabled ${!item.trickName ? 'selected' : ''}>-- Select a trick --</option>
+                        ${item.trickName && !hasMatch ? `<option value="${item.trickName}" selected>${item.trickName} (${item.category} - Fam ${item.family})</option>` : ''}
                         ${filteredTricks.map(t => {
                           const name = t.name || t.trickname;
                           return `<option value="${name}" ${name === item.trickName ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
@@ -317,13 +318,12 @@
                     <div class="label-caps" style="margin-bottom:8px; color:var(--primary);">Combo Independent Trick Slots</div>
                     
                     ${(item.slots || []).map((slot, sIdx) => {
-                      const sSearch = (slot.searchFilter || '').toLowerCase();
                       const sFiltered = allTricks.filter(t => {
                         const mCat = (slot.categoryFilter === 'ALL' || t.category === slot.categoryFilter);
                         const mFam = (slot.familyFilter === 'ALL' || t.family === slot.familyFilter);
-                        const mName = (t.name || t.trickname || '').toLowerCase();
-                        return mCat && mFam && (!sSearch || mName.includes(sSearch));
+                        return mCat && mFam && matchTrickKeywords(t.name || t.trickname, slot.searchFilter);
                       });
+                      const hasSlotMatch = sFiltered.some(t => (t.name || t.trickname) === slot.selectedTrick);
 
                       return `
                         <div style="padding:10px; background:var(--bg-surface); border:1px solid var(--border-razor); border-radius:var(--radius-md); margin-bottom:8px;">
@@ -361,12 +361,13 @@
                               <input type="text" class="search-input" style="padding:6px 6px 6px 28px; font-size:0.75rem;" placeholder="Search trick in position..." value="${slot.searchFilter || ''}" oninput="onComboSlotSearchInput(${idx}, ${sIdx}, this.value)">
                             </div>
                             <select id="comboTrickSelect_${idx}_${sIdx}" style="font-size:0.75rem; padding:6px 8px;" onchange="onComboSlotTrickChange(${idx}, ${sIdx}, this.value)">
-                              <option value="" disabled ${!slot.selectedTrick ? 'selected' : ''}>-- Add a trick to your combo --</option>
-                              ${sFiltered.map(t => {
-                                const name = t.name || t.trickname;
-                                return `<option value="${name}" ${name === slot.selectedTrick ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
-                              }).join('')}
-                            </select>
+                          <option value="" disabled ${!slot.selectedTrick ? 'selected' : ''}>-- Add a trick to your combo --</option>
+                          ${slot.selectedTrick && !hasSlotMatch ? `<option value="${slot.selectedTrick}" selected>${slot.selectedTrick} (${slot.category} - Fam ${slot.family})</option>` : ''}
+                          ${sFiltered.map(t => {
+                            const name = t.name || t.trickname;
+                            return `<option value="${name}" ${name === slot.selectedTrick ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
+                          }).join('')}
+                        </select>
                           </div>
                         </div>
                       `;
@@ -548,23 +549,25 @@
       if (!item) return;
 
       item.searchFilter = value || '';
-      const searchVal = item.searchFilter.toLowerCase().trim();
       const select = document.getElementById(`itemTrickSelect_${idx}`);
       if (!select) return;
 
       const allTricks = getAllTricks();
-      const filteredTricks = allTricks.filter(t => {
-        const name = (t.name || t.trickname || '').toLowerCase();
-        return name.includes(searchVal);
-      });
+      const filteredTricks = allTricks.filter(t => matchTrickKeywords(t.name || t.trickname, value));
 
-      select.innerHTML = `
-        <option value="">-- Choose Trick --</option>
-        ${filteredTricks.map(t => {
-          const name = t.name || t.trickname;
-          return `<option value="${name}" ${name === item.trickName ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
-        }).join('')}
-      `;
+      let optionsHtml = `<option value="" ${!item.trickName ? 'selected' : ''} disabled>-- Choose Trick --</option>`;
+
+      if (item.trickName && !filteredTricks.some(t => (t.name || t.trickname) === item.trickName)) {
+        optionsHtml += `<option value="${item.trickName}" selected>${item.trickName} (${item.category} - Fam ${item.family})</option>`;
+      }
+
+      optionsHtml += filteredTricks.map(t => {
+        const name = t.name || t.trickname;
+        return `<option value="${name}" ${name === item.trickName ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
+      }).join('');
+
+      select.innerHTML = optionsHtml;
+      select.value = item.trickName || '';
     }
 
 

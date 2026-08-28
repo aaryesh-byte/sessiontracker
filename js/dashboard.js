@@ -82,7 +82,7 @@ let calSelectedDate = null;
       if (!select || !appState.currentUser) return;
 
       const searchInput = document.getElementById('progTrickSearch');
-      const searchVal = searchInput ? searchInput.value.toLowerCase().trim() : '';
+      const searchVal = searchInput ? searchInput.value : '';
 
       const skaterSessions = appState.sessions.filter(s => 
         String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
@@ -92,7 +92,7 @@ let calSelectedDate = null;
       select.innerHTML = '<option value="ALL">All Practice Items & Combos</option>';
       uniqueTricks.forEach(t => {
         const name = t.trickName || t.trickname;
-        if (!searchVal || name.toLowerCase().includes(searchVal)) {
+        if (matchTrickKeywords(name, searchVal)) {
           const opt = document.createElement('option');
           opt.value = name;
           opt.textContent = name;
@@ -100,7 +100,6 @@ let calSelectedDate = null;
         }
       });
     }
-
 
     function onTimeRangeFilterChange() {
       const rangeEl = document.getElementById('progTimeRange');

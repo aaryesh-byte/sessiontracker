@@ -181,6 +181,21 @@ const FAMILY_POINTS = {
       'E': { min: 10, max: 20 },
       'Custom': { min: 15, max: 35 }
     };
+
+// Universal smart word-based search matcher for tricks and combos
+function matchTrickKeywords(trickName, query) {
+  if (!query || !query.trim()) return true;
+  const rawTarget = String(trickName || '').toLowerCase();
+  const rawQuery = String(query || '').toLowerCase().trim();
+  
+  // Direct substring match
+  if (rawTarget.includes(rawQuery)) return true;
+
+  // Multi-token word-based match: each word in the query must match a part of the trick name
+  const queryTokens = rawQuery.split(/\s+/).filter(Boolean);
+  return queryTokens.every(token => rawTarget.includes(token));
+}
+
 // Modular Performance Scoring Registry (Base points placeholder; configurable)
 const PERFORMANCE_SCORING_CONFIG = {
   minCompletedTricksRequired: 9,
