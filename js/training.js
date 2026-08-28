@@ -18,7 +18,7 @@
           searchFilter: ''
         }
       ];
-      appState.sessionPerformance = null;
+      appState.sessionPerformances = [];
       renderSessionItems();
       renderSessionPerformanceSection();
     }
@@ -69,80 +69,89 @@
       renderSessionItems();
     }
 
-    // Performance Session Handlers (Temporary copy)
+    // Performance Session Handlers (Allows multiple Performance runs in 1 session)
     function addPerformanceToSession() {
+      if (!appState.sessionPerformances) appState.sessionPerformances = [];
       const master = getMasterPerformance();
-      // Deep clone master performance into session temporary snapshot
-      appState.sessionPerformance = {
-        title: master.title || '2-Minute Performance Routine',
-        smoothness: master.smoothness || 0,
-        footwork: master.footwork || 0,
+      const allTricks = getAllTricks();
+
+      // Deep clone master performance into a temporary session snapshot
+      const newSnapshot = {
+        id: 'perf-run-' + Date.now() + Math.random(),
+        title: `Performance Run #${appState.sessionPerformances.length + 1}`,
+        smoothness: 0,
+        footwork: 0,
         notes: '',
         isCollapsed: false,
-        items: (master.items && master.items.length > 0) ? JSON.parse(JSON.stringify(master.items)) : [
-          { id: 'pitem-1', type: 'single', name: '', category: 'OTHERS', family: 'E', completed: false },
-          { id: 'pitem-2', type: 'single', name: '', category: 'OTHERS', family: 'E', completed: false }
+        items: (master && master.items && master.items.length > 0) ? JSON.parse(JSON.stringify(master.items)) : [
+          { id: 'pitem-1', type: 'single', name: allTricks[0] ? (allTricks[0].name || allTricks[0].trickname) : 'Butterfly', category: 'OTHERS', family: 'B', completed: false },
+          { id: 'pitem-2', type: 'single', name: allTricks[1] ? (allTricks[1].name || allTricks[1].trickname) : 'Nelson', category: 'OTHERS', family: 'E', completed: false }
         ]
       };
+
+      appState.sessionPerformances.push(newSnapshot);
       renderSessionPerformanceSection();
-      showToast('Loaded Performance routine into training session.', 'success');
+      showToast(`Added Performance #${appState.sessionPerformances.length} to session.`, 'success');
     }
 
-    function removePerformanceFromSession() {
-      appState.sessionPerformance = null;
+    function removePerformanceFromSession(perfIdx) {
+      if (!appState.sessionPerformances || !appState.sessionPerformances[perfIdx]) return;
+      appState.sessionPerformances.splice(perfIdx, 1);
       renderSessionPerformanceSection();
     }
 
-    function toggleSessionPerformanceCollapse() {
-      if (appState.sessionPerformance) {
-        appState.sessionPerformance.isCollapsed = !appState.sessionPerformance.isCollapsed;
+    function toggleSessionPerformanceCollapse(perfIdx) {
+      if (appState.sessionPerformances && appState.sessionPerformances[perfIdx]) {
+        appState.sessionPerformances[perfIdx].isCollapsed = !appState.sessionPerformances[perfIdx].isCollapsed;
         renderSessionPerformanceSection();
       }
     }
 
-    function toggleSessionPerfItemCompletion(itemIdx) {
-      if (!appState.sessionPerformance || !appState.sessionPerformance.items[itemIdx]) return;
-      appState.sessionPerformance.items[itemIdx].completed = !appState.sessionPerformance.items[itemIdx].completed;
+    function toggleSessionPerfItemCompletion(perfIdx, itemIdx) {
+      if (!appState.sessionPerformances || !appState.sessionPerformances[perfIdx] || !appState.sessionPerformances[perfIdx].items[itemIdx]) return;
+      appState.sessionPerformances[perfIdx].items[itemIdx].completed = !appState.sessionPerformances[perfIdx].items[itemIdx].completed;
       renderSessionPerformanceSection();
     }
 
-    function addSessionPerfItem(type) {
-      if (!appState.sessionPerformance) return;
+    function addSessionPerfItem(perfIdx, type) {
+      if (!appState.sessionPerformances || !appState.sessionPerformances[perfIdx]) return;
       const id = 'pitem-' + Date.now();
+      const allTricks = getAllTricks();
       if (type === 'combo') {
-        appState.sessionPerformance.items.push({
+        appState.sessionPerformances[perfIdx].items.push({
           id,
           type: 'combo',
-          name: '',
-          comboTricks: ['', ''],
+          name: 'Butterfly → Nelson',
+          comboTricks: ['Butterfly', 'Nelson'],
           category: 'OTHERS',
           family: 'Custom',
           completed: false
         });
       } else {
-        appState.sessionPerformance.items.push({
+        const def = allTricks[0] || { name: 'Butterfly', category: 'OTHERS', family: 'B' };
+        appState.sessionPerformances[perfIdx].items.push({
           id,
           type: 'single',
-          name: '',
-          category: 'OTHERS',
-          family: 'E',
+          name: def.name || def.trickname,
+          category: def.category,
+          family: def.family,
           completed: false
         });
       }
       renderSessionPerformanceSection();
     }
 
-    function removeSessionPerfItem(itemIdx) {
-      if (!appState.sessionPerformance) return;
-      appState.sessionPerformance.items.splice(itemIdx, 1);
+    function removeSessionPerfItem(perfIdx, itemIdx) {
+      if (!appState.sessionPerformances || !appState.sessionPerformances[perfIdx]) return;
+      appState.sessionPerformances[perfIdx].items.splice(itemIdx, 1);
       renderSessionPerformanceSection();
     }
 
-    function onSessionPerfItemTrickChange(itemIdx, trickName) {
-      if (!appState.sessionPerformance || !appState.sessionPerformance.items[itemIdx]) return;
+    function onSessionPerfItemTrickChange(perfIdx, itemIdx, trickName) {
+      if (!appState.sessionPerformances || !appState.sessionPerformances[perfIdx] || !appState.sessionPerformances[perfIdx].items[itemIdx]) return;
       const allTricks = getAllTricks();
       const trickObj = allTricks.find(t => (t.name || t.trickname) === trickName);
-      const it = appState.sessionPerformance.items[itemIdx];
+      const it = appState.sessionPerformances[perfIdx].items[itemIdx];
       it.name = trickName;
       if (trickObj) {
         it.category = trickObj.category;
@@ -416,116 +425,113 @@
       const container = document.getElementById('sessionPerformanceContainer');
       if (!container) return;
 
-      if (!appState.sessionPerformance) {
-        container.innerHTML = `
-          <div class="empty-state" style="padding:14px 10px; border:1px dashed rgba(244, 63, 94, 0.3); border-radius:var(--radius-md); margin-bottom:10px;">
-            <div class="empty-text" style="margin-bottom:6px; font-size:0.8125rem;">No Performance added to this session.</div>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="addPerformanceToSession()" style="border-color:rgba(244,63,94,0.4); color:#fb7185;">+ Add Performance Routine to Today's Training</button>
-          </div>
-        `;
+      if (!appState.sessionPerformances || appState.sessionPerformances.length === 0) {
+        container.innerHTML = '';
         return;
       }
 
-      const perf = appState.sessionPerformance;
       const allTricks = getAllTricks();
-      const isCollapsed = !!perf.isCollapsed;
-      const scoreData = PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore(perf);
 
-      container.innerHTML = `
-        <div class="session-item-card perf-session-card ${isCollapsed ? 'is-collapsed' : ''}">
-          <div class="session-item-header" onclick="toggleSessionPerformanceCollapse()">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span class="collapse-arrow">${isCollapsed ? '▶' : '▼'}</span>
-              <span class="badge badge-perf">🎭 Performance (2-Min Routine)</span>
-              <span class="badge ${scoreData.isValid ? 'badge-combo' : 'badge-danger'}">
-                ${scoreData.completedCount} / ${PERFORMANCE_SCORING_CONFIG.minCompletedTricksRequired} Completed ${scoreData.isValid ? '✓' : '(Min 9 Req.)'}
-              </span>
+      container.innerHTML = appState.sessionPerformances.map((perf, pIdx) => {
+        const isCollapsed = !!perf.isCollapsed;
+        const scoreData = PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore(perf);
+
+        return `
+          <div class="session-item-card perf-session-card ${isCollapsed ? 'is-collapsed' : ''}" style="margin-bottom:12px;">
+            <div class="session-item-header" onclick="toggleSessionPerformanceCollapse(${pIdx})">
+              <div style="display:flex; align-items:center; gap:8px; overflow:hidden;">
+                <span class="collapse-arrow">${isCollapsed ? '▶' : '▼'}</span>
+                <span class="badge badge-perf">🎭 Performance #${pIdx + 1}</span>
+                <span class="badge ${scoreData.isValid ? 'badge-combo' : 'badge-danger'}">
+                  ${scoreData.completedCount} / ${PERFORMANCE_SCORING_CONFIG.minCompletedTricksRequired} Completed ${scoreData.isValid ? '✓' : '(Min 9 Req.)'}
+                </span>
+              </div>
+              <button type="button" onclick="event.stopPropagation(); removePerformanceFromSession(${pIdx})" style="background:rgba(239, 68, 68, 0.15); border:1px solid rgba(239, 68, 68, 0.3); color:#f87171; padding:2px 8px; border-radius:var(--radius-pill); font-weight:700; font-size:0.6875rem; cursor:pointer;">✕ Remove</button>
             </div>
-            <button type="button" onclick="event.stopPropagation(); removePerformanceFromSession()" style="background:rgba(239, 68, 68, 0.15); border:1px solid rgba(239, 68, 68, 0.3); color:#f87171; padding:2px 8px; border-radius:var(--radius-pill); font-weight:700; font-size:0.6875rem; cursor:pointer;">✕ Remove Performance</button>
-          </div>
 
-          ${!isCollapsed ? `
-            <div class="session-item-body" style="margin-top:10px;">
-              <div style="font-size:0.75rem; color:var(--on-surface-muted); margin-bottom:10px;">
-                Temporary Session Copy: Check completed tricks in today's run. Modifications here do NOT alter your saved Master Performance.
-              </div>
+            ${!isCollapsed ? `
+              <div class="session-item-body" style="margin-top:10px;">
+                <div style="font-size:0.75rem; color:var(--on-surface-muted); margin-bottom:10px;">
+                  Session Run #${pIdx + 1}: Mark completion and swap components for today's run without modifying master configuration.
+                </div>
 
-              <!-- Score Summary Strip -->
-              <div class="perf-score-strip">
-                <div>
-                  <span class="label-caps">Base Trick Pts</span>
-                  <div class="perf-strip-val">${scoreData.basePoints}</div>
+                <!-- Score Summary Strip -->
+                <div class="perf-score-strip">
+                  <div>
+                    <span class="label-caps">Base Trick Pts</span>
+                    <div class="perf-strip-val">${scoreData.basePoints}</div>
+                  </div>
+                  <div>
+                    <span class="label-caps">Smoothness</span>
+                    <div class="perf-strip-val">${scoreData.smoothness}</div>
+                  </div>
+                  <div>
+                    <span class="label-caps">Footwork</span>
+                    <div class="perf-strip-val">${scoreData.footwork}</div>
+                  </div>
+                  <div>
+                    <span class="label-caps">Est. Score</span>
+                    <div class="perf-strip-val" style="color:var(--primary);">${scoreData.totalScore}</div>
+                  </div>
                 </div>
-                <div>
-                  <span class="label-caps">Smoothness</span>
-                  <div class="perf-strip-val">${scoreData.smoothness}</div>
-                </div>
-                <div>
-                  <span class="label-caps">Footwork</span>
-                  <div class="perf-strip-val">${scoreData.footwork}</div>
-                </div>
-                <div>
-                  <span class="label-caps">Est. Score</span>
-                  <div class="perf-strip-val" style="color:var(--primary);">${scoreData.totalScore}</div>
-                </div>
-              </div>
 
-              <!-- Trick & Combo Checklist -->
-              <div class="perf-items-list" style="margin:12px 0;">
-                ${(perf.items || []).map((item, pIdx) => `
-                  <div class="perf-item-row ${item.completed ? 'is-complete' : 'is-incomplete'}">
-                    <label class="perf-checkbox-label">
-                      <input type="checkbox" ${item.completed ? 'checked' : ''} onchange="toggleSessionPerfItemCompletion(${pIdx})">
-                      <span class="perf-custom-check"></span>
-                    </label>
-                    <div style="flex:1; min-width:0;">
-                      <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-family:var(--font-mono); font-size:0.75rem; font-weight:700; color:var(--on-surface);">
-                          #${pIdx + 1} [${item.type === 'combo' ? 'Combo' : 'Trick'}] ${item.name || 'Unassigned'}
-                        </span>
-                        <span class="badge ${item.completed ? 'badge-combo' : 'badge-family'}" style="font-size:0.6rem; padding:2px 6px;">
-                          ${item.completed ? 'COMPLETE' : 'INCOMPLETE'}
-                        </span>
-                      </div>
-                      <div class="row-2" style="margin-top:6px;">
-                        <select style="font-size:0.75rem; padding:4px 8px;" onchange="onSessionPerfItemTrickChange(${pIdx}, this.value)">
-                          <option value="">-- Swap Trick for Today --</option>
-                          ${allTricks.map(t => {
-                            const name = t.name || t.trickname;
-                            return `<option value="${name}" ${name === item.name ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
-                          }).join('')}
-                        </select>
-                        <button type="button" onclick="removeSessionPerfItem(${pIdx})" style="background:none; border:none; color:#f87171; font-size:0.7rem; cursor:pointer; text-align:right;">✕ Remove from today</button>
+                <!-- Trick & Combo Checklist -->
+                <div class="perf-items-list" style="margin:12px 0;">
+                  ${(perf.items || []).map((item, itIdx) => `
+                    <div class="perf-item-row ${item.completed ? 'is-complete' : 'is-incomplete'}">
+                      <label class="perf-checkbox-label">
+                        <input type="checkbox" ${item.completed ? 'checked' : ''} onchange="toggleSessionPerfItemCompletion(${pIdx}, ${itIdx})">
+                        <span class="perf-custom-check"></span>
+                      </label>
+                      <div style="flex:1; min-width:0;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                          <span style="font-family:var(--font-mono); font-size:0.75rem; font-weight:700; color:var(--on-surface);">
+                            #${itIdx + 1} [${item.type === 'combo' ? 'Combo' : 'Trick'}] ${item.name || 'Unassigned'}
+                          </span>
+                          <span class="badge ${item.completed ? 'badge-combo' : 'badge-family'}" style="font-size:0.6rem; padding:2px 6px;">
+                            ${item.completed ? 'COMPLETE' : 'INCOMPLETE'}
+                          </span>
+                        </div>
+                        <div class="row-2" style="margin-top:6px;">
+                          <select style="font-size:0.75rem; padding:4px 8px;" onchange="onSessionPerfItemTrickChange(${pIdx}, ${itIdx}, this.value)">
+                            <option value="">-- Swap Trick for Run #${pIdx + 1} --</option>
+                            ${allTricks.map(t => {
+                              const name = t.name || t.trickname;
+                              return `<option value="${name}" ${name === item.name ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
+                            }).join('')}
+                          </select>
+                          <button type="button" onclick="removeSessionPerfItem(${pIdx}, ${itIdx})" style="background:none; border:none; color:#f87171; font-size:0.7rem; cursor:pointer; text-align:right;">✕ Remove</button>
+                        </div>
                       </div>
                     </div>
+                  `).join('')}
+                </div>
+
+                <div style="display:flex; gap:8px; margin-bottom:12px;">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="addSessionPerfItem(${pIdx}, 'single')">+ Add Trick</button>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="addSessionPerfItem(${pIdx}, 'combo')">+ Add Combo</button>
+                </div>
+
+                <div class="row-2">
+                  <div class="form-group">
+                    <label>Smoothness Score (Judged / Self)</label>
+                    <input type="number" min="0" max="20" step="0.5" placeholder="e.g. 8.5" value="${perf.smoothness || ''}" oninput="appState.sessionPerformances[${pIdx}].smoothness = parseFloat(this.value) || 0; renderSessionPerformanceSection();">
                   </div>
-                `).join('')}
-              </div>
-
-              <div style="display:flex; gap:8px; margin-bottom:12px;">
-                <button type="button" class="btn btn-secondary btn-sm" onclick="addSessionPerfItem('single')">+ Add Trick</button>
-                <button type="button" class="btn btn-secondary btn-sm" onclick="addSessionPerfItem('combo')">+ Add Combo</button>
-              </div>
-
-              <div class="row-2">
-                <div class="form-group">
-                  <label>Smoothness Score (Judged / Self)</label>
-                  <input type="number" min="0" max="20" step="0.5" placeholder="e.g. 8.5" value="${perf.smoothness || ''}" oninput="appState.sessionPerformance.smoothness = parseFloat(this.value) || 0; renderSessionPerformanceSection();">
+                  <div class="form-group">
+                    <label>Footwork &amp; Flow Score</label>
+                    <input type="number" min="0" max="20" step="0.5" placeholder="e.g. 7.0" value="${perf.footwork || ''}" oninput="appState.sessionPerformances[${pIdx}].footwork = parseFloat(this.value) || 0; renderSessionPerformanceSection();">
+                  </div>
                 </div>
-                <div class="form-group">
-                  <label>Footwork &amp; Flow Score</label>
-                  <input type="number" min="0" max="20" step="0.5" placeholder="e.g. 7.0" value="${perf.footwork || ''}" oninput="appState.sessionPerformance.footwork = parseFloat(this.value) || 0; renderSessionPerformanceSection();">
+
+                <div class="form-group" style="margin-bottom:0;">
+                  <label>Run #${pIdx + 1} Notes</label>
+                  <input type="text" placeholder="e.g. Routine run-through notes" value="${perf.notes || ''}" oninput="appState.sessionPerformances[${pIdx}].notes = this.value;">
                 </div>
               </div>
-
-              <div class="form-group" style="margin-bottom:0;">
-                <label>Performance Run Notes</label>
-                <input type="text" placeholder="e.g. Solid routine run-through, missed last spin combo." value="${perf.notes || ''}" oninput="appState.sessionPerformance.notes = this.value;">
-              </div>
-            </div>
-          ` : ''}
-        </div>
-      `;
+            ` : ''}
+          </div>
+        `;
+      }).join('');
     }
 
     window.toggleSessionItemCollapse = toggleSessionItemCollapse;
@@ -697,31 +703,34 @@ async function handleMultiSessionSubmit(e) {
         });
       });
 
-      // Format session Performance snapshot if included
-      if (appState.sessionPerformance && appState.sessionPerformance.items && appState.sessionPerformance.items.length > 0) {
-        const perfScore = PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore(appState.sessionPerformance);
-        const perfRecord = {
-          sessionId: sessionId,
-          date: date,
-          sessionType: 'Performance',
-          skaterName: activeSkater,
-          userId: activeSkater,
-          trickName: 'Performance Routine (2 min)',
-          category: 'PERFORMANCE',
-          family: perfScore.isValid ? 'Valid' : 'Incomplete',
-          targetCones: appState.sessionPerformance.items.length,
-          completedCones: perfScore.completedCount,
-          missedCones: appState.sessionPerformance.items.length - perfScore.completedCount,
-          falls: 0,
-          successRate: parseFloat(((perfScore.completedCount / appState.sessionPerformance.items.length) * 100).toFixed(1)),
-          connectedCompletion: 'N/A',
-          performanceSnapshot: JSON.parse(JSON.stringify(appState.sessionPerformance)),
-          performanceScore: perfScore.totalScore,
-          smoothnessScore: perfScore.smoothness,
-          footworkScore: perfScore.footwork,
-          notes: appState.sessionPerformance.notes || globalNotes
-        };
-        formattedPayloadItems.push(perfRecord);
+      // Format all session Performance snapshots included in this training log
+      if (appState.sessionPerformances && appState.sessionPerformances.length > 0) {
+        appState.sessionPerformances.forEach((perf, pIdx) => {
+          if (!perf.items || perf.items.length === 0) return;
+          const perfScore = PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore(perf);
+          const perfRecord = {
+            sessionId: sessionId,
+            date: date,
+            sessionType: 'Performance',
+            skaterName: activeSkater,
+            userId: activeSkater,
+            trickName: `Performance Run #${pIdx + 1} (2 min)`,
+            category: 'PERFORMANCE',
+            family: perfScore.isValid ? 'Valid' : 'Incomplete',
+            targetCones: perf.items.length,
+            completedCones: perfScore.completedCount,
+            missedCones: perf.items.length - perfScore.completedCount,
+            falls: 0,
+            successRate: perf.items.length > 0 ? parseFloat(((perfScore.completedCount / perf.items.length) * 100).toFixed(1)) : 0,
+            connectedCompletion: 'N/A',
+            performanceSnapshot: JSON.parse(JSON.stringify(perf)),
+            performanceScore: perfScore.totalScore,
+            smoothnessScore: perfScore.smoothness,
+            footworkScore: perfScore.footwork,
+            notes: perf.notes || globalNotes
+          };
+          formattedPayloadItems.push(perfRecord);
+        });
       }
 
       formattedPayloadItems.forEach(rec => appState.sessions.unshift(rec));

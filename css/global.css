@@ -1468,6 +1468,78 @@
       color: #f87171;
       border-color: rgba(239, 68, 68, 0.3);
     }
+/* CUSTOM TRICKS RIGHT-SIDE ACCENT */
+    .custom-tricks-card {
+      position: relative;
+      border-right: 4px solid #fbbf24 !important;
+      box-shadow: var(--card-shadow), 0 0 16px rgba(251, 191, 36, 0.06) !important;
+    }
+
+    .custom-tricks-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 1px;
+      background: linear-gradient(180deg, #fbbf24, transparent);
+    }
+
+    /* MASTER PERFORMANCE LOCKED & COMBO BUILDER STYLES */
+    .perf-master-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .perf-master-locked-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .perf-master-locked-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--bg-container);
+      border: 1px solid var(--border-razor);
+      border-radius: var(--radius-md);
+    }
+
+    .perf-master-combo-card {
+      background: var(--bg-container);
+      border: 1px solid rgba(0, 255, 194, 0.25);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+
+    .perf-master-combo-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .perf-combo-subtricks-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .perf-combo-subtrick-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-razor);
+      border-radius: var(--radius-sm);
+    }
 
     /* DASHBOARD METRICS GRID */
     .metrics-grid {

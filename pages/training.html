@@ -35,20 +35,20 @@
             </div>
           </div>
 
-          <!-- Performance Routine Section -->
-          <div class="form-group" style="margin-top:12px;">
-            <label style="margin-bottom:8px; color:#fb7185;">Performance Component</label>
-            <div id="sessionPerformanceContainer"></div>
-          </div>
-
-          <!-- Individual Drills & Combos Section -->
+          <!-- Training Log Components (Individual Trick / Combo / Performance) -->
           <div class="form-group" style="margin-top:16px;">
-            <label style="margin-bottom:8px;">Session Drills &amp; Combos (Tap header to collapse/expand)</label>
+            <label style="margin-bottom:8px;">Training Session Practiced Components</label>
+            
+            <!-- Performance Runs Container -->
+            <div id="sessionPerformanceContainer"></div>
+
+            <!-- Drills & Combos Container -->
             <div id="sessionItemsContainer"></div>
             
-            <div style="display:flex; gap:10px; margin-top:10px;">
-              <button type="button" class="btn btn-secondary btn-sm" onclick="addSessionItem('single')">+ Add Individual Trick</button>
-              <button type="button" class="btn btn-secondary btn-sm" onclick="addSessionItem('combo')">+ Add Combo Sequence</button>
+            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="addSessionItem('single')">+ Individual Trick</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="addSessionItem('combo')">+ Trick Combo</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="addPerformanceToSession()" style="border-color:rgba(244,63,94,0.45); color:#fb7185;">+ Performance</button>
             </div>
           </div>
 
