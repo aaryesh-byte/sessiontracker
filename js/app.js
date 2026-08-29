@@ -214,11 +214,25 @@ async function handleAuthSubmit(e) {
         const targetAttempts = Number(r.targetAttempts || r.targetattempts || 10);
         const completedAttempts = Number(r.completedAttempts || r.completedattempts || 0);
 
+        let parsedDate = '';
+        if (r.date) {
+          if (typeof r.date === 'string') {
+            parsedDate = r.date.includes('T') ? r.date.split('T')[0] : r.date.trim();
+          } else if (r.date instanceof Date) {
+            const yyyy = r.date.getFullYear();
+            const mm = String(r.date.getMonth() + 1).padStart(2, '0');
+            const dd = String(r.date.getDate()).padStart(2, '0');
+            parsedDate = `${yyyy}-${mm}-${dd}`;
+          } else {
+            parsedDate = String(r.date).split('T')[0];
+          }
+        }
+
         return {
           sessionId: r.sessionId || r.sessionid || ('SESS-' + Date.now()),
           userId: r.userId || r.userid || '',
           skaterName: r.skaterName || r.skatername || '',
-          date: r.date ? String(r.date).split('T')[0] : '',
+          date: parsedDate,
           sessionType: sType,
           trickName: tName,
           category: r.category || (sType === 'Performance' ? 'PERFORMANCE' : 'OTHERS'),
@@ -273,9 +287,7 @@ async function handleAuthSubmit(e) {
       }
 
       const skaterName = appState.currentUser.skaterName || appState.currentUser.username || 'Skater';
-      const userRecords = appState.sessions.filter(s =>
-        String(s.skaterName || s.skatername || s.userid || '').toLowerCase() === String(skaterName).toLowerCase()
-      );
+      const userRecords = typeof getUserFilteredSessions === 'function' ? getUserFilteredSessions() : appState.sessions;
 
       const trainingRecords = userRecords.filter(s => (s.sessionType || s.sessiontype) !== 'Rest' && (s.trickName || s.trickname) !== 'Rest Day');
       const restSessions = userRecords.filter(s => (s.sessionType || s.sessiontype) === 'Rest' || (s.trickName || s.trickname) === 'Rest Day');
@@ -586,9 +598,7 @@ async function handleAuthSubmit(e) {
       }
 
       const skaterName = appState.currentUser.skaterName || appState.currentUser.username || 'Skater';
-      const userSessions = appState.sessions.filter(s =>
-        String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(skaterName).toLowerCase()
-      );
+      const userSessions = typeof getUserFilteredSessions === 'function' ? getUserFilteredSessions() : appState.sessions;
 
       const trainingDays = new Set(userSessions.filter(s => (s.sessionType || s.sessiontype) !== 'Rest' && (s.trickName || s.trickname) !== 'Rest Day').map(s => s.date).filter(Boolean)).size;
       const uniqueDays = new Set(userSessions.map(s => s.date).filter(Boolean)).size;
