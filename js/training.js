@@ -922,6 +922,17 @@ async function handleMultiSessionSubmit(e) {
           }
         }
 
+        const tAtt = item.targetAttempts !== undefined && item.targetAttempts !== '' ? Number(item.targetAttempts) : 10;
+        const cAtt = item.completedAttempts !== undefined && item.completedAttempts !== '' ? Math.min(tAtt, Number(item.completedAttempts)) : 0;
+
+        let enrichedNotes = item.notes || globalNotes;
+        const metaObj = {
+          userNotes: item.notes || '',
+          targetAttempts: tAtt,
+          completedAttempts: cAtt,
+          comboSlots: isCombo && item.slots ? item.slots.map(s => s.selectedTrick).filter(Boolean) : []
+        };
+
         formattedPayloadItems.push({
           sessionId: sessionId,
           date: date,
@@ -934,10 +945,13 @@ async function handleMultiSessionSubmit(e) {
           targetCones: target,
           completedCones: completed,
           missedCones: missed,
+          targetAttempts: tAtt,
+          completedAttempts: cAtt,
           falls: item.falls !== '' && item.falls !== undefined ? Number(item.falls) : 0,
           successRate: target > 0 ? parseFloat(((completed / target) * 100).toFixed(1)) : 0,
           connectedCompletion: connRate,
-          notes: item.notes || globalNotes
+          notes: JSON.stringify(metaObj),
+          itemMetadata: metaObj
         });
       });
 
@@ -998,9 +1012,10 @@ async function handleMultiSessionSubmit(e) {
       if (notesEl) notesEl.value = '';
       
       const summaryStats = calculateSessionSummary(formattedPayloadItems, date);
+      const savedItemsSnapshot = JSON.parse(JSON.stringify(formattedPayloadItems));
       initSessionItems();
       populateProgressTrickFilter();
-      showSessionSummaryModal(summaryStats);
+      showSessionSummaryModal(summaryStats, savedItemsSnapshot, date);
     }
 
     function calculateSessionSummary(items, date) {
@@ -1009,51 +1024,226 @@ async function handleMultiSessionSubmit(e) {
       let totalMissed = 0;
       let singleCount = 0;
       let comboCount = 0;
-      let bestItem = null;
+      let bestItem = 'Training Drills';
       let bestScore = -1;
 
       items.forEach(it => {
-        totalTarget += it.targetCones;
-        totalCompleted += it.completedCones;
-        totalMissed += it.missedCones;
+        const sType = it.sessionType || it.sessiontype;
+        if (sType !== 'Performance' && sType !== 'Rest') {
+          totalTarget += Number(it.targetCones || it.targetcones || 0);
+          totalCompleted += Number(it.completedCones || it.completedcones || 0);
+          totalMissed += Number(it.missedCones || it.missedcones || 0);
 
-        if (it.sessionType === 'Combo') comboCount++;
-        else singleCount++;
+          if (sType === 'Combo') comboCount++;
+          else singleCount++;
 
-        if (it.completedCones > bestScore) {
-          bestScore = it.completedCones;
-          bestItem = it.trickName;
+          const completed = Number(it.completedCones || it.completedcones || 0);
+          if (completed > bestScore) {
+            bestScore = completed;
+            bestItem = it.trickName || it.trickname;
+          }
         }
       });
 
-      const overallSuccess = totalTarget > 0 ? ((totalCompleted / totalTarget) * 100).toFixed(1) : 0;
+      const overallSuccess = totalTarget > 0 ? ((totalCompleted / totalTarget) * 100).toFixed(1) : '100';
 
-      const targetAttempts = Number(item.targetAttempts !== undefined && item.targetAttempts !== '' ? item.targetAttempts : 10);
-        const completedAttempts = Math.min(targetAttempts, Number(item.completedAttempts || 0));
-
-        return {
-          sessionId: sessionId,
-          date: date,
-          sessionType: isCombo ? 'Combo' : 'Single',
-          skaterName: activeSkater,
-          userId: activeSkater,
-          trickName: comboName || (isCombo ? 'Combo Sequence' : item.trickName),
-          category: comboCat,
-          family: comboFam,
-          targetCones: target,
-          completedCones: completed,
-          missedCones: missed,
-          targetAttempts: targetAttempts,
-          completedAttempts: completedAttempts,
-          attemptSuccessRate: targetAttempts > 0 ? parseFloat(((completedAttempts / targetAttempts) * 100).toFixed(1)) : 0,
-          falls: item.falls !== '' && item.falls !== undefined ? Number(item.falls) : 0,
-          successRate: target > 0 ? parseFloat(((completed / target) * 100).toFixed(1)) : 0,
-          connectedCompletion: connRate,
-          notes: item.notes || globalNotes
-        };
+      return {
+        date: date,
+        singleCount,
+        comboCount,
+        overallSuccess,
+        bestItem: bestItem || 'Drills Complete',
+        bestScore: Math.max(0, bestScore)
+      };
     }
 
-    function showSessionSummaryModal(summary) {
+    function formatSummaryDate(isoDateStr) {
+      if (!isoDateStr) return '';
+      const parts = String(isoDateStr).split('T')[0].split('-');
+      if (parts.length === 3) {
+        const d = parseInt(parts[2], 10);
+        const m = parseInt(parts[1], 10);
+        const y = parts[0].slice(-2);
+        return `${d}/${m}/${y}`;
+      }
+      return isoDateStr;
+    }
+
+    function generateCoachSummaryText(sessionItems, dateStr) {
+      const formattedDate = formatSummaryDate(dateStr);
+      const lines = [];
+
+      lines.push(formattedDate);
+      lines.push('');
+      lines.push('Classic:');
+
+      let sectionCounter = 1;
+
+      // 1. Warmup / Session Notes
+      const firstNoteItem = sessionItems.find(it => {
+        const n = extractItemUserNotes(it);
+        return n && (n.toLowerCase().includes('warmup') || n.toLowerCase().includes('warm up'));
+      });
+
+      if (firstNoteItem) {
+        const warmupText = extractItemUserNotes(firstNoteItem);
+        lines.push(`${sectionCounter}. ${warmupText}`);
+        sectionCounter++;
+      }
+
+      // 2. Individual Tricks
+      const singleTricks = sessionItems.filter(it => {
+        const st = it.sessionType || it.sessiontype || 'Single';
+        return st === 'Single';
+      });
+
+      if (singleTricks.length > 0) {
+        lines.push(`${sectionCounter}. Individual tricks`);
+        singleTricks.forEach(t => {
+          const name = t.trickName || t.trickname || 'Trick';
+          const attempts = extractItemAttempts(t);
+          lines.push(`   ${name} - ${attempts.completed}/${attempts.target}`);
+        });
+        sectionCounter++;
+      }
+
+      // 3. Combos
+      const comboTricks = sessionItems.filter(it => {
+        const st = it.sessionType || it.sessiontype;
+        return st === 'Combo';
+      });
+
+      if (comboTricks.length > 0) {
+        lines.push(`${sectionCounter}. Combo`);
+        comboTricks.forEach((cb, cIdx) => {
+          const name = cb.trickName || cb.trickname || `Combo ${cIdx + 1}`;
+          const attempts = extractItemAttempts(cb);
+          const subTricks = extractComboSubTricks(cb);
+
+          if (subTricks.length > 0) {
+            lines.push(`   Combo ${cIdx + 1} - ${attempts.completed}/${attempts.target}`);
+            subTricks.forEach(stName => {
+              lines.push(`   ${stName} - complete`);
+            });
+          } else {
+            lines.push(`   ${name} - ${attempts.completed}/${attempts.target}`);
+          }
+        });
+        sectionCounter++;
+      }
+
+      // 4. Performance
+      const perfSessions = sessionItems.filter(it => {
+        const st = it.sessionType || it.sessiontype;
+        return st === 'Performance' || (it.category || '') === 'PERFORMANCE';
+      });
+
+      if (perfSessions.length > 0) {
+        perfSessions.forEach(perfRec => {
+          const snap = extractPerformanceSnapshot(perfRec);
+          lines.push(`${sectionCounter}. Performance`);
+
+          if (snap && snap.items && snap.items.length > 0) {
+            snap.items.forEach((pItem, pIdx) => {
+              if (pItem.type === 'combo') {
+                const subList = Array.isArray(pItem.comboTricks) ? pItem.comboTricks.filter(Boolean) : (pItem.name ? pItem.name.split(' → ').filter(Boolean) : []);
+                const subStatus = pItem.comboSubCompleted || {};
+                lines.push(`   Combo ${pIdx + 1}:`);
+                subList.forEach((subName, sIdx) => {
+                  const isDone = subStatus[sIdx] === true || pItem.completed === true;
+                  lines.push(`      ${subName} - ${isDone ? 'complete' : 'incomplete'}`);
+                });
+              } else {
+                lines.push(`   ${pItem.name || 'Trick'} - ${pItem.completed ? 'complete' : 'incomplete'}`);
+              }
+            });
+          }
+
+          const smoothness = perfRec.smoothnessScore !== undefined ? perfRec.smoothnessScore : (snap && snap.smoothness);
+          const footwork = perfRec.footworkScore !== undefined ? perfRec.footworkScore : (snap && snap.footwork);
+
+          if (smoothness !== undefined && smoothness !== null && smoothness !== '' && Number(smoothness) > 0) {
+            lines.push('');
+            lines.push(`   Smoothness - ${smoothness}/10`);
+          }
+          if (footwork !== undefined && footwork !== null && footwork !== '' && Number(footwork) > 0) {
+            lines.push(`   Footwork - ${footwork}/10`);
+          }
+
+          sectionCounter++;
+        });
+      }
+
+      return lines.join('\n');
+    }
+
+    function extractItemUserNotes(item) {
+      if (!item) return '';
+      if (item.notes && typeof item.notes === 'string') {
+        if (item.notes.startsWith('{')) {
+          try {
+            const parsed = JSON.parse(item.notes);
+            return parsed.userNotes || parsed.notes || '';
+          } catch(e) {}
+        }
+        return item.notes;
+      }
+      return '';
+    }
+
+    function extractItemAttempts(item) {
+      let target = Number(item.targetAttempts || item.targetattempts || 0);
+      let completed = Number(item.completedAttempts || item.completedattempts || 0);
+
+      if (target === 0 && item.notes && typeof item.notes === 'string' && item.notes.startsWith('{')) {
+        try {
+          const parsed = JSON.parse(item.notes);
+          if (parsed.targetAttempts !== undefined) target = Number(parsed.targetAttempts);
+          if (parsed.completedAttempts !== undefined) completed = Number(parsed.completedAttempts);
+        } catch(e) {}
+      }
+
+      if (target === 0) {
+        target = Number(item.targetCones || item.targetcones || 10);
+        completed = Number(item.completedCones || item.completedcones || target);
+      }
+
+      return { target, completed };
+    }
+
+    function extractComboSubTricks(item) {
+      if (item.itemMetadata && Array.isArray(item.itemMetadata.comboSlots) && item.itemMetadata.comboSlots.length > 0) {
+        return item.itemMetadata.comboSlots;
+      }
+      if (item.notes && typeof item.notes === 'string' && item.notes.startsWith('{')) {
+        try {
+          const parsed = JSON.parse(item.notes);
+          if (Array.isArray(parsed.comboSlots) && parsed.comboSlots.length > 0) {
+            return parsed.comboSlots;
+          }
+        } catch(e) {}
+      }
+      const rawName = item.trickName || item.trickname || '';
+      if (rawName.includes(' → ')) {
+        return rawName.split(' → ').map(s => s.trim()).filter(Boolean);
+      }
+      return [];
+    }
+
+    function extractPerformanceSnapshot(perfRec) {
+      if (perfRec.performanceSnapshot && typeof perfRec.performanceSnapshot === 'object') {
+        return perfRec.performanceSnapshot;
+      }
+      if (perfRec.notes && typeof perfRec.notes === 'string' && perfRec.notes.startsWith('{')) {
+        try {
+          const parsed = JSON.parse(perfRec.notes);
+          if (parsed.snapshot) return parsed.snapshot;
+        } catch(e) {}
+      }
+      return null;
+    }
+
+    function showSessionSummaryModal(summary, savedItems, dateStr) {
       let modal = document.getElementById('sessionSummaryModal');
       if (!modal) {
         modal = document.createElement('div');
@@ -1062,8 +1252,10 @@ async function handleMultiSessionSubmit(e) {
         document.body.appendChild(modal);
       }
 
+      window._lastSavedSessionData = { items: savedItems, date: dateStr };
+
       modal.innerHTML = `
-        <div class="glass-card" style="max-width:400px; width:100%; text-align:center;">
+        <div class="glass-card" style="max-width:420px; width:100%; text-align:center;">
           <div style="font-size:2.2rem; margin-bottom:4px;">🏁</div>
           <div class="headline-lg" style="color:var(--primary); margin-bottom:4px;">SESSION COMPLETE ✓</div>
           <div class="label-caps">${summary.date}</div>
@@ -1089,12 +1281,112 @@ async function handleMultiSessionSubmit(e) {
             <div style="font-size:0.75rem; color:var(--on-surface-muted); margin-top:2px;">Completed: ${summary.bestScore} cones</div>
           </div>
 
-          <button type="button" class="btn" onclick="closeSessionSummaryModal()">Go to Dashboard</button>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <button type="button" class="btn" onclick="openGeneratedSummaryViewModal()">📋 Generate Coach Summary</button>
+            <button type="button" class="btn btn-secondary" onclick="closeSessionSummaryModal()">Go to Dashboard</button>
+          </div>
         </div>
       `;
 
       modal.style.display = 'flex';
     }
+
+    function openGeneratedSummaryViewModal() {
+      const data = window._lastSavedSessionData;
+      if (!data || !data.items || data.items.length === 0) {
+        showToast('No session data found to summarize.', 'warning');
+        return;
+      }
+
+      const summaryText = generateCoachSummaryText(data.items, data.date);
+      displayFormattedSummaryModal('Training Summary for Coach', summaryText);
+    }
+
+    function displayFormattedSummaryModal(title, textContent) {
+      let modal = document.getElementById('coachSummaryDisplayModal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'coachSummaryDisplayModal';
+        modal.className = 'modal-overlay';
+        document.body.appendChild(modal);
+      }
+
+      modal.innerHTML = `
+        <div class="summary-modal-wrap">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-razor); padding-bottom:10px;">
+            <div>
+              <div class="card-title" style="margin-bottom:0; color:var(--primary);">📋 ${title}</div>
+              <div class="label-caps" style="margin-top:2px;">Ready to copy &amp; send directly to coach</div>
+            </div>
+            <button type="button" class="cal-nav-btn" onclick="closeFormattedSummaryModal()" style="width:34px; height:34px;">✕</button>
+          </div>
+
+          <pre id="coachSummaryPreContent" class="summary-text-box">${escapeHtml(textContent)}</pre>
+
+          <div style="display:flex; gap:10px;">
+            <button type="button" id="btnCopyCoachSummary" class="btn" onclick="copyCoachSummaryText()">
+              <span>📋 Copy Summary</span>
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="closeFormattedSummaryModal()">Done</button>
+          </div>
+        </div>
+      `;
+
+      modal.style.display = 'flex';
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    async function copyCoachSummaryText() {
+      const pre = document.getElementById('coachSummaryPreContent');
+      const btn = document.getElementById('btnCopyCoachSummary');
+      if (!pre) return;
+
+      const text = pre.textContent || pre.innerText;
+
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        }
+
+        if (btn) {
+          btn.innerHTML = `<span>✓ Copied to Clipboard!</span>`;
+          btn.style.background = '#10b981';
+          setTimeout(() => {
+            btn.innerHTML = `<span>📋 Copy Summary</span>`;
+            btn.style.background = 'var(--primary)';
+          }, 2500);
+        }
+        showToast('Training summary copied to clipboard!', 'success');
+      } catch (err) {
+        showToast('Unable to copy automatically. Please select text manually.', 'error');
+      }
+    }
+
+    function closeFormattedSummaryModal() {
+      const modal = document.getElementById('coachSummaryDisplayModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    window.openGeneratedSummaryViewModal = openGeneratedSummaryViewModal;
+    window.displayFormattedSummaryModal = displayFormattedSummaryModal;
+    window.copyCoachSummaryText = copyCoachSummaryText;
+    window.closeFormattedSummaryModal = closeFormattedSummaryModal;
+    window.generateCoachSummaryText = generateCoachSummaryText;
 
     function closeSessionSummaryModal() {
       const modal = document.getElementById('sessionSummaryModal');

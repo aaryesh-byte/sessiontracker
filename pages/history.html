@@ -1,4 +1,20 @@
 <div id="tab-history" class="tab-content active">
+      <!-- Weekly Summary Generator Bar -->
+      <div class="weekly-summary-trigger-card">
+        <div>
+          <div style="font-family:var(--font-display); font-weight:800; font-size:0.95rem; color:var(--primary); display:flex; align-items:center; gap:6px;">
+            <span>📅</span><span>Coach Weekly Summary</span>
+          </div>
+          <div class="label-caps" style="margin-top:2px;">Generate Monday–Sunday structured report</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <input type="date" id="histWeeklyPicker" style="width:auto; min-height:34px; padding:4px 8px; font-size:0.75rem;" title="Select any date within the target week">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="handleGenerateWeeklySummaryClick()" style="border-color:var(--primary-dim); color:var(--primary);">
+            📋 Generate Weekly Summary
+          </button>
+        </div>
+      </div>
+
       <div class="glass-card">
         <div class="card-title">History Filters</div>
         <div class="row-2">

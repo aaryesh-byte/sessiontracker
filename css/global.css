@@ -1469,6 +1469,52 @@
       border-color: rgba(239, 68, 68, 0.3);
     }
 
+    /* SUMMARY MODAL & COACH REPORT STYLING */
+    .summary-modal-wrap {
+      max-width: 540px;
+      width: 100%;
+      max-height: 88vh;
+      overflow-y: auto;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-razor);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      box-shadow: var(--card-shadow), 0 0 28px var(--primary-glow);
+      position: relative;
+    }
+
+    .summary-text-box {
+      background: var(--bg-base);
+      border: 1px solid var(--border-razor);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      line-height: 1.6;
+      color: var(--on-surface);
+      white-space: pre-wrap;
+      word-break: break-word;
+      user-select: text;
+      -webkit-user-select: text;
+      margin: 14px 0 16px 0;
+      max-height: 52vh;
+      overflow-y: auto;
+      text-align: left;
+    }
+
+    .weekly-summary-trigger-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      background: linear-gradient(135deg, var(--bg-surface) 60%, rgba(0, 255, 194, 0.06));
+      border: 1px solid rgba(0, 255, 194, 0.3);
+      border-radius: var(--radius-lg);
+      padding: 14px 18px;
+      margin-bottom: 14px;
+    }
+    
 /* ATTEMPT TRACKER & DYNAMIC PROGRESS BAR */
     .attempt-tracker-box {
       background: var(--bg-surface);
