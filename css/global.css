@@ -1516,7 +1516,7 @@
       box-shadow: 0 0 8px var(--primary-glow);
       transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    
+
 /* CUSTOM TRICKS RIGHT-SIDE ACCENT */
     .custom-tricks-card {
       position: relative;
@@ -1656,7 +1656,109 @@
       border: 1px solid var(--border-razor) !important;
       color: var(--on-surface) !important;
     }
+/* COLLAPSIBLE MASTER PERFORMANCE ITEMS */
+    .perf-master-row {
+      background: var(--bg-container);
+      border: 1px solid var(--border-razor);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      transition: all 0.2s ease;
+    }
 
+    .perf-master-row.is-collapsed {
+      padding: 8px 12px;
+    }
+
+    .perf-master-item-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    /* COMPACT INLINE SEARCH BUTTON AND POPOVER */
+    .btn-compact-search-trigger {
+      background: var(--bg-container-high);
+      border: 1px solid var(--border-razor);
+      border-radius: var(--radius-sm);
+      color: var(--on-surface);
+      width: 26px;
+      height: 26px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .btn-compact-search-trigger:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .session-inline-search-bar {
+      display: none;
+      flex: 1;
+      max-width: 130px;
+    }
+
+    .session-inline-search-bar.active {
+      display: block;
+    }
+
+    .session-inline-search-bar input {
+      padding: 4px 6px !important;
+      font-size: 0.75rem !important;
+      height: 26px !important;
+      min-height: 26px !important;
+      border-radius: var(--radius-sm) !important;
+    }
+
+    .session-combo-edit-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-razor);
+      border-radius: var(--radius-sm);
+      padding: 8px;
+      margin-top: 6px;
+    }
+
+    .session-combo-subtrick-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .perf-item-toggle-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--bg-container-high);
+      border: 1px solid var(--border-razor);
+      flex-shrink: 0;
+      cursor: pointer;
+      margin-top: 2px;
+      transition: all 0.2s ease;
+    }
+
+    .perf-item-row.is-complete .perf-item-toggle-indicator {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--primary-dark);
+      box-shadow: 0 0 8px var(--primary-glow);
+    }
+
+    .perf-status-symbol {
+      font-weight: 800;
+      font-size: 0.75rem;
+      line-height: 1;
+    }
     /* DASHBOARD METRICS GRID */
     .metrics-grid {
       display: grid;

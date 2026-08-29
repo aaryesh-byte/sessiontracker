@@ -196,7 +196,7 @@ function matchTrickKeywords(trickName, query) {
   return queryTokens.every(token => rawTarget.includes(token));
 }
 
-// Modular Performance Scoring Registry (Base points placeholder; configurable)
+// Modular Performance Scoring Registry with Individual Trick Sub-Counting for Combos
 const PERFORMANCE_SCORING_CONFIG = {
   minCompletedTricksRequired: 9,
   basePointsByFamily: {
@@ -209,16 +209,30 @@ const PERFORMANCE_SCORING_CONFIG = {
   },
   calculatePerformanceScore: function(perfData) {
     if (!perfData || !perfData.items) {
-      return { totalScore: 0, completedCount: 0, isValid: false, basePoints: 0, smoothness: 0, footwork: 0 };
+      return { totalScore: 0, completedCount: 0, totalIndividualTricks: 0, isValid: false, basePoints: 0, smoothness: 0, footwork: 0 };
     }
     let basePoints = 0;
     let completedCount = 0;
+    let totalIndividualTricks = 0;
 
     perfData.items.forEach(it => {
-      if (it.completed) {
-        completedCount++;
-        const pts = this.basePointsByFamily[it.family] || (it.type === 'combo' ? 5 : 2);
-        basePoints += (it.basePoints !== undefined ? Number(it.basePoints) : pts);
+      if (it.type === 'combo') {
+        const comboList = Array.isArray(it.comboTricks) ? it.comboTricks.filter(Boolean) : (it.name ? it.name.split(' → ').filter(Boolean) : []);
+        const comboTricksCount = Math.max(1, comboList.length);
+        totalIndividualTricks += comboTricksCount;
+
+        if (it.completed) {
+          // A completed 3-trick combo counts as 3 completed individual tricks
+          completedCount += comboTricksCount;
+          basePoints += (it.basePoints !== undefined ? Number(it.basePoints) : (comboTricksCount * 3));
+        }
+      } else {
+        totalIndividualTricks += 1;
+        if (it.completed) {
+          completedCount += 1;
+          const pts = this.basePointsByFamily[it.family] || 2;
+          basePoints += (it.basePoints !== undefined ? Number(it.basePoints) : pts);
+        }
       }
     });
 
@@ -233,6 +247,7 @@ const PERFORMANCE_SCORING_CONFIG = {
       footwork,
       totalScore,
       completedCount,
+      totalIndividualTricks,
       totalItems: perfData.items.length,
       isValid
     };

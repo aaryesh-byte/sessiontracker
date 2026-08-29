@@ -48,6 +48,13 @@ let calSelectedDate = null;
           appState.sessions = Array.isArray(json.data.sessions) ? json.data.sessions : [];
           appState.customTricks = Array.isArray(json.data.customTricks) ? json.data.customTricks : [];
 
+          // Authoritative cross-device Master Performance sync
+          if (json.data.masterPerformance && typeof json.data.masterPerformance === 'object') {
+            const userKey = (activeSkater || activeUsername || '').toLowerCase();
+            appState.masterPerformances[userKey] = json.data.masterPerformance;
+            try { localStorage.setItem(`rollsync_master_perf_${userKey}`, JSON.stringify(json.data.masterPerformance)); } catch(e) {}
+          }
+
           populateProgressTrickFilter();
           renderAnalytics();
 

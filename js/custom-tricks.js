@@ -231,48 +231,59 @@
       if (!appState.masterPerformances[userKey]) {
         try {
           const stored = localStorage.getItem(`rollsync_master_perf_${userKey}`);
-          if (stored) {
-            appState.masterPerformances[userKey] = JSON.parse(stored);
-          } else {
-            appState.masterPerformances[userKey] = {
-              title: '2-Minute Performance Routine',
-              items: [],
-              smoothness: 0,
-              footwork: 0
-            };
-          }
-        } catch(e) {
-          appState.masterPerformances[userKey] = { title: '2-Minute Performance Routine', items: [], smoothness: 0, footwork: 0 };
-        }
+          if (stored) appState.masterPerformances[userKey] = JSON.parse(stored);
+        } catch(e) {}
+      }
+      if (!appState.masterPerformances[userKey]) {
+        appState.masterPerformances[userKey] = {
+          title: '2-Minute Performance Routine',
+          items: [],
+          smoothness: 0,
+          footwork: 0
+        };
       }
       return appState.masterPerformances[userKey];
     }
 
-    function saveMasterPerformance(perfObj) {
+    async function saveMasterPerformance(perfObj) {
       if (!appState.currentUser) return;
-      const userKey = (appState.currentUser.skaterName || appState.currentUser.username || '').toLowerCase();
-      appState.masterPerformances[userKey] = JSON.parse(JSON.stringify(perfObj));
-      try {
-        localStorage.setItem(`rollsync_master_perf_${userKey}`, JSON.stringify(perfObj));
-      } catch(e) { console.error('LocalStorage error saving performance:', e); }
+      const activeSkater = appState.currentUser.skaterName || appState.currentUser.username;
+      const userKey = activeSkater.toLowerCase();
+      
+      const cleanClone = JSON.parse(JSON.stringify(perfObj));
+      appState.masterPerformances[userKey] = cleanClone;
+      try { localStorage.setItem(`rollsync_master_perf_${userKey}`, JSON.stringify(cleanClone)); } catch(e) {}
 
       if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== "YOUR_APPS_SCRIPT_WEB_APP_URL") {
         try {
-          fetch(APPS_SCRIPT_URL, {
+          const res = await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({
               action: 'saveMasterPerformance',
               payload: {
-                skaterName: appState.currentUser.skaterName,
-                userId: appState.currentUser.skaterName,
-                masterPerformance: perfObj
+                skaterName: activeSkater,
+                userId: activeSkater,
+                masterPerformance: cleanClone
               }
             })
           });
-        } catch(err) { console.error('API master performance error:', err); }
+          const json = await res.json();
+          if (json.status === 'success') {
+            showToast('Master Performance synced to your account cloud!', 'success');
+          }
+        } catch(err) { console.error('Cloud Sync Error for Master Performance:', err); }
       }
     }
+
+    function toggleMasterPerfItemCollapse(idx) {
+      if (tempMasterPerformanceDraft && tempMasterPerformanceDraft.items[idx]) {
+        tempMasterPerformanceDraft.items[idx].isCollapsed = !tempMasterPerformanceDraft.items[idx].isCollapsed;
+        renderMasterPerformancePanel();
+      }
+    }
+
+    window.toggleMasterPerfItemCollapse = toggleMasterPerfItemCollapse;
 
     function enterMasterPerformanceEditMode() {
       const master = getMasterPerformance();
@@ -553,90 +564,106 @@
               </div>
             ` : master.items.map((item, idx) => {
               const isCombo = item.type === 'combo';
+              const isCollapsed = !!item.isCollapsed;
+              const displayName = isCombo ? (item.name || 'Combo Sequence') : (item.name || 'Individual Trick');
+
               if (!isCombo) {
                 const sQuery = item.searchQuery || '';
                 const filtered = allTricks.filter(t => matchTrickKeywords(t.name || t.trickname, sQuery));
                 const hasMatch = filtered.some(t => (t.name || t.trickname) === item.name);
 
                 return `
-                  <div class="perf-master-row">
-                    <div class="perf-order-controls">
-                      <button type="button" class="btn-icon-tiny" onclick="moveMasterPerfItem(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} title="Move Up">▲</button>
-                      <button type="button" class="btn-icon-tiny" onclick="moveMasterPerfItem(${idx}, 1)" ${idx === master.items.length - 1 ? 'disabled' : ''} title="Move Down">▼</button>
-                    </div>
-                    <div style="font-family:var(--font-mono); font-size:0.75rem; font-weight:700; width:26px; flex-shrink:0;">#${idx + 1}</div>
-                    <div class="perf-slot-controls-wrap">
-                      <div class="perf-search-input-wrap">
-                        <span class="perf-search-icon">🔍</span>
-                        <input type="text" class="perf-search-input" placeholder="Search trick (e.g. Christie)..." value="${sQuery}" oninput="onMasterPerfSingleSearch(${idx}, this.value)">
+                  <div class="perf-master-row ${isCollapsed ? 'is-collapsed' : ''}">
+                    <div class="perf-master-item-head" onclick="toggleMasterPerfItemCollapse(${idx})">
+                      <div style="display:flex; align-items:center; gap:6px; overflow:hidden;">
+                        <span class="collapse-arrow">${isCollapsed ? '▶' : '▼'}</span>
+                        <div class="perf-order-controls" onclick="event.stopPropagation()">
+                          <button type="button" class="btn-icon-tiny" onclick="moveMasterPerfItem(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} title="Move Up">▲</button>
+                          <button type="button" class="btn-icon-tiny" onclick="moveMasterPerfItem(${idx}, 1)" ${idx === master.items.length - 1 ? 'disabled' : ''} title="Move Down">▼</button>
+                        </div>
+                        <span style="font-family:var(--font-mono); font-size:0.75rem; font-weight:700;">#${idx + 1}</span>
+                        <span class="badge badge-family" style="font-size:0.65rem;">Trick</span>
+                        <span class="collapsed-item-preview" title="${displayName}">${displayName}</span>
                       </div>
-                      <select id="masterPerfSingleSelect_${idx}" class="perf-select" onchange="onMasterPerfSingleChange(${idx}, this.value)">
-                        <option value="" disabled ${!item.name ? 'selected' : ''}>-- Choose Trick --</option>
-                        ${item.name && !hasMatch ? `<option value="${item.name}" selected>${item.name} (${item.category} - Fam ${item.family})</option>` : ''}
-                        ${filtered.map(t => {
-                          const name = t.name || t.trickname;
-                          return `<option value="${name}" ${name === item.name ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
-                        }).join('')}
-                      </select>
+                      <button type="button" onclick="event.stopPropagation(); removeMasterPerfItem(${idx})" class="btn-icon-danger" title="Remove Trick">✕ Remove</button>
                     </div>
-                    <span class="badge badge-family" style="font-size:0.65rem; flex-shrink:0;">Fam ${item.family || 'E'}</span>
-                    <button type="button" onclick="removeMasterPerfItem(${idx})" class="btn-icon-danger" style="flex-shrink:0;" title="Remove Trick">✕</button>
+
+                    ${!isCollapsed ? `
+                      <div class="perf-slot-controls-wrap" style="margin-top:8px;">
+                        <div class="perf-search-input-wrap">
+                          <span class="perf-search-icon">🔍</span>
+                          <input type="text" class="perf-search-input" placeholder="Search trick (e.g. Christie)..." value="${sQuery}" oninput="onMasterPerfSingleSearch(${idx}, this.value)">
+                        </div>
+                        <select id="masterPerfSingleSelect_${idx}" class="perf-select" onchange="onMasterPerfSingleChange(${idx}, this.value)">
+                          <option value="" disabled ${!item.name ? 'selected' : ''}>-- Choose Trick --</option>
+                          ${item.name && !hasMatch ? `<option value="${item.name}" selected>${item.name} (${item.category} - Fam ${item.family})</option>` : ''}
+                          ${filtered.map(t => {
+                            const name = t.name || t.trickname;
+                            return `<option value="${name}" ${name === item.name ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
+                          }).join('')}
+                        </select>
+                      </div>
+                    ` : ''}
                   </div>
                 `;
               }
 
-              // PERFORMANCE COMBO BUILDER CARD
+              // PERFORMANCE COMBO BUILDER CARD (COLLAPSIBLE)
               const comboTricks = item.comboTricks || (item.name ? item.name.split(' → ') : ['', '']);
               return `
-                <div class="perf-master-combo-card">
-                  <div class="perf-master-combo-header">
-                    <div style="display:flex; align-items:center; gap:6px;">
-                      <div class="perf-order-controls">
+                <div class="perf-master-combo-card ${isCollapsed ? 'is-collapsed' : ''}">
+                  <div class="perf-master-combo-header" onclick="toggleMasterPerfItemCollapse(${idx})">
+                    <div style="display:flex; align-items:center; gap:6px; overflow:hidden;">
+                      <span class="collapse-arrow">${isCollapsed ? '▶' : '▼'}</span>
+                      <div class="perf-order-controls" onclick="event.stopPropagation()">
                         <button type="button" class="btn-icon-tiny" onclick="moveMasterPerfItem(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} title="Move Up">▲</button>
                         <button type="button" class="btn-icon-tiny" onclick="moveMasterPerfItem(${idx}, 1)" ${idx === master.items.length - 1 ? 'disabled' : ''} title="Move Down">▼</button>
                       </div>
                       <span style="font-family:var(--font-mono); font-size:0.75rem; font-weight:700;">#${idx + 1}</span>
-                      <span class="badge badge-combo" style="font-size:0.65rem;">Performance Combo</span>
+                      <span class="badge badge-combo" style="font-size:0.65rem;">Combo (${comboTricks.filter(Boolean).length} tricks)</span>
+                      <span class="collapsed-item-preview" title="${displayName}">${displayName}</span>
                     </div>
-                    <button type="button" onclick="removeMasterPerfItem(${idx})" class="btn-icon-danger">✕ Remove Combo</button>
+                    <button type="button" onclick="event.stopPropagation(); removeMasterPerfItem(${idx})" class="btn-icon-danger">✕ Remove</button>
                   </div>
 
-                  <div class="perf-combo-subtricks-list">
-                    ${comboTricks.map((subName, sIdx) => {
-                      const subQuery = (item.subSearchQueries && item.subSearchQueries[sIdx]) || '';
-                      const filtered = allTricks.filter(t => matchTrickKeywords(t.name || t.trickname, subQuery));
-                      const hasMatch = filtered.some(t => (t.name || t.trickname) === subName);
+                  ${!isCollapsed ? `
+                    <div class="perf-combo-subtricks-list" style="margin-top:8px;">
+                      ${comboTricks.map((subName, sIdx) => {
+                        const subQuery = (item.subSearchQueries && item.subSearchQueries[sIdx]) || '';
+                        const filtered = allTricks.filter(t => matchTrickKeywords(t.name || t.trickname, subQuery));
+                        const hasMatch = filtered.some(t => (t.name || t.trickname) === subName);
 
-                      return `
-                        <div class="perf-combo-subtrick-row">
-                          <div class="perf-order-controls">
-                            <button type="button" class="btn-icon-tiny" onclick="moveSubTrickInMasterCombo(${idx}, ${sIdx}, -1)" ${sIdx === 0 ? 'disabled' : ''} title="Move Up">▲</button>
-                            <button type="button" class="btn-icon-tiny" onclick="moveSubTrickInMasterCombo(${idx}, ${sIdx}, 1)" ${sIdx === comboTricks.length - 1 ? 'disabled' : ''} title="Move Down">▼</button>
-                          </div>
-                          <span style="font-family:var(--font-mono); font-size:0.7rem; color:var(--on-surface-muted); width:18px; flex-shrink:0;">${sIdx + 1}.</span>
-                          <div class="perf-slot-controls-wrap">
-                            <div class="perf-search-input-wrap">
-                              <span class="perf-search-icon">🔍</span>
-                              <input type="text" class="perf-search-input" placeholder="Search combo trick (e.g. Christie)..." value="${subQuery}" oninput="onMasterComboSubTrickSearch(${idx}, ${sIdx}, this.value)">
+                        return `
+                          <div class="perf-combo-subtrick-row">
+                            <div class="perf-order-controls">
+                              <button type="button" class="btn-icon-tiny" onclick="moveSubTrickInMasterCombo(${idx}, ${sIdx}, -1)" ${sIdx === 0 ? 'disabled' : ''} title="Move Up">▲</button>
+                              <button type="button" class="btn-icon-tiny" onclick="moveSubTrickInMasterCombo(${idx}, ${sIdx}, 1)" ${sIdx === comboTricks.length - 1 ? 'disabled' : ''} title="Move Down">▼</button>
                             </div>
-                            <select id="masterComboSubSelect_${idx}_${sIdx}" class="perf-select" onchange="onMasterComboSubTrickChange(${idx}, ${sIdx}, this.value)">
-                              <option value="" disabled ${!subName ? 'selected' : ''}>-- Choose Trick --</option>
-                              ${subName && !hasMatch ? `<option value="${subName}" selected>${subName}</option>` : ''}
-                              ${filtered.map(t => {
-                                const name = t.name || t.trickname;
-                                return `<option value="${name}" ${name === subName ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
-                              }).join('')}
-                            </select>
+                            <span style="font-family:var(--font-mono); font-size:0.7rem; color:var(--on-surface-muted); width:18px; flex-shrink:0;">${sIdx + 1}.</span>
+                            <div class="perf-slot-controls-wrap">
+                              <div class="perf-search-input-wrap">
+                                <span class="perf-search-icon">🔍</span>
+                                <input type="text" class="perf-search-input" placeholder="Search combo trick (e.g. Christie)..." value="${subQuery}" oninput="onMasterComboSubTrickSearch(${idx}, ${sIdx}, this.value)">
+                              </div>
+                              <select id="masterComboSubSelect_${idx}_${sIdx}" class="perf-select" onchange="onMasterComboSubTrickChange(${idx}, ${sIdx}, this.value)">
+                                <option value="" disabled ${!subName ? 'selected' : ''}>-- Choose Trick --</option>
+                                ${subName && !hasMatch ? `<option value="${subName}" selected>${subName}</option>` : ''}
+                                ${filtered.map(t => {
+                                  const name = t.name || t.trickname;
+                                  return `<option value="${name}" ${name === subName ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
+                                }).join('')}
+                              </select>
+                            </div>
+                            ${comboTricks.length > 2 ? `<button type="button" onclick="removeSubTrickFromMasterCombo(${idx}, ${sIdx})" class="btn-icon-danger" style="font-size:0.75rem; flex-shrink:0;">✕</button>` : ''}
                           </div>
-                          ${comboTricks.length > 2 ? `<button type="button" onclick="removeSubTrickFromMasterCombo(${idx}, ${sIdx})" class="btn-icon-danger" style="font-size:0.75rem; flex-shrink:0;">✕</button>` : ''}
-                        </div>
-                      `;
-                    }).join('')}
-                  </div>
+                        `;
+                      }).join('')}
+                    </div>
 
-                  <button type="button" class="btn btn-secondary btn-sm" onclick="addSubTrickToMasterCombo(${idx})" style="font-size:0.6875rem; padding:4px 10px; margin-top:6px;">
-                    + Add Trick to Combo
-                  </button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="addSubTrickToMasterCombo(${idx})" style="font-size:0.6875rem; padding:4px 10px; margin-top:6px;">
+                      + Add Trick to Combo
+                    </button>
+                  ` : ''}
                 </div>
               `;
             }).join('')}

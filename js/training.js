@@ -117,13 +117,25 @@
     window.onAttemptInputChange = onAttemptInputChange;
     window.updateAttemptProgressBar = updateAttemptProgressBar;
 
-    // Performance Session Handlers (Allows multiple Performance runs in 1 session)
+    // Performance Session Handlers (Strict Initial Incomplete State)
     function addPerformanceToSession() {
       if (!appState.sessionPerformances) appState.sessionPerformances = [];
       const master = getMasterPerformance();
       const allTricks = getAllTricks();
 
-      // Deep clone master performance into a temporary session snapshot
+      let clonedItems = [];
+      if (master && master.items && master.items.length > 0) {
+        clonedItems = JSON.parse(JSON.stringify(master.items)).map(it => {
+          it.completed = false; // Always enforce initial INCOMPLETE state for training sessions
+          return it;
+        });
+      } else {
+        clonedItems = [
+          { id: 'pitem-1', type: 'single', name: allTricks[0] ? (allTricks[0].name || allTricks[0].trickname) : 'Butterfly', category: 'OTHERS', family: 'B', completed: false },
+          { id: 'pitem-2', type: 'single', name: allTricks[1] ? (allTricks[1].name || allTricks[1].trickname) : 'Nelson', category: 'OTHERS', family: 'E', completed: false }
+        ];
+      }
+
       const newSnapshot = {
         id: 'perf-run-' + Date.now() + Math.random(),
         title: `Performance Run #${appState.sessionPerformances.length + 1}`,
@@ -131,16 +143,87 @@
         footwork: 0,
         notes: '',
         isCollapsed: false,
-        items: (master && master.items && master.items.length > 0) ? JSON.parse(JSON.stringify(master.items)) : [
-          { id: 'pitem-1', type: 'single', name: allTricks[0] ? (allTricks[0].name || allTricks[0].trickname) : 'Butterfly', category: 'OTHERS', family: 'B', completed: false },
-          { id: 'pitem-2', type: 'single', name: allTricks[1] ? (allTricks[1].name || allTricks[1].trickname) : 'Nelson', category: 'OTHERS', family: 'E', completed: false }
-        ]
+        items: clonedItems
       };
 
       appState.sessionPerformances.push(newSnapshot);
       renderSessionPerformanceSection();
-      showToast(`Added Performance #${appState.sessionPerformances.length} to session.`, 'success');
+      showToast(`Added Performance Run #${appState.sessionPerformances.length} (Tricks set to Incomplete).`, 'success');
     }
+
+    function addSubTrickToSessionCombo(perfIdx, itemIdx) {
+      if (!appState.sessionPerformances || !appState.sessionPerformances[perfIdx]) return;
+      const item = appState.sessionPerformances[perfIdx].items[itemIdx];
+      if (!item.comboTricks) item.comboTricks = [];
+      item.comboTricks.push('');
+      item.name = item.comboTricks.filter(Boolean).join(' → ');
+      renderSessionPerformanceSection();
+    }
+
+    function removeSubTrickFromSessionCombo(perfIdx, itemIdx, subIdx) {
+      if (!appState.sessionPerformances || !appState.sessionPerformances[perfIdx]) return;
+      const item = appState.sessionPerformances[perfIdx].items[itemIdx];
+      if (!item.comboTricks || item.comboTricks.length <= 2) {
+        showToast('A combo must contain at least two tricks.', 'warning');
+        return;
+      }
+      item.comboTricks.splice(subIdx, 1);
+      item.name = item.comboTricks.filter(Boolean).join(' → ');
+      renderSessionPerformanceSection();
+    }
+
+    function onSessionComboSubTrickChange(perfIdx, itemIdx, subIdx, trickName) {
+      if (!appState.sessionPerformances || !appState.sessionPerformances[perfIdx]) return;
+      const item = appState.sessionPerformances[perfIdx].items[itemIdx];
+      if (!item.comboTricks) item.comboTricks = [];
+      item.comboTricks[subIdx] = trickName;
+      item.name = item.comboTricks.filter(Boolean).join(' → ');
+      renderSessionPerformanceSection();
+    }
+
+    function toggleSessionInlineSearch(elemId) {
+      const el = document.getElementById(elemId);
+      if (el) {
+        el.classList.toggle('active');
+        if (el.classList.contains('active')) {
+          const input = el.querySelector('input');
+          if (input) input.focus();
+        }
+      }
+    }
+
+    function onSessionInlineSearchInput(perfIdx, itemIdx, subIdx, query) {
+      const isSub = subIdx !== undefined && subIdx !== null;
+      const selectId = isSub ? `sessionComboSubSelect_${perfIdx}_${itemIdx}_${subIdx}` : `sessionPerfSingleSelect_${perfIdx}_${itemIdx}`;
+      const select = document.getElementById(selectId);
+      if (!select) return;
+
+      const allTricks = getAllTricks();
+      const filtered = allTricks.filter(t => matchTrickKeywords(t.name || t.trickname, query));
+
+      const item = appState.sessionPerformances[perfIdx].items[itemIdx];
+      const currentSelected = isSub ? (item.comboTricks && item.comboTricks[subIdx]) : item.name;
+
+      let optionsHtml = `<option value="" ${!currentSelected ? 'selected' : ''} disabled>-- Choose Trick --</option>`;
+
+      if (currentSelected && !filtered.some(t => (t.name || t.trickname) === currentSelected)) {
+        optionsHtml += `<option value="${currentSelected}" selected>${currentSelected}</option>`;
+      }
+
+      optionsHtml += filtered.map(t => {
+        const name = t.name || t.trickname;
+        return `<option value="${name}" ${name === currentSelected ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
+      }).join('');
+
+      select.innerHTML = optionsHtml;
+      select.value = currentSelected || '';
+    }
+
+    window.addSubTrickToSessionCombo = addSubTrickToSessionCombo;
+    window.removeSubTrickFromSessionCombo = removeSubTrickFromSessionCombo;
+    window.onSessionComboSubTrickChange = onSessionComboSubTrickChange;
+    window.toggleSessionInlineSearch = toggleSessionInlineSearch;
+    window.onSessionInlineSearchInput = onSessionInlineSearchInput;
 
     function removePerformanceFromSession(perfIdx) {
       if (!appState.sessionPerformances || !appState.sessionPerformances[perfIdx]) return;
@@ -538,36 +621,72 @@
                   </div>
                 </div>
 
-                <!-- Trick & Combo Checklist -->
+                <!-- Trick & Combo Interactive Checklist with Tap-to-Toggle -->
                 <div class="perf-items-list" style="margin:12px 0;">
-                  ${(perf.items || []).map((item, itIdx) => `
-                    <div class="perf-item-row ${item.completed ? 'is-complete' : 'is-incomplete'}">
-                      <label class="perf-checkbox-label">
-                        <input type="checkbox" ${item.completed ? 'checked' : ''} onchange="toggleSessionPerfItemCompletion(${pIdx}, ${itIdx})">
-                        <span class="perf-custom-check"></span>
-                      </label>
-                      <div style="flex:1; min-width:0;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                          <span style="font-family:var(--font-mono); font-size:0.75rem; font-weight:700; color:var(--on-surface);">
-                            #${itIdx + 1} [${item.type === 'combo' ? 'Combo' : 'Trick'}] ${item.name || 'Unassigned'}
-                          </span>
-                          <span class="badge ${item.completed ? 'badge-combo' : 'badge-family'}" style="font-size:0.6rem; padding:2px 6px;">
-                            ${item.completed ? 'COMPLETE' : 'INCOMPLETE'}
-                          </span>
+                  ${(perf.items || []).map((item, itIdx) => {
+                    const isCombo = item.type === 'combo';
+                    const comboTricks = item.comboTricks || (item.name ? item.name.split(' → ') : ['', '']);
+                    const individualCount = isCombo ? comboTricks.filter(Boolean).length : 1;
+
+                    return `
+                      <div class="perf-item-row ${item.completed ? 'is-complete' : 'is-incomplete'}" onclick="toggleSessionPerfItemCompletion(${pIdx}, ${itIdx})">
+                        <div class="perf-item-toggle-indicator">
+                          <span class="perf-status-symbol">${item.completed ? '✓' : '○'}</span>
                         </div>
-                        <div class="row-2" style="margin-top:6px;">
-                          <select style="font-size:0.75rem; padding:4px 8px;" onchange="onSessionPerfItemTrickChange(${pIdx}, ${itIdx}, this.value)">
-                            <option value="">-- Swap Trick for Run #${pIdx + 1} --</option>
-                            ${allTricks.map(t => {
-                              const name = t.name || t.trickname;
-                              return `<option value="${name}" ${name === item.name ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
-                            }).join('')}
-                          </select>
-                          <button type="button" onclick="removeSessionPerfItem(${pIdx}, ${itIdx})" style="background:none; border:none; color:#f87171; font-size:0.7rem; cursor:pointer; text-align:right;">✕ Remove</button>
+                        <div style="flex:1; min-width:0;" onclick="event.stopPropagation()">
+                          <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="toggleSessionPerfItemCompletion(${pIdx}, ${itIdx})">
+                            <span style="font-family:var(--font-mono); font-size:0.75rem; font-weight:700; color:var(--on-surface);">
+                              #${itIdx + 1} [${isCombo ? `Combo • ${individualCount} Tricks` : 'Trick'}] ${item.name || 'Unassigned'}
+                            </span>
+                            <span class="badge ${item.completed ? 'badge-combo' : 'badge-danger'}" style="font-size:0.6rem; padding:2px 6px;">
+                              ${item.completed ? `COMPLETE (+${individualCount})` : 'INCOMPLETE'}
+                            </span>
+                          </div>
+
+                          ${!isCombo ? `
+                            <div style="display:flex; align-items:center; gap:6px; margin-top:6px;">
+                              <button type="button" class="btn-compact-search-trigger" onclick="toggleSessionInlineSearch('sessionSearchSingle_${pIdx}_${itIdx}')" title="Filter list">🔍</button>
+                              <div id="sessionSearchSingle_${pIdx}_${itIdx}" class="session-inline-search-bar">
+                                <input type="text" placeholder="Search (e.g. Christie)..." oninput="onSessionInlineSearchInput(${pIdx}, ${itIdx}, null, this.value)">
+                              </div>
+                              <select id="sessionPerfSingleSelect_${pIdx}_${itIdx}" style="font-size:0.75rem; padding:4px 8px; flex:1;" onchange="onSessionPerfItemTrickChange(${pIdx}, ${itIdx}, this.value)">
+                                <option value="" disabled ${!item.name ? 'selected' : ''}>-- Swap Trick for Run #${pIdx + 1} --</option>
+                                ${allTricks.map(t => {
+                                  const name = t.name || t.trickname;
+                                  return `<option value="${name}" ${name === item.name ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
+                                }).join('')}
+                              </select>
+                              <button type="button" onclick="removeSessionPerfItem(${pIdx}, ${itIdx})" class="btn-icon-danger" style="font-size:0.75rem;" title="Remove Trick">✕</button>
+                            </div>
+                          ` : `
+                            <div class="session-combo-edit-box">
+                              ${comboTricks.map((subName, subIdx) => `
+                                <div class="session-combo-subtrick-row">
+                                  <span style="font-family:var(--font-mono); font-size:0.6875rem; color:var(--on-surface-muted); width:18px;">${subIdx + 1}.</span>
+                                  <button type="button" class="btn-compact-search-trigger" onclick="toggleSessionInlineSearch('sessionSearchSub_${pIdx}_${itIdx}_${subIdx}')" title="Filter list">🔍</button>
+                                  <div id="sessionSearchSub_${pIdx}_${itIdx}_${subIdx}" class="session-inline-search-bar">
+                                    <input type="text" placeholder="Filter..." oninput="onSessionInlineSearchInput(${pIdx}, ${itIdx}, ${subIdx}, this.value)">
+                                  </div>
+                                  <select id="sessionComboSubSelect_${pIdx}_${itIdx}_${subIdx}" style="font-size:0.75rem; padding:3px 6px; flex:1;" onchange="onSessionComboSubTrickChange(${pIdx}, ${itIdx}, ${subIdx}, this.value)">
+                                    <option value="" disabled ${!subName ? 'selected' : ''}>-- Select Trick --</option>
+                                    ${allTricks.map(t => {
+                                      const name = t.name || t.trickname;
+                                      return `<option value="${name}" ${name === subName ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
+                                    }).join('')}
+                                  </select>
+                                  ${comboTricks.length > 2 ? `<button type="button" onclick="removeSubTrickFromSessionCombo(${pIdx}, ${itIdx}, ${subIdx})" class="btn-icon-danger" style="font-size:0.75rem;">✕</button>` : ''}
+                                </div>
+                              `).join('')}
+                              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="addSubTrickToSessionCombo(${pIdx}, ${itIdx})" style="font-size:0.65rem; padding:2px 8px;">+ Add Combo Trick</button>
+                                <button type="button" onclick="removeSessionPerfItem(${pIdx}, ${itIdx})" class="btn-icon-danger" style="font-size:0.75rem;">✕ Remove Combo</button>
+                              </div>
+                            </div>
+                          `}
                         </div>
                       </div>
-                    </div>
-                  `).join('')}
+                    `;
+                  }).join('')}
                 </div>
 
                 <div style="display:flex; gap:8px; margin-bottom:12px;">

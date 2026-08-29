@@ -110,16 +110,17 @@ async function handleAuthSubmit(e) {
           appState.sessions = (json.data && Array.isArray(json.data.sessions)) ? json.data.sessions : [];
           appState.customTricks = (json.data && Array.isArray(json.data.customTricks)) ? json.data.customTricks : [];
           
-          // Load Master Performance Routine from local/cloud storage
+          // Cloud database is the authoritative source of truth for Master Performance
           const userKey = (authenticatedUser.skaterName || authenticatedUser.username || '').toLowerCase();
-          try {
-            const savedPerf = localStorage.getItem(`rollsync_master_perf_${userKey}`);
-            if (savedPerf) {
-              appState.masterPerformances[userKey] = JSON.parse(savedPerf);
-            } else if (json.data && json.data.masterPerformance) {
-              appState.masterPerformances[userKey] = json.data.masterPerformance;
-            }
-          } catch(e) { console.error('Error loading master performance:', e); }
+          if (json.data && json.data.masterPerformance && typeof json.data.masterPerformance === 'object' && Object.keys(json.data.masterPerformance).length > 0) {
+            appState.masterPerformances[userKey] = json.data.masterPerformance;
+            try { localStorage.setItem(`rollsync_master_perf_${userKey}`, JSON.stringify(json.data.masterPerformance)); } catch(e) {}
+          } else {
+            try {
+              const localBackup = localStorage.getItem(`rollsync_master_perf_${userKey}`);
+              if (localBackup) appState.masterPerformances[userKey] = JSON.parse(localBackup);
+            } catch(e) {}
+          }
 
           if (appState.authMode === 'register') {
             showToast(`Registration complete: Welcome ${authenticatedUser.skaterName}!`, 'success');
