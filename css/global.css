@@ -1753,7 +1753,49 @@
       color: var(--primary-dark);
       box-shadow: 0 0 8px var(--primary-glow);
     }
+/* SUB-TRICK CHECKBOX IN PERFORMANCE COMBOS */
+    .perf-subtrick-checkbox {
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+      margin-right: 4px;
+    }
 
+    .perf-subtrick-checkbox input {
+      display: none !important;
+    }
+
+    .perf-subtrick-box {
+      width: 16px;
+      height: 16px;
+      border: 1.5px solid var(--border-razor);
+      border-radius: var(--radius-sm);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-container);
+      transition: all 0.15s ease;
+    }
+
+    .perf-subtrick-checkbox input:checked + .perf-subtrick-box {
+      background: var(--primary);
+      border-color: var(--primary);
+      box-shadow: 0 0 6px var(--primary-glow);
+    }
+
+    .perf-subtrick-checkbox input:checked + .perf-subtrick-box::after {
+      content: '✓';
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: var(--primary-dark);
+      line-height: 1;
+    }
+
+    .session-combo-subtrick-row.is-sub-done {
+      background: rgba(0, 255, 194, 0.04);
+      border-radius: var(--radius-sm);
+    }
+    
     .perf-status-symbol {
       font-weight: 800;
       font-size: 0.75rem;

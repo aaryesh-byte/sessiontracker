@@ -127,6 +127,11 @@
       if (master && master.items && master.items.length > 0) {
         clonedItems = JSON.parse(JSON.stringify(master.items)).map(it => {
           it.completed = false; // Always enforce initial INCOMPLETE state for training sessions
+          it.comboSubCompleted = {};
+          if (it.type === 'combo') {
+            const list = Array.isArray(it.comboTricks) ? it.comboTricks : (it.name ? it.name.split(' → ') : []);
+            list.forEach((_, sIdx) => { it.comboSubCompleted[sIdx] = false; });
+          }
           return it;
         });
       } else {
@@ -240,9 +245,37 @@
 
     function toggleSessionPerfItemCompletion(perfIdx, itemIdx) {
       if (!appState.sessionPerformances || !appState.sessionPerformances[perfIdx] || !appState.sessionPerformances[perfIdx].items[itemIdx]) return;
-      appState.sessionPerformances[perfIdx].items[itemIdx].completed = !appState.sessionPerformances[perfIdx].items[itemIdx].completed;
+      const item = appState.sessionPerformances[perfIdx].items[itemIdx];
+      const newStatus = !item.completed;
+      item.completed = newStatus;
+
+      // When toggling the whole combo header checkbox, synchronize all its sub-tricks
+      if (item.type === 'combo') {
+        const comboList = Array.isArray(item.comboTricks) ? item.comboTricks.filter(Boolean) : (item.name ? item.name.split(' → ').filter(Boolean) : []);
+        if (!item.comboSubCompleted) item.comboSubCompleted = {};
+        for (let s = 0; s < comboList.length; s++) {
+          item.comboSubCompleted[s] = newStatus;
+        }
+      }
+
       renderSessionPerformanceSection();
     }
+
+    function toggleSessionPerfComboSubTrickCompletion(perfIdx, itemIdx, subIdx) {
+      if (!appState.sessionPerformances || !appState.sessionPerformances[perfIdx] || !appState.sessionPerformances[perfIdx].items[itemIdx]) return;
+      const item = appState.sessionPerformances[perfIdx].items[itemIdx];
+      if (!item.comboSubCompleted) item.comboSubCompleted = {};
+      item.comboSubCompleted[subIdx] = !item.comboSubCompleted[subIdx];
+
+      // Recheck if all subtricks are complete to update overall combo badge
+      const comboList = Array.isArray(item.comboTricks) ? item.comboTricks.filter(Boolean) : (item.name ? item.name.split(' → ').filter(Boolean) : []);
+      const allDone = comboList.length > 0 && comboList.every((_, idx) => item.comboSubCompleted[idx] === true);
+      item.completed = allDone;
+
+      renderSessionPerformanceSection();
+    }
+
+    window.toggleSessionPerfComboSubTrickCompletion = toggleSessionPerfComboSubTrickCompletion;
 
     function addSessionPerfItem(perfIdx, type) {
       if (!appState.sessionPerformances || !appState.sessionPerformances[perfIdx]) return;
@@ -660,23 +693,31 @@
                             </div>
                           ` : `
                             <div class="session-combo-edit-box">
-                              ${comboTricks.map((subName, subIdx) => `
-                                <div class="session-combo-subtrick-row">
-                                  <span style="font-family:var(--font-mono); font-size:0.6875rem; color:var(--on-surface-muted); width:18px;">${subIdx + 1}.</span>
-                                  <button type="button" class="btn-compact-search-trigger" onclick="toggleSessionInlineSearch('sessionSearchSub_${pIdx}_${itIdx}_${subIdx}')" title="Filter list">🔍</button>
-                                  <div id="sessionSearchSub_${pIdx}_${itIdx}_${subIdx}" class="session-inline-search-bar">
-                                    <input type="text" placeholder="Filter..." oninput="onSessionInlineSearchInput(${pIdx}, ${itIdx}, ${subIdx}, this.value)">
+                              ${comboTricks.map((subName, subIdx) => {
+                                const isSubDone = Boolean(item.comboSubCompleted && item.comboSubCompleted[subIdx]);
+                                return `
+                                  <div class="session-combo-subtrick-row ${isSubDone ? 'is-sub-done' : ''}">
+                                    <!-- Independent Sub-Trick Checkbox -->
+                                    <label class="perf-subtrick-checkbox" title="Toggle Trick Complete" onclick="event.stopPropagation()">
+                                      <input type="checkbox" ${isSubDone ? 'checked' : ''} onchange="toggleSessionPerfComboSubTrickCompletion(${pIdx}, ${itIdx}, ${subIdx})">
+                                      <span class="perf-subtrick-box"></span>
+                                    </label>
+                                    <span style="font-family:var(--font-mono); font-size:0.6875rem; color:var(--on-surface-muted); width:18px;">${subIdx + 1}.</span>
+                                    <button type="button" class="btn-compact-search-trigger" onclick="toggleSessionInlineSearch('sessionSearchSub_${pIdx}_${itIdx}_${subIdx}')" title="Filter list">🔍</button>
+                                    <div id="sessionSearchSub_${pIdx}_${itIdx}_${subIdx}" class="session-inline-search-bar">
+                                      <input type="text" placeholder="Filter..." oninput="onSessionInlineSearchInput(${pIdx}, ${itIdx}, ${subIdx}, this.value)">
+                                    </div>
+                                    <select id="sessionComboSubSelect_${pIdx}_${itIdx}_${subIdx}" style="font-size:0.75rem; padding:3px 6px; flex:1;" onchange="onSessionComboSubTrickChange(${pIdx}, ${itIdx}, ${subIdx}, this.value)">
+                                      <option value="" disabled ${!subName ? 'selected' : ''}>-- Select Trick --</option>
+                                      ${allTricks.map(t => {
+                                        const name = t.name || t.trickname;
+                                        return `<option value="${name}" ${name === subName ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
+                                      }).join('')}
+                                    </select>
+                                    ${comboTricks.length > 2 ? `<button type="button" onclick="removeSubTrickFromSessionCombo(${pIdx}, ${itIdx}, ${subIdx})" class="btn-icon-danger" style="font-size:0.75rem;">✕</button>` : ''}
                                   </div>
-                                  <select id="sessionComboSubSelect_${pIdx}_${itIdx}_${subIdx}" style="font-size:0.75rem; padding:3px 6px; flex:1;" onchange="onSessionComboSubTrickChange(${pIdx}, ${itIdx}, ${subIdx}, this.value)">
-                                    <option value="" disabled ${!subName ? 'selected' : ''}>-- Select Trick --</option>
-                                    ${allTricks.map(t => {
-                                      const name = t.name || t.trickname;
-                                      return `<option value="${name}" ${name === subName ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
-                                    }).join('')}
-                                  </select>
-                                  ${comboTricks.length > 2 ? `<button type="button" onclick="removeSubTrickFromSessionCombo(${pIdx}, ${itIdx}, ${subIdx})" class="btn-icon-danger" style="font-size:0.75rem;">✕</button>` : ''}
-                                </div>
-                              `).join('')}
+                                `;
+                              }).join('')}
                               <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
                                 <button type="button" class="btn btn-secondary btn-sm" onclick="addSubTrickToSessionCombo(${pIdx}, ${itIdx})" style="font-size:0.65rem; padding:2px 8px;">+ Add Combo Trick</button>
                                 <button type="button" onclick="removeSessionPerfItem(${pIdx}, ${itIdx})" class="btn-icon-danger" style="font-size:0.75rem;">✕ Remove Combo</button>
@@ -778,11 +819,11 @@
 
 
 async function handleMultiSessionSubmit(e) {
-      e.preventDefault();
+      if (e) { e.preventDefault(); e.stopPropagation(); }
 
       if (!appState.currentUser || (!appState.currentUser.skaterName && !appState.currentUser.username)) {
         showToast('Error: No active skater profile found. Please sign in.', 'error');
-        return;
+        return false;
       }
 
       const activeSkater = appState.currentUser.skaterName || appState.currentUser.username;
@@ -794,22 +835,14 @@ async function handleMultiSessionSubmit(e) {
       const todayStr = new Date().toISOString().split('T')[0];
       if (date > todayStr) {
         showToast('You cannot log training for a future date.', 'warning');
-        return;
+        return false;
       }
 
       const notesEl = document.getElementById('logSessionGlobalNotes');
       const globalNotes = notesEl ? notesEl.value.trim() : '';
       const sessionId = 'SESS-' + Date.now();
 
-      const hasItems = appState.sessionItems && appState.sessionItems.length > 0 && appState.sessionItems.some(i => i.trickName || (i.slots && i.slots.some(s => s.selectedTrick)));
-      const hasPerf = appState.sessionPerformance && appState.sessionPerformance.items && appState.sessionPerformance.items.length > 0;
-
-      if (!hasItems && !hasPerf) {
-        showToast('Please add at least one trick drill, combo, or Performance before saving this session.', 'warning');
-        return;
-      }
-
-      // Filter down to valid individual trick/combo items (ignores default empty single-trick slot if only logging Performance)
+      // Detect valid individual drills or combos
       const validDrillItems = (appState.sessionItems || []).filter(item => {
         if (!item) return false;
         if (item.type === 'combo') {
@@ -817,6 +850,16 @@ async function handleMultiSessionSubmit(e) {
         }
         return Boolean(item.trickName && item.trickName.trim() !== '');
       });
+
+      // Detect valid Performance routines
+      const validPerfRuns = (appState.sessionPerformances || []).filter(p => p && p.items && p.items.length > 0);
+
+      const hasValidContent = validDrillItems.length > 0 || validPerfRuns.length > 0;
+
+      if (!hasValidContent) {
+        showToast('Please add at least one trick drill, combo, or Performance to save this session.', 'warning');
+        return false;
+      }
 
       const hasValidPerformance = appState.sessionPerformances && appState.sessionPerformances.length > 0 && appState.sessionPerformances.some(p => p && p.items && p.items.length > 0);
 
@@ -903,28 +946,29 @@ async function handleMultiSessionSubmit(e) {
         appState.sessionPerformances.forEach((perf, pIdx) => {
           if (!perf.items || perf.items.length === 0) return;
           const perfScore = PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore(perf);
-          const perfRecord = {
-            sessionId: sessionId,
-            date: date,
-            sessionType: 'Performance',
-            skaterName: activeSkater,
-            userId: activeSkater,
-            trickName: `Performance Run #${pIdx + 1} (2 min)`,
-            category: 'PERFORMANCE',
-            family: perfScore.isValid ? 'Valid' : 'Incomplete',
-            targetCones: perf.items.length,
-            completedCones: perfScore.completedCount,
-            missedCones: perf.items.length - perfScore.completedCount,
-            falls: 0,
-            successRate: perf.items.length > 0 ? parseFloat(((perfScore.completedCount / perf.items.length) * 100).toFixed(1)) : 0,
-            connectedCompletion: 'N/A',
-            performanceSnapshot: JSON.parse(JSON.stringify(perf)),
-            performanceScore: perfScore.totalScore,
-            smoothnessScore: perfScore.smoothness,
-            footworkScore: perfScore.footwork,
-            notes: perf.notes || globalNotes
-          };
-          formattedPayloadItems.push(perfRecord);
+        const totalTricksInRun = perfScore.totalIndividualTricks || perf.items.length;
+        const perfRecord = {
+          sessionId: sessionId,
+          date: date,
+          sessionType: 'Performance',
+          skaterName: activeSkater,
+          userId: activeSkater,
+          trickName: `Performance Run #${pIdx + 1} (2 min)`,
+          category: 'PERFORMANCE',
+          family: perfScore.isValid ? 'Valid' : 'Incomplete',
+          targetCones: totalTricksInRun,
+          completedCones: perfScore.completedCount,
+          missedCones: Math.max(0, totalTricksInRun - perfScore.completedCount),
+          falls: 0,
+          successRate: totalTricksInRun > 0 ? parseFloat(((perfScore.completedCount / totalTricksInRun) * 100).toFixed(1)) : 0,
+          connectedCompletion: 'N/A',
+          performanceSnapshot: JSON.parse(JSON.stringify(perf)),
+          performanceScore: perfScore.totalScore,
+          smoothnessScore: perfScore.smoothness,
+          footworkScore: perfScore.footwork,
+          notes: perf.notes || globalNotes
+        };
+        formattedPayloadItems.push(perfRecord);
         });
       }
 

@@ -196,7 +196,7 @@ function matchTrickKeywords(trickName, query) {
   return queryTokens.every(token => rawTarget.includes(token));
 }
 
-// Modular Performance Scoring Registry with Individual Trick Sub-Counting for Combos
+// Modular Performance Scoring Registry with Granular Per-Trick Sub-Checklist
 const PERFORMANCE_SCORING_CONFIG = {
   minCompletedTricksRequired: 9,
   basePointsByFamily: {
@@ -221,11 +221,17 @@ const PERFORMANCE_SCORING_CONFIG = {
         const comboTricksCount = Math.max(1, comboList.length);
         totalIndividualTricks += comboTricksCount;
 
-        if (it.completed) {
-          // A completed 3-trick combo counts as 3 completed individual tricks
-          completedCount += comboTricksCount;
-          basePoints += (it.basePoints !== undefined ? Number(it.basePoints) : (comboTricksCount * 3));
+        const subStatus = it.comboSubCompleted || {};
+        let comboCompletedTricks = 0;
+
+        for (let s = 0; s < comboTricksCount; s++) {
+          if (subStatus[s] === true) {
+            comboCompletedTricks++;
+          }
         }
+
+        completedCount += comboCompletedTricks;
+        basePoints += (comboCompletedTricks * 3);
       } else {
         totalIndividualTricks += 1;
         if (it.completed) {
