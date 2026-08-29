@@ -49,7 +49,7 @@ let calSelectedDate = null;
           appState.customTricks = Array.isArray(json.data.customTricks) ? json.data.customTricks : [];
 
           // 100% Cloud-Authoritative cross-device Master Performance sync
-          const userKey = (appState.currentUser.userId || activeSkater || activeUsername || '').toLowerCase();
+          const userKey = String(appState.currentUser.userId || activeSkater || activeUsername || '').toLowerCase();
           if (json.data.masterPerformance && typeof json.data.masterPerformance === 'object') {
             appState.masterPerformances[userKey] = json.data.masterPerformance;
           }
