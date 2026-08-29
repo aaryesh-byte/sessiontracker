@@ -103,23 +103,19 @@ async function handleAuthSubmit(e) {
           const authenticatedUser = json.user || {
             username: u,
             skaterName: skaterName || u,
-            userId: u
+            userId: (u || '').toLowerCase()
           };
 
           appState.currentUser = authenticatedUser;
-          appState.sessions = (json.data && Array.isArray(json.data.sessions)) ? json.data.sessions : [];
+          appState.sessions = (json.data && Array.isArray(json.data.sessions)) ? normalizeSessionRecords(json.data.sessions) : [];
           appState.customTricks = (json.data && Array.isArray(json.data.customTricks)) ? json.data.customTricks : [];
           
-          // Cloud database is the authoritative source of truth for Master Performance
-          const userKey = (authenticatedUser.skaterName || authenticatedUser.username || '').toLowerCase();
-          if (json.data && json.data.masterPerformance && typeof json.data.masterPerformance === 'object' && Object.keys(json.data.masterPerformance).length > 0) {
+          // Cloud database is 100% the SINGLE SOURCE OF TRUTH for Master Performance
+          const userKey = (authenticatedUser.userId || authenticatedUser.username || authenticatedUser.skaterName || '').toLowerCase();
+          if (json.data && json.data.masterPerformance && typeof json.data.masterPerformance === 'object') {
             appState.masterPerformances[userKey] = json.data.masterPerformance;
-            try { localStorage.setItem(`rollsync_master_perf_${userKey}`, JSON.stringify(json.data.masterPerformance)); } catch(e) {}
           } else {
-            try {
-              const localBackup = localStorage.getItem(`rollsync_master_perf_${userKey}`);
-              if (localBackup) appState.masterPerformances[userKey] = JSON.parse(localBackup);
-            } catch(e) {}
+            appState.masterPerformances[userKey] = { title: '2-Minute Performance Routine', items: [], smoothness: 0, footwork: 0 };
           }
 
           if (appState.authMode === 'register') {
@@ -129,7 +125,8 @@ async function handleAuthSubmit(e) {
           }
 
           onAuthSuccess();
-        } else {
+        }
+         else {
           const rawMsg = (json.message || '').toLowerCase();
 
           if (rawMsg.includes('password') || rawMsg.includes('invalid credential') || rawMsg.includes('wrong pass')) {
@@ -170,7 +167,77 @@ async function handleAuthSubmit(e) {
       const el = document.getElementById(id);
       if (el) el.textContent = text;
     }
+// Canonical data normalizer to eradicate 'undefined' and unparsed JSON across all devices
+    function normalizeSessionRecords(rawRecords) {
+      if (!Array.isArray(rawRecords)) return [];
+      return rawRecords.map(r => {
+        const sType = r.sessionType || r.sessiontype || 'Single';
+        const tName = r.trickName || r.trickname || r.trickcombo || (sType === 'Rest' ? 'Rest Day' : 'Training Drill');
+        
+        let pScore = Number(r.performanceScore || r.performancescore || 0);
+        let sScore = Number(r.smoothnessScore || r.smoothnessscore || 0);
+        let fScore = Number(r.footworkScore || r.footworkscore || 0);
+        let pSnapshot = r.performanceSnapshot || null;
 
+        // Parse performance data if stored in performancedata or stringified notes
+        const rawPerf = r.performanceData || r.performancedata || '';
+        if (rawPerf && typeof rawPerf === 'string' && rawPerf.startsWith('{')) {
+          try {
+            const pObj = JSON.parse(rawPerf);
+            pScore = pObj.performanceScore || pScore;
+            sScore = pObj.smoothnessScore || sScore;
+            fScore = pObj.footworkScore || fScore;
+            pSnapshot = pObj.snapshot || pSnapshot;
+          } catch(e) {}
+        }
+
+        // Clean user notes (strip raw JSON strings)
+        let cleanNotes = String(r.notes || '').trim();
+        if (cleanNotes.startsWith('{') && cleanNotes.endsWith('}')) {
+          try {
+            const parsed = JSON.parse(cleanNotes);
+            if (parsed.snapshot && !pSnapshot) {
+              pSnapshot = parsed.snapshot;
+              pScore = parsed.performanceScore || pScore;
+              sScore = parsed.smoothnessScore || sScore;
+              fScore = parsed.footworkScore || fScore;
+            }
+            cleanNotes = parsed.userNotes || parsed.notes || '';
+          } catch(e) {}
+        }
+
+        const targetCones = Number(r.targetCones || r.targetcones || 0);
+        const completedCones = Number(r.completedCones || r.completedcones || 0);
+        const targetAttempts = Number(r.targetAttempts || r.targetattempts || 10);
+        const completedAttempts = Number(r.completedAttempts || r.completedattempts || 0);
+
+        return {
+          sessionId: r.sessionId || r.sessionid || ('SESS-' + Date.now()),
+          userId: r.userId || r.userid || '',
+          skaterName: r.skaterName || r.skatername || '',
+          date: r.date ? String(r.date).split('T')[0] : '',
+          sessionType: sType,
+          trickName: tName,
+          category: r.category || (sType === 'Performance' ? 'PERFORMANCE' : 'OTHERS'),
+          family: r.family || (sType === 'Performance' ? 'Valid' : 'Custom'),
+          targetCones: targetCones,
+          completedCones: completedCones,
+          missedCones: Number(r.missedCones || r.missedcones || 0),
+          falls: Number(r.falls || 0),
+          successRate: Number(r.successRate || r.successrate || (targetCones > 0 ? parseFloat(((completedCones / targetCones) * 100).toFixed(1)) : 0)),
+          connectedCompletion: r.connectedCompletion || r.connectedcompletion || 'N/A',
+          targetAttempts: targetAttempts,
+          completedAttempts: completedAttempts,
+          performanceScore: pScore,
+          smoothnessScore: sScore,
+          footworkScore: fScore,
+          performanceSnapshot: pSnapshot,
+          notes: cleanNotes
+        };
+      });
+    }
+
+    window.normalizeSessionRecords = normalizeSessionRecords;
     window.addEventListener('DOMContentLoaded', () => {
       const savedTheme = localStorage.getItem('slalom_theme') || 'dark';
       applyTheme(savedTheme);

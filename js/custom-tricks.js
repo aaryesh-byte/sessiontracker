@@ -225,15 +225,9 @@
 
     function getMasterPerformance() {
       if (!appState.currentUser) {
-        return { title: 'Master Performance', items: [], smoothness: 0, footwork: 0 };
+        return { title: '2-Minute Performance Routine', items: [], smoothness: 0, footwork: 0 };
       }
-      const userKey = (appState.currentUser.skaterName || appState.currentUser.username || '').toLowerCase();
-      if (!appState.masterPerformances[userKey]) {
-        try {
-          const stored = localStorage.getItem(`rollsync_master_perf_${userKey}`);
-          if (stored) appState.masterPerformances[userKey] = JSON.parse(stored);
-        } catch(e) {}
-      }
+      const userKey = (appState.currentUser.userId || appState.currentUser.username || appState.currentUser.skaterName || '').toLowerCase();
       if (!appState.masterPerformances[userKey]) {
         appState.masterPerformances[userKey] = {
           title: '2-Minute Performance Routine',
@@ -247,12 +241,11 @@
 
     async function saveMasterPerformance(perfObj) {
       if (!appState.currentUser) return;
+      const userKey = (appState.currentUser.userId || appState.currentUser.username || appState.currentUser.skaterName || '').toLowerCase();
       const activeSkater = appState.currentUser.skaterName || appState.currentUser.username;
-      const userKey = activeSkater.toLowerCase();
       
       const cleanClone = JSON.parse(JSON.stringify(perfObj));
       appState.masterPerformances[userKey] = cleanClone;
-      try { localStorage.setItem(`rollsync_master_perf_${userKey}`, JSON.stringify(cleanClone)); } catch(e) {}
 
       if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== "YOUR_APPS_SCRIPT_WEB_APP_URL") {
         try {
@@ -262,17 +255,20 @@
             body: JSON.stringify({
               action: 'saveMasterPerformance',
               payload: {
+                userId: userKey,
                 skaterName: activeSkater,
-                userId: activeSkater,
                 masterPerformance: cleanClone
               }
             })
           });
           const json = await res.json();
           if (json.status === 'success') {
-            showToast('Master Performance synced to your account cloud!', 'success');
+            showToast('Master Performance saved to RollSync Cloud!', 'success');
           }
-        } catch(err) { console.error('Cloud Sync Error for Master Performance:', err); }
+        } catch(err) {
+          console.error('Cloud Sync Error for Master Performance:', err);
+          showToast('Failed to sync Master Performance to backend.', 'error');
+        }
       }
     }
 

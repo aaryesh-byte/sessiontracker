@@ -986,11 +986,12 @@ async function handleMultiSessionSubmit(e) {
         });
       }
 
-      formattedPayloadItems.forEach(rec => appState.sessions.unshift(rec));
+      const normalizedItems = normalizeSessionRecords(formattedPayloadItems);
+      normalizedItems.forEach(rec => appState.sessions.unshift(rec));
 
       if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== "YOUR_APPS_SCRIPT_WEB_APP_URL") {
         try {
-          fetch(APPS_SCRIPT_URL, {
+          const res = await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({
@@ -998,14 +999,21 @@ async function handleMultiSessionSubmit(e) {
               payload: {
                 sessionId: sessionId,
                 date: date,
-                skaterName: appState.currentUser.skaterName,
-                userId: appState.currentUser.skaterName,
+                skaterName: activeSkater,
+                userId: (appState.currentUser.userId || activeSkater).toLowerCase(),
                 sessionNotes: globalNotes,
                 items: formattedPayloadItems
               }
             })
           });
-        } catch(err) { console.error('API Error:', err); }
+          const resJson = await res.json();
+          if (resJson.status !== 'success') {
+            console.warn('Backend save notice:', resJson);
+          }
+        } catch(err) {
+          console.error('API Error saving session:', err);
+          showToast('Warning: Session saved locally but cloud sync failed.', 'warning');
+        }
       }
 
       showToast(`Training session saved with ${formattedPayloadItems.length} practice item(s)!`, 'success');

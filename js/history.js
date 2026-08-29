@@ -5,14 +5,11 @@
       const container = document.getElementById('historyList');
       if (!container || !appState.currentUser) return;
 
-      if (appState.sessions.length === 0) {
-        container.innerHTML = `
-          <div class="skeleton-card">
-            <div class="skeleton skeleton-title" style="width:45%;"></div>
-            <div class="skeleton skeleton-text"></div>
-            <div class="skeleton skeleton-text" style="width:70%;"></div>
-          </div>
-        `;
+      const userRecords = typeof getUserFilteredSessions === 'function' ? getUserFilteredSessions() : appState.sessions;
+
+      if (userRecords.length === 0) {
+        container.innerHTML = `<div class="glass-card empty-state"><div class="empty-icon">📜</div><div class="empty-text">No practice sessions logged yet.</div><button class="btn" style="max-width:200px; margin:0 auto;" onclick="switchTab('log')">Log Training Session</button></div>`;
+        return;
       }
 
       const typeEl = document.getElementById('histType');
@@ -24,12 +21,8 @@
       const dateEl = document.getElementById('histDate');
       const dateFilter = dateEl ? dateEl.value : '';
 
-      const filtered = appState.sessions.filter(s => {
-        const currentSkater = String(appState.currentUser.skaterName || appState.currentUser.username || '').toLowerCase();
-        const recordSkater = String(s.skaterName || s.skatername || s.userId || s.userid || '').toLowerCase();
-        if (currentSkater && recordSkater && currentSkater !== recordSkater) return false;
-
-        const sType = s.sessionType || s.sessiontype || 'Single';
+      const filtered = userRecords.filter(s => {
+        const sType = s.sessionType || 'Single';
         if (typeFilter !== 'ALL' && sType !== typeFilter) return false;
         if (dateFilter) {
           if (s.date !== dateFilter) return false;
