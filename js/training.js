@@ -809,17 +809,29 @@ async function handleMultiSessionSubmit(e) {
         return;
       }
 
-      // Validate every session item thoroughly to prevent blank/fake saves
-      for (let i = 0; i < appState.sessionItems.length; i++) {
-        const item = appState.sessionItems[i];
+      // Filter down to valid individual trick/combo items (ignores default empty single-trick slot if only logging Performance)
+      const validDrillItems = (appState.sessionItems || []).filter(item => {
+        if (!item) return false;
+        if (item.type === 'combo') {
+          return item.slots && item.slots.some(s => s && s.selectedTrick && s.selectedTrick.trim() !== '');
+        }
+        return Boolean(item.trickName && item.trickName.trim() !== '');
+      });
+
+      const hasValidPerformance = appState.sessionPerformances && appState.sessionPerformances.length > 0 && appState.sessionPerformances.some(p => p && p.items && p.items.length > 0);
+
+      // Must have at least one valid drill/combo OR at least one Performance
+      if (validDrillItems.length === 0 && !hasValidPerformance) {
+        showToast('Please add at least one trick drill, combo, or Performance to save this session.', 'warning');
+        return;
+      }
+
+      // Validate only explicitly configured drill/combo items
+      for (let i = 0; i < validDrillItems.length; i++) {
+        const item = validDrillItems[i];
         const isCombo = item.type === 'combo';
 
-        if (!isCombo) {
-          if (!item.trickName || item.trickName.trim() === '') {
-            showToast(`Please select a trick for Item #${i + 1}.`, 'warning');
-            return;
-          }
-        } else {
+        if (isCombo) {
           const validSlots = (item.slots || []).filter(s => s.selectedTrick && s.selectedTrick.trim() !== '');
           if (validSlots.length < 2) {
             showToast(`Please select at least 2 tricks for Combo #${i + 1}.`, 'warning');
@@ -841,8 +853,7 @@ async function handleMultiSessionSubmit(e) {
       const formattedPayloadItems = [];
 
       // Format individual trick and combo items
-      (appState.sessionItems || []).forEach(item => {
-        if (!item.trickName && (!item.slots || !item.slots.some(s => s.selectedTrick))) return;
+      validDrillItems.forEach(item => {
         const target = Number(item.target || 0);
         const completed = Number(item.completed || 0);
         const missed = item.missed !== '' && item.missed !== undefined ? Number(item.missed) : Math.max(0, target - completed);
