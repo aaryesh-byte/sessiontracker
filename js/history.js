@@ -50,9 +50,22 @@
 
         if (isPerformance) {
           const snapshot = s.performanceSnapshot || { items: [] };
-          const completedTricks = (snapshot.items || []).filter(it => it.completed).length;
-          const totalTricks = (snapshot.items || []).length;
-          const isValid = completedTricks >= 9;
+
+          let scoreData = { completedCount: 0, totalIndividualTricks: 0, isValid: false, totalScore: s.performanceScore || 0, smoothness: s.smoothnessScore || 0, footwork: s.footworkScore || 0 };
+          if (typeof PERFORMANCE_SCORING_CONFIG !== 'undefined' && PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore) {
+            scoreData = PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore(snapshot);
+          } else {
+            scoreData.completedCount = s.completedCones || 0;
+            scoreData.totalIndividualTricks = s.targetCones || (snapshot.items ? snapshot.items.length : 0);
+            scoreData.isValid = scoreData.completedCount >= 9;
+          }
+
+          const completedTricks = scoreData.completedCount;
+          const totalTricks = scoreData.totalIndividualTricks || (snapshot.items ? snapshot.items.length : 0);
+          const isValid = scoreData.isValid;
+          const totalPts = s.performanceScore || scoreData.totalScore || 0;
+          const smoothnessVal = s.smoothnessScore !== undefined && s.smoothnessScore !== null ? s.smoothnessScore : scoreData.smoothness;
+          const footworkVal = s.footworkScore !== undefined && s.footworkScore !== null ? s.footworkScore : scoreData.footwork;
 
           return `
             <div class="history-item" style="border-left:3px solid #fb7185;">
@@ -62,27 +75,59 @@
                   <div style="font-size:0.75rem; color:var(--on-surface-muted); margin-top:2px;">
                     ${s.date} • <span class="badge badge-perf">Performance</span> 
                     <span class="badge ${isValid ? 'badge-combo' : 'badge-danger'}">
-                      ${completedTricks}/${totalTricks} Completed ${isValid ? '✓' : '(Min 9 Req.)'}
+                      ${completedTricks}/${PERFORMANCE_SCORING_CONFIG.minCompletedTricksRequired || 9} Completed ${isValid ? '✓' : '(Min 9 Req.)'}
                     </span>
                   </div>
                 </div>
                 <div style="display:flex; align-items:center; gap:6px;">
                   <button type="button" class="btn btn-secondary btn-sm" onclick="generateDailySummaryFromHistory('${s.date}')" title="Generate coach summary for ${s.date}">📋 Summary</button>
-                  <span class="badge badge-combo">${s.performanceScore || 0} pts</span>
+                  <span class="badge badge-combo">${totalPts} pts</span>
                 </div>
               </div>
               <div class="history-stats">
-                <span>🎯 Base Completed: ${completedTricks}</span>
-                <span>✨ Smoothness: ${s.smoothnessScore || 0}</span>
-                <span>⚡ Footwork: ${s.footworkScore || 0}</span>
+                <span>🎯 Tricks Completed: ${completedTricks} / ${totalTricks}</span>
+                <span>✨ Smoothness: ${smoothnessVal}</span>
+                <span>⚡ Footwork: ${footworkVal}</span>
               </div>
               ${snapshot.items && snapshot.items.length > 0 ? `
-                <div class="history-perf-pills">
-                  ${snapshot.items.map(it => `
-                    <span class="history-perf-pill ${it.completed ? 'is-done' : 'is-missed'}">
-                      ${it.completed ? '✓' : '✗'} ${it.name || 'Trick'}
-                    </span>
-                  `).join('')}
+                <div class="history-perf-items-container" style="margin-top:10px;">
+                  ${snapshot.items.map((it, itemIdx) => {
+                    const isCombo = it.type === 'combo';
+                    if (isCombo) {
+                      const comboList = Array.isArray(it.comboTricks) ? it.comboTricks.filter(Boolean) : (it.name ? it.name.split(' → ').filter(Boolean) : []);
+                      const subStatus = it.comboSubCompleted || {};
+                      return `
+                        <div class="history-perf-combo-card" style="background:var(--bg-surface); border:1px solid var(--border-razor); border-radius:var(--radius-md); padding:8px 10px; margin-bottom:6px;">
+                          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <span style="font-family:var(--font-mono); font-size:0.75rem; font-weight:700; color:var(--on-surface);">
+                              #${itemIdx + 1} [Combo • ${comboList.length} Tricks] ${it.name || 'Combo Sequence'}
+                            </span>
+                            <span class="badge ${it.completed ? 'badge-combo' : 'badge-danger'}" style="font-size:0.6rem; padding:2px 6px;">
+                              ${it.completed ? 'COMBO COMPLETE' : 'PARTIAL / INCOMPLETE'}
+                            </span>
+                          </div>
+                          <div class="history-perf-pills">
+                            ${comboList.map((subName, sIdx) => {
+                              const isSubDone = subStatus[sIdx] === true || (subStatus[sIdx] === undefined && it.completed === true);
+                              return `
+                                <span class="history-perf-pill ${isSubDone ? 'is-done' : 'is-missed'}">
+                                  ${isSubDone ? '✓' : '✗'} ${subName}
+                                </span>
+                              `;
+                            }).join('')}
+                          </div>
+                        </div>
+                      `;
+                    } else {
+                      return `
+                        <div class="history-perf-pills" style="margin-bottom:4px;">
+                          <span class="history-perf-pill ${it.completed ? 'is-done' : 'is-missed'}">
+                            ${it.completed ? '✓' : '✗'} #${itemIdx + 1} ${it.name || 'Trick'}
+                          </span>
+                        </div>
+                      `;
+                    }
+                  }).join('')}
                 </div>
               ` : ''}
               ${s.notes ? `<div style="font-size:0.8125rem; color:var(--on-surface); margin-top:8px; font-style:italic; border-top:1px solid var(--border-razor); padding-top:6px;">"${s.notes}"</div>` : ''}

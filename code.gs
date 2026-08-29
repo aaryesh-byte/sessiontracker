@@ -428,15 +428,15 @@ function saveSessionRecord(p) {
     const completed = Number(item.completedCones) || 0;
     const missed = Number(item.missedCones) || 0;
     const successRate = target > 0 ? parseFloat(((completed / target) * 100).toFixed(1)) : 0;
-    const tAttempts = Number(item.targetAttempts) || 10;
-    const cAttempts = Number(item.completedAttempts) || 0;
+    const tAttempts = item.targetAttempts !== undefined && item.targetAttempts !== '' ? Number(item.targetAttempts) : 10;
+    const cAttempts = item.completedAttempts !== undefined && item.completedAttempts !== '' ? Number(item.completedAttempts) : 0;
 
     let perfDataString = '';
     if (item.sessionType === 'Performance' || item.performanceSnapshot) {
       perfDataString = JSON.stringify({
-        performanceScore: item.performanceScore || 0,
-        smoothnessScore: item.smoothnessScore || 0,
-        footworkScore: item.footworkScore || 0,
+        performanceScore: item.performanceScore !== undefined ? Number(item.performanceScore) : 0,
+        smoothnessScore: item.smoothnessScore !== undefined ? Number(item.smoothnessScore) : 0,
+        footworkScore: item.footworkScore !== undefined ? Number(item.footworkScore) : 0,
         snapshot: item.performanceSnapshot || { items: [] }
       });
     }

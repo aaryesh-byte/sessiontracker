@@ -827,6 +827,7 @@ async function handleMultiSessionSubmit(e) {
       }
 
       const activeSkater = appState.currentUser.skaterName || appState.currentUser.username;
+      const activeUserId = String(appState.currentUser.userId || activeSkater).toLowerCase();
 
       const dateEl = document.getElementById('logDate');
       const date = dateEl ? dateEl.value : new Date().toISOString().split('T')[0];
@@ -938,7 +939,7 @@ async function handleMultiSessionSubmit(e) {
           date: date,
           sessionType: isCombo ? 'Combo' : 'Single',
           skaterName: activeSkater,
-          userId: activeSkater,
+          userId: activeUserId,
           trickName: comboName || (isCombo ? 'Combo Sequence' : item.trickName),
           category: comboCat,
           family: comboFam,
@@ -966,7 +967,7 @@ async function handleMultiSessionSubmit(e) {
           date: date,
           sessionType: 'Performance',
           skaterName: activeSkater,
-          userId: activeSkater,
+          userId: activeUserId,
           trickName: `Performance Run #${pIdx + 1} (2 min)`,
           category: 'PERFORMANCE',
           family: perfScore.isValid ? 'Valid' : 'Incomplete',
@@ -1000,7 +1001,8 @@ async function handleMultiSessionSubmit(e) {
                 sessionId: sessionId,
                 date: date,
                 skaterName: activeSkater,
-                userId: String(appState.currentUser.userId || activeSkater).toLowerCase(),
+                userId: activeUserId,
+                username: appState.currentUser.username,
                 sessionNotes: globalNotes,
                 items: formattedPayloadItems
               }
