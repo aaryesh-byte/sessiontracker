@@ -214,10 +214,13 @@ async function handleAuthSubmit(e) {
         const targetAttempts = Number(r.targetAttempts || r.targetattempts || 10);
         const completedAttempts = Number(r.completedAttempts || r.completedattempts || 0);
 
+        const resUserId = String(r.userId || r.userid || r.skaterName || r.skatername || '');
+        const resSkaterName = String(r.skaterName || r.skatername || r.userId || r.userid || '');
+
         return {
           sessionId: r.sessionId || r.sessionid || ('SESS-' + Date.now()),
-          userId: r.userId || r.userid || '',
-          skaterName: r.skaterName || r.skatername || '',
+          userId: resUserId,
+          skaterName: resSkaterName,
           date: r.date ? String(r.date).split('T')[0] : '',
           sessionType: sType,
           trickName: tName,
@@ -272,10 +275,8 @@ async function handleAuthSubmit(e) {
         document.body.appendChild(modal);
       }
 
+      const userRecords = typeof getUserFilteredSessions === 'function' ? getUserFilteredSessions() : appState.sessions;
       const skaterName = appState.currentUser.skaterName || appState.currentUser.username || 'Skater';
-      const userRecords = appState.sessions.filter(s =>
-        String(s.skaterName || s.skatername || s.userid || '').toLowerCase() === String(skaterName).toLowerCase()
-      );
 
       const trainingRecords = userRecords.filter(s => (s.sessionType || s.sessiontype) !== 'Rest' && (s.trickName || s.trickname) !== 'Rest Day');
       const restSessions = userRecords.filter(s => (s.sessionType || s.sessiontype) === 'Rest' || (s.trickName || s.trickname) === 'Rest Day');
@@ -585,10 +586,8 @@ async function handleAuthSubmit(e) {
         document.body.appendChild(modal);
       }
 
+      const userSessions = typeof getUserFilteredSessions === 'function' ? getUserFilteredSessions() : appState.sessions;
       const skaterName = appState.currentUser.skaterName || appState.currentUser.username || 'Skater';
-      const userSessions = appState.sessions.filter(s =>
-        String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(skaterName).toLowerCase()
-      );
 
       const trainingDays = new Set(userSessions.filter(s => (s.sessionType || s.sessiontype) !== 'Rest' && (s.trickName || s.trickname) !== 'Rest Day').map(s => s.date).filter(Boolean)).size;
       const uniqueDays = new Set(userSessions.map(s => s.date).filter(Boolean)).size;
@@ -944,8 +943,15 @@ async function switchTab(tabId, el) {
 
     function getAllTricks() {
       if (!appState.currentUser) return PREDEFINED_TRICKS;
-      const userCustom = appState.customTricks.filter(t => 
-        String(t.skaterName || t.skatername).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
-      );
+      const uId = String(appState.currentUser.userId || '').toLowerCase();
+      const sName = String(appState.currentUser.skaterName || '').toLowerCase();
+      const uName = String(appState.currentUser.username || '').toLowerCase();
+
+      const userCustom = appState.customTricks.filter(t => {
+        const recUser = String(t.userId || t.userid || '').toLowerCase();
+        const recSkater = String(t.skaterName || t.skatername || '').toLowerCase();
+        return (recUser && (recUser === uId || recUser === sName || recUser === uName)) ||
+               (recSkater && (recSkater === uId || recSkater === sName || recSkater === uName));
+      });
       return [...PREDEFINED_TRICKS, ...userCustom];
     }

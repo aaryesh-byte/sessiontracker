@@ -709,9 +709,16 @@
         return;
       }
 
-      const userCustom = appState.customTricks.filter(t => 
-        String(t.skaterName || t.skatername).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
-      );
+      const uId = String(appState.currentUser.userId || '').toLowerCase();
+      const sName = String(appState.currentUser.skaterName || '').toLowerCase();
+      const uName = String(appState.currentUser.username || '').toLowerCase();
+
+      const userCustom = appState.customTricks.filter(t => {
+        const recUser = String(t.userId || t.userid || '').toLowerCase();
+        const recSkater = String(t.skaterName || t.skatername || '').toLowerCase();
+        return (recUser && (recUser === uId || recUser === sName || recUser === uName)) ||
+               (recSkater && (recSkater === uId || recSkater === sName || recSkater === uName));
+      });
 
       renderMasterPerformancePanel();
 

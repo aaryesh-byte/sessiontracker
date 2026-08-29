@@ -244,8 +244,8 @@ function getSkaterSessions(userId, skaterName) {
     // Canonical property mapping to prevent undefined in frontend
     return {
       sessionId: s.sessionid || ('SESS-' + Date.now()),
-      userId: s.userid || userId,
-      skaterName: s.skatername || skaterName || s.userid,
+      userId: s.userid || userId || s.skatername || skaterName,
+      skaterName: s.skatername || skaterName || s.userid || userId,
       date: s.date ? String(s.date).split('T')[0] : '',
       sessionType: s.sessiontype || 'Single',
       trickName: s.trickname || s.trickcombo || 'Training Drill',
@@ -286,8 +286,8 @@ function getSkaterTricks(userId, skaterName) {
     category: t.category || 'OTHERS',
     family: t.family || 'Custom',
     type: 'Custom',
-    userId: t.userid || userId,
-    skaterName: t.skatername || skaterName || t.userid
+    userId: t.userid || userId || t.skatername || skaterName,
+    skaterName: t.skatername || skaterName || t.userid || userId
   }));
 }
 

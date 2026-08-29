@@ -90,9 +90,7 @@ let calSelectedDate = null;
       const searchInput = document.getElementById('progTrickSearch');
       const searchVal = searchInput ? searchInput.value : '';
 
-      const skaterSessions = appState.sessions.filter(s => 
-        String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
-      );
+      const skaterSessions = getUserFilteredSessions();
       const uniqueTricks = [...new Map(skaterSessions.map(item => [item.trickName || item.trickname, item])).values()];
 
       select.innerHTML = '<option value="ALL">All Practice Items & Combos</option>';
@@ -144,9 +142,9 @@ let calSelectedDate = null;
 
       const now = new Date();
 
-      const filtered = appState.sessions.filter(s => {
-        const skaterMatch = String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase();
-        if (!skaterMatch) return false;
+      const userSessions = getUserFilteredSessions();
+
+      const filtered = userSessions.filter(s => {
 
         const sessionDate = new Date(s.date);
         if (timeRange === 'TODAY') {
@@ -211,8 +209,10 @@ let calSelectedDate = null;
       const uName = String(appState.currentUser.username || '').toLowerCase();
 
       return appState.sessions.filter(s => {
-        const recUser = String(s.userId || s.userid || s.skaterName || s.skatername || '').toLowerCase();
-        return recUser === uId || recUser === sName || recUser === uName;
+        const recUser = String(s.userId || s.userid || '').toLowerCase();
+        const recSkater = String(s.skaterName || s.skatername || '').toLowerCase();
+        return (recUser && (recUser === uId || recUser === sName || recUser === uName)) ||
+               (recSkater && (recSkater === uId || recSkater === sName || recSkater === uName));
       });
     }
 
@@ -330,10 +330,7 @@ let calSelectedDate = null;
       const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
       title.textContent = `${monthNames[calCurrentMonth]} ${calCurrentYear}`;
 
-      const activeSkater = String(appState.currentUser.skaterName || appState.currentUser.username || '').toLowerCase();
-      const userSessions = appState.sessions.filter(s =>
-        String(s.skaterName || s.skatername || s.userid || '').toLowerCase() === activeSkater
-      );
+      const userSessions = getUserFilteredSessions();
 
       const sessionDateMap = {};
       userSessions.forEach(s => {
@@ -397,10 +394,7 @@ let calSelectedDate = null;
       const summary = document.getElementById('calendarDaySummary');
       if (!summary || !appState.currentUser) return;
 
-      const daySessions = appState.sessions.filter(s =>
-        String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase() &&
-        s.date === dateKey
-      );
+      const daySessions = getUserFilteredSessions().filter(s => s.date === dateKey);
 
       if (daySessions.length === 0) {
         summary.style.display = 'block';
@@ -464,9 +458,7 @@ let calSelectedDate = null;
       const combosContainer = document.getElementById('pbCombosList');
       if (!tricksContainer || !combosContainer || !appState.currentUser) return;
 
-      const userSessions = appState.sessions.filter(s =>
-        String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
-      );
+      const userSessions = getUserFilteredSessions();
 
       const trickBests = {};
       const comboBests = {};
