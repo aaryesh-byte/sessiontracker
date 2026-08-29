@@ -7,14 +7,16 @@ function doGet(e) {
   const action = e.parameter.action || 'getData';
   
   if (action === 'getData') {
-    const skaterName = e.parameter.skaterName || e.parameter.userId;
-    if (skaterName) {
+    const userId = e.parameter.userId || e.parameter.username;
+    const skaterName = e.parameter.skaterName;
+    const identifier = skaterName || userId;
+    if (identifier) {
       return createJsonResponse({
         status: 'success',
         data: {
-          sessions: getSkaterSessions(skaterName),
-          customTricks: getSkaterTricks(skaterName),
-          masterPerformance: getSkaterMasterPerformance(skaterName)
+          sessions: getSkaterSessions(userId, skaterName),
+          customTricks: getSkaterTricks(userId, skaterName),
+          masterPerformance: getSkaterMasterPerformance(userId, skaterName)
         }
       });
     }
@@ -46,13 +48,14 @@ function doPost(e) {
     }
 
     if (action === 'syncUserData') {
-      const skaterName = contents.payload.skaterName || contents.payload.userId;
+      const userId = contents.payload.userId || contents.payload.username;
+      const skaterName = contents.payload.skaterName;
       return createJsonResponse({
         status: 'success',
         data: {
-          sessions: getSkaterSessions(skaterName),
-          customTricks: getSkaterTricks(skaterName),
-          masterPerformance: getSkaterMasterPerformance(skaterName)
+          sessions: getSkaterSessions(userId, skaterName),
+          customTricks: getSkaterTricks(userId, skaterName),
+          masterPerformance: getSkaterMasterPerformance(userId, skaterName)
         }
       });
     }
@@ -228,25 +231,64 @@ function registerUser(payload) {
 }
 
 // STRICT CANONICAL USER ISOLATION
+function getMatchUserKeys(userId, skaterName) {
+  const keys = new Set();
+  if (userId) keys.add(normalizeUserKey(userId));
+  if (skaterName) keys.add(normalizeUserKey(skaterName));
+
+  const ss = getSpreadsheet();
+  const userSheet = ss.getSheetByName('Users');
+  if (userSheet) {
+    const users = sheetToObjects(userSheet);
+    const matchedUser = users.find(u => {
+      const uId = normalizeUserKey(u.userid);
+      const uName = normalizeUserKey(u.username);
+      const sName = normalizeUserKey(u.skatername);
+      return (userId && (uId === normalizeUserKey(userId) || uName === normalizeUserKey(userId) || sName === normalizeUserKey(userId))) ||
+             (skaterName && (uId === normalizeUserKey(skaterName) || uName === normalizeUserKey(skaterName) || sName === normalizeUserKey(skaterName)));
+    });
+
+    if (matchedUser) {
+      if (matchedUser.userid) keys.add(normalizeUserKey(matchedUser.userid));
+      if (matchedUser.username) keys.add(normalizeUserKey(matchedUser.username));
+      if (matchedUser.skatername) keys.add(normalizeUserKey(matchedUser.skatername));
+    }
+  }
+
+  return Array.from(keys);
+}
+
+function formatDateIso(dateVal) {
+  if (!dateVal) return '';
+  if (dateVal instanceof Date) {
+    const yyyy = dateVal.getFullYear();
+    const mm = String(dateVal.getMonth() + 1).padStart(2, '0');
+    const dd = String(dateVal.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  const str = String(dateVal).trim();
+  if (str.includes('T')) return str.split('T')[0];
+  return str;
+}
+
 function getSkaterSessions(userId, skaterName) {
   const ss = getSpreadsheet();
   const sheet = ss.getSheetByName('Training Sessions');
   if (!sheet) return [];
   const allSessions = sheetToObjects(sheet);
 
-  const k1 = normalizeUserKey(userId);
-  const k2 = normalizeUserKey(skaterName);
+  const matchKeys = getMatchUserKeys(userId, skaterName);
 
   return allSessions.filter(s => {
     const sUser = normalizeUserKey(s.userid || s.skatername);
-    return sUser === k1 || (k2 && sUser === k2);
+    return matchKeys.includes(sUser);
   }).map(s => {
     // Canonical property mapping to prevent undefined in frontend
     return {
       sessionId: s.sessionid || ('SESS-' + Date.now()),
       userId: s.userid || userId,
       skaterName: s.skatername || skaterName || s.userid,
-      date: s.date ? String(s.date).split('T')[0] : '',
+      date: formatDateIso(s.date),
       sessionType: s.sessiontype || 'Single',
       trickName: s.trickname || s.trickcombo || 'Training Drill',
       category: s.category || 'OTHERS',
@@ -272,12 +314,11 @@ function getSkaterTricks(userId, skaterName) {
   if (!sheet) return [];
   const allTricks = sheetToObjects(sheet);
 
-  const k1 = normalizeUserKey(userId);
-  const k2 = normalizeUserKey(skaterName);
+  const matchKeys = getMatchUserKeys(userId, skaterName);
 
   return allTricks.filter(t => {
     const tUser = normalizeUserKey(t.userid || t.skatername);
-    return (tUser === k1 || (k2 && tUser === k2)) && (t.type === 'Custom');
+    return matchKeys.includes(tUser) && (t.type === 'Custom');
   }).map(t => ({
     id: t.trickid || t.id || ('CUST-' + Date.now()),
     trickId: t.trickid || t.id,
@@ -298,12 +339,11 @@ function getSkaterMasterPerformance(userId, skaterName) {
   if (!perfSheet) return { title: '2-Minute Performance Routine', items: [], smoothness: 0, footwork: 0 };
 
   const allPerfs = sheetToObjects(perfSheet);
-  const k1 = normalizeUserKey(userId);
-  const k2 = normalizeUserKey(skaterName);
+  const matchKeys = getMatchUserKeys(userId, skaterName);
 
   const record = allPerfs.find(p => {
     const pUser = normalizeUserKey(p.userid || p.skatername);
-    return pUser === k1 || (k2 && pUser === k2);
+    return matchKeys.includes(pUser);
   });
 
   if (!record || !record.configjson) {

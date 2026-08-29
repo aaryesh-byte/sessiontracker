@@ -90,9 +90,7 @@ let calSelectedDate = null;
       const searchInput = document.getElementById('progTrickSearch');
       const searchVal = searchInput ? searchInput.value : '';
 
-      const skaterSessions = appState.sessions.filter(s => 
-        String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
-      );
+      const skaterSessions = getUserFilteredSessions();
       const uniqueTricks = [...new Map(skaterSessions.map(item => [item.trickName || item.trickname, item])).values()];
 
       select.innerHTML = '<option value="ALL">All Practice Items & Combos</option>';
@@ -144,10 +142,9 @@ let calSelectedDate = null;
 
       const now = new Date();
 
-      const filtered = appState.sessions.filter(s => {
-        const skaterMatch = String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase();
-        if (!skaterMatch) return false;
-
+      const userSessions = getUserFilteredSessions();
+      const filtered = userSessions.filter(s => {
+        if (!s.date) return false;
         const sessionDate = new Date(s.date);
         if (timeRange === 'TODAY') {
           const todayStr = new Date().toISOString().split('T')[0];
@@ -206,13 +203,14 @@ let calSelectedDate = null;
 
     function getUserFilteredSessions() {
       if (!appState.currentUser || !appState.sessions) return [];
-      const uId = String(appState.currentUser.userId || '').toLowerCase();
-      const sName = String(appState.currentUser.skaterName || '').toLowerCase();
-      const uName = String(appState.currentUser.username || '').toLowerCase();
+      const keys = new Set();
+      if (appState.currentUser.userId) keys.add(String(appState.currentUser.userId).trim().toLowerCase());
+      if (appState.currentUser.skaterName) keys.add(String(appState.currentUser.skaterName).trim().toLowerCase());
+      if (appState.currentUser.username) keys.add(String(appState.currentUser.username).trim().toLowerCase());
 
       return appState.sessions.filter(s => {
-        const recUser = String(s.userId || s.userid || s.skaterName || s.skatername || '').toLowerCase();
-        return recUser === uId || recUser === sName || recUser === uName;
+        const recUser = String(s.userId || s.userid || s.skaterName || s.skatername || '').trim().toLowerCase();
+        return keys.has(recUser);
       });
     }
 
@@ -330,10 +328,7 @@ let calSelectedDate = null;
       const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
       title.textContent = `${monthNames[calCurrentMonth]} ${calCurrentYear}`;
 
-      const activeSkater = String(appState.currentUser.skaterName || appState.currentUser.username || '').toLowerCase();
-      const userSessions = appState.sessions.filter(s =>
-        String(s.skaterName || s.skatername || s.userid || '').toLowerCase() === activeSkater
-      );
+      const userSessions = getUserFilteredSessions();
 
       const sessionDateMap = {};
       userSessions.forEach(s => {
@@ -397,10 +392,7 @@ let calSelectedDate = null;
       const summary = document.getElementById('calendarDaySummary');
       if (!summary || !appState.currentUser) return;
 
-      const daySessions = appState.sessions.filter(s =>
-        String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase() &&
-        s.date === dateKey
-      );
+      const daySessions = getUserFilteredSessions().filter(s => s.date === dateKey);
 
       if (daySessions.length === 0) {
         summary.style.display = 'block';
@@ -464,9 +456,7 @@ let calSelectedDate = null;
       const combosContainer = document.getElementById('pbCombosList');
       if (!tricksContainer || !combosContainer || !appState.currentUser) return;
 
-      const userSessions = appState.sessions.filter(s =>
-        String(s.skaterName || s.skatername || s.userid).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
-      );
+      const userSessions = getUserFilteredSessions();
 
       const trickBests = {};
       const comboBests = {};
@@ -531,14 +521,25 @@ let calSelectedDate = null;
       destroyChartInstance('successRate');
 
       const grouped = {};
-      sessions.slice().reverse().forEach(s => {
+      sessions.forEach(s => {
+        if (!s.date) return;
+        const sType = s.sessionType || s.sessiontype;
+        if (sType === 'Rest' || (s.trickName || s.trickname) === 'Rest Day') return;
+
+        const target = Number(s.targetCones || s.targetcones || 0);
+        const completed = Number(s.completedCones || s.completedcones || 0);
+        if (target <= 0) return;
+
         if (!grouped[s.date]) grouped[s.date] = { target: 0, completed: 0 };
-        grouped[s.date].target += Number(s.targetCones || s.targetcones);
-        grouped[s.date].completed += Number(s.completedCones || s.completedcones);
+        grouped[s.date].target += target;
+        grouped[s.date].completed += completed;
       });
 
-      const labels = Object.keys(grouped);
-      const data = labels.map(d => ((grouped[d].completed / grouped[d].target) * 100).toFixed(1));
+      const labels = Object.keys(grouped).sort();
+      const data = labels.map(d => {
+        const item = grouped[d];
+        return item.target > 0 ? ((item.completed / item.target) * 100).toFixed(1) : 0;
+      });
 
       appState.charts.successRate = new Chart(ctx, {
         type: 'line',
@@ -567,13 +568,20 @@ let calSelectedDate = null;
       destroyChartInstance('cones');
 
       const grouped = {};
-      sessions.slice().reverse().forEach(s => {
+      sessions.forEach(s => {
+        if (!s.date) return;
+        const sType = s.sessionType || s.sessiontype;
+        if (sType === 'Rest' || (s.trickName || s.trickname) === 'Rest Day') return;
+
+        const target = Number(s.targetCones || s.targetcones || 0);
+        const completed = Number(s.completedCones || s.completedcones || 0);
+
         if (!grouped[s.date]) grouped[s.date] = { target: 0, completed: 0 };
-        grouped[s.date].target += Number(s.targetCones || s.targetcones);
-        grouped[s.date].completed += Number(s.completedCones || s.completedcones);
+        grouped[s.date].target += target;
+        grouped[s.date].completed += completed;
       });
 
-      const labels = Object.keys(grouped);
+      const labels = Object.keys(grouped).sort();
 
       appState.charts.cones = new Chart(ctx, {
         type: 'line',
@@ -596,14 +604,26 @@ let calSelectedDate = null;
 
       const trickStats = {};
       sessions.forEach(s => {
+        const sType = s.sessionType || s.sessiontype;
+        if (sType === 'Rest' || (s.trickName || s.trickname) === 'Rest Day') return;
+
         const name = s.trickName || s.trickname;
+        if (!name) return;
+
+        const target = Number(s.targetCones || s.targetcones || 0);
+        const completed = Number(s.completedCones || s.completedcones || 0);
+        if (target <= 0) return;
+
         if (!trickStats[name]) trickStats[name] = { target: 0, completed: 0 };
-        trickStats[name].target += Number(s.targetCones || s.targetcones);
-        trickStats[name].completed += Number(s.completedCones || s.completedcones);
+        trickStats[name].target += target;
+        trickStats[name].completed += completed;
       });
 
       const labels = Object.keys(trickStats);
-      const data = labels.map(l => ((trickStats[l].completed / trickStats[l].target) * 100).toFixed(1));
+      const data = labels.map(l => {
+        const item = trickStats[l];
+        return item.target > 0 ? ((item.completed / item.target) * 100).toFixed(1) : 0;
+      });
 
       appState.charts.tricks = new Chart(ctx, {
         type: 'line',
@@ -631,12 +651,13 @@ let calSelectedDate = null;
       destroyChartInstance('falls');
 
       const grouped = {};
-      sessions.slice().reverse().forEach(s => {
+      sessions.forEach(s => {
+        if (!s.date) return;
         if (!grouped[s.date]) grouped[s.date] = 0;
-        grouped[s.date] += Number(s.falls);
+        grouped[s.date] += Number(s.falls || 0);
       });
 
-      const labels = Object.keys(grouped);
+      const labels = Object.keys(grouped).sort();
 
       appState.charts.falls = new Chart(ctx, {
         type: 'line',

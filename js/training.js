@@ -1420,13 +1420,12 @@ async function handleMultiSessionSubmit(e) {
     // Extract unique saved combos exclusively for the active logged-in user
     function getUserPastCombos() {
       if (!appState.currentUser || !appState.sessions) return [];
-      const activeSkater = String(appState.currentUser.skaterName || appState.currentUser.username || '').toLowerCase();
+      const userSessions = typeof getUserFilteredSessions === 'function' ? getUserFilteredSessions() : appState.sessions;
       
-      const userComboSessions = appState.sessions.filter(s => {
-        const skaterMatch = String(s.skaterName || s.skatername || s.userid || '').toLowerCase() === activeSkater;
+      const userComboSessions = userSessions.filter(s => {
         const isCombo = (s.sessionType || s.sessiontype) === 'Combo';
         const name = s.trickName || s.trickname || '';
-        return skaterMatch && isCombo && name && name.includes(' → ');
+        return isCombo && name && name.includes(' → ');
       });
 
       const uniqueNames = [...new Set(userComboSessions.map(s => s.trickName || s.trickname))];

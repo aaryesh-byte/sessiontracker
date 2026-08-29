@@ -151,12 +151,9 @@
     }
     function generateDailySummaryFromHistory(dateKey) {
       if (!appState.currentUser || !appState.sessions) return;
-      const activeSkater = String(appState.currentUser.skaterName || appState.currentUser.username || '').toLowerCase();
+      const userRecords = typeof getUserFilteredSessions === 'function' ? getUserFilteredSessions() : appState.sessions;
       
-      const daySessions = appState.sessions.filter(s =>
-        String(s.skaterName || s.skatername || s.userid || '').toLowerCase() === activeSkater &&
-        s.date === dateKey
-      );
+      const daySessions = userRecords.filter(s => s.date === dateKey);
 
       if (daySessions.length === 0) {
         showToast(`No training sessions found for ${dateKey}`, 'warning');
@@ -192,11 +189,10 @@
       const targetDate = (picker && picker.value) ? picker.value : new Date().toISOString().split('T')[0];
 
       const weekRange = getWeekRange(targetDate);
-      const activeSkater = String(appState.currentUser.skaterName || appState.currentUser.username || '').toLowerCase();
+      const userRecords = typeof getUserFilteredSessions === 'function' ? getUserFilteredSessions() : appState.sessions;
 
-      const weekSessions = appState.sessions.filter(s => {
-        const sMatch = String(s.skaterName || s.skatername || s.userid || '').toLowerCase() === activeSkater;
-        return sMatch && s.date >= weekRange.monday && s.date <= weekRange.sunday;
+      const weekSessions = userRecords.filter(s => {
+        return s.date && s.date >= weekRange.monday && s.date <= weekRange.sunday;
       });
 
       if (weekSessions.length === 0) {
