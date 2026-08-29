@@ -103,15 +103,18 @@ async function handleAuthSubmit(e) {
           const authenticatedUser = json.user || {
             username: u,
             skaterName: skaterName || u,
-            userId: (u || '').toLowerCase()
+            userId: String(u || '').toLowerCase()
           };
+          if (authenticatedUser && authenticatedUser.userId !== undefined && authenticatedUser.userId !== null) {
+            authenticatedUser.userId = String(authenticatedUser.userId);
+          }
 
           appState.currentUser = authenticatedUser;
           appState.sessions = (json.data && Array.isArray(json.data.sessions)) ? normalizeSessionRecords(json.data.sessions) : [];
           appState.customTricks = (json.data && Array.isArray(json.data.customTricks)) ? json.data.customTricks : [];
           
           // Cloud database is 100% the SINGLE SOURCE OF TRUTH for Master Performance
-          const userKey = (authenticatedUser.userId || authenticatedUser.username || authenticatedUser.skaterName || '').toLowerCase();
+          const userKey = String(authenticatedUser.userId || authenticatedUser.username || authenticatedUser.skaterName || '').toLowerCase();
           if (json.data && json.data.masterPerformance && typeof json.data.masterPerformance === 'object') {
             appState.masterPerformances[userKey] = json.data.masterPerformance;
           } else {

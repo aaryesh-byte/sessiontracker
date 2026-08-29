@@ -227,7 +227,7 @@
       if (!appState.currentUser) {
         return { title: '2-Minute Performance Routine', items: [], smoothness: 0, footwork: 0 };
       }
-      const userKey = (appState.currentUser.userId || appState.currentUser.username || appState.currentUser.skaterName || '').toLowerCase();
+      const userKey = String(appState.currentUser.userId || appState.currentUser.username || appState.currentUser.skaterName || '').toLowerCase();
       if (!appState.masterPerformances[userKey]) {
         appState.masterPerformances[userKey] = {
           title: '2-Minute Performance Routine',
@@ -241,7 +241,7 @@
 
     async function saveMasterPerformance(perfObj) {
       if (!appState.currentUser) return;
-      const userKey = (appState.currentUser.userId || appState.currentUser.username || appState.currentUser.skaterName || '').toLowerCase();
+      const userKey = String(appState.currentUser.userId || appState.currentUser.username || appState.currentUser.skaterName || '').toLowerCase();
       const activeSkater = appState.currentUser.skaterName || appState.currentUser.username;
       
       const cleanClone = JSON.parse(JSON.stringify(perfObj));
@@ -695,7 +695,6 @@
     window.addMasterPerfTrick = addMasterPerfTrick;
     window.removeMasterPerfItem = removeMasterPerfItem;
     window.moveMasterPerfItem = moveMasterPerfItem;
-    window.onMasterPerfItemChange = onMasterPerfItemChange;
     window.renderMasterPerformancePanel = renderMasterPerformancePanel;
 
     function renderCustomTricksList() {

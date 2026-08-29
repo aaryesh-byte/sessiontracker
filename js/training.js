@@ -1000,7 +1000,7 @@ async function handleMultiSessionSubmit(e) {
                 sessionId: sessionId,
                 date: date,
                 skaterName: activeSkater,
-                userId: (appState.currentUser.userId || activeSkater).toLowerCase(),
+                userId: String(appState.currentUser.userId || activeSkater).toLowerCase(),
                 sessionNotes: globalNotes,
                 items: formattedPayloadItems
               }
