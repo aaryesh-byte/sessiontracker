@@ -177,21 +177,26 @@ async function handleAuthSubmit(e) {
         const sType = r.sessionType || r.sessiontype || 'Single';
         const tName = r.trickName || r.trickname || r.trickcombo || (sType === 'Rest' ? 'Rest Day' : 'Training Drill');
         
-        let pScore = Number(r.performanceScore || r.performancescore || 0);
-        let sScore = Number(r.smoothnessScore || r.smoothnessscore || 0);
-        let fScore = Number(r.footworkScore || r.footworkscore || 0);
+        let pScore = r.performanceScore !== undefined ? Number(r.performanceScore) : (r.performancescore !== undefined ? Number(r.performancescore) : 0);
+        let sScore = r.smoothnessScore !== undefined ? Number(r.smoothnessScore) : (r.smoothnessscore !== undefined ? Number(r.smoothnessscore) : 0);
+        let fScore = r.footworkScore !== undefined ? Number(r.footworkScore) : (r.footworkscore !== undefined ? Number(r.footworkscore) : 0);
         let pSnapshot = r.performanceSnapshot || null;
 
         // Parse performance data if stored in performancedata or stringified notes
         const rawPerf = r.performanceData || r.performancedata || '';
-        if (rawPerf && typeof rawPerf === 'string' && rawPerf.startsWith('{')) {
-          try {
-            const pObj = JSON.parse(rawPerf);
-            pScore = pObj.performanceScore || pScore;
-            sScore = pObj.smoothnessScore || sScore;
-            fScore = pObj.footworkScore || fScore;
-            pSnapshot = pObj.snapshot || pSnapshot;
-          } catch(e) {}
+        if (rawPerf) {
+          let pObj = null;
+          if (typeof rawPerf === 'string' && rawPerf.trim().startsWith('{')) {
+            try { pObj = JSON.parse(rawPerf); } catch(e) {}
+          } else if (typeof rawPerf === 'object') {
+            pObj = rawPerf;
+          }
+          if (pObj) {
+            if (pObj.performanceScore !== undefined) pScore = Number(pObj.performanceScore);
+            if (pObj.smoothnessScore !== undefined) sScore = Number(pObj.smoothnessScore);
+            if (pObj.footworkScore !== undefined) fScore = Number(pObj.footworkScore);
+            if (pObj.snapshot) pSnapshot = pObj.snapshot;
+          }
         }
 
         // Clean user notes (strip raw JSON strings)
@@ -201,18 +206,38 @@ async function handleAuthSubmit(e) {
             const parsed = JSON.parse(cleanNotes);
             if (parsed.snapshot && !pSnapshot) {
               pSnapshot = parsed.snapshot;
-              pScore = parsed.performanceScore || pScore;
-              sScore = parsed.smoothnessScore || sScore;
-              fScore = parsed.footworkScore || fScore;
+              if (parsed.performanceScore !== undefined) pScore = Number(parsed.performanceScore);
+              if (parsed.smoothnessScore !== undefined) sScore = Number(parsed.smoothnessScore);
+              if (parsed.footworkScore !== undefined) fScore = Number(parsed.footworkScore);
             }
             cleanNotes = parsed.userNotes || parsed.notes || '';
           } catch(e) {}
         }
 
-        const targetCones = Number(r.targetCones || r.targetcones || 0);
-        const completedCones = Number(r.completedCones || r.completedcones || 0);
-        const targetAttempts = Number(r.targetAttempts || r.targetattempts || 10);
-        const completedAttempts = Number(r.completedAttempts || r.completedattempts || 0);
+        // Ensure pSnapshot itself is parsed if it's a JSON string
+        if (typeof pSnapshot === 'string' && pSnapshot.trim().startsWith('{')) {
+          try { pSnapshot = JSON.parse(pSnapshot); } catch(e) {}
+        }
+
+        // Align smoothness and footwork between snapshot and session record
+        if (pSnapshot && typeof pSnapshot === 'object') {
+          if (sScore === 0 && pSnapshot.smoothness !== undefined) sScore = Number(pSnapshot.smoothness);
+          if (fScore === 0 && pSnapshot.footwork !== undefined) fScore = Number(pSnapshot.footwork);
+          if (pSnapshot.smoothness === undefined) pSnapshot.smoothness = sScore;
+          if (pSnapshot.footwork === undefined) pSnapshot.footwork = fScore;
+
+          if (typeof PERFORMANCE_SCORING_CONFIG !== 'undefined' && PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore) {
+            const calc = PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore(pSnapshot);
+            if (pScore === 0 || pScore !== calc.totalScore) pScore = calc.totalScore;
+            if (sScore === 0) sScore = calc.smoothness;
+            if (fScore === 0) fScore = calc.footwork;
+          }
+        }
+
+        const targetCones = r.targetCones !== undefined ? Number(r.targetCones) : Number(r.targetcones || 0);
+        const completedCones = r.completedCones !== undefined ? Number(r.completedCones) : Number(r.completedcones || 0);
+        const targetAttempts = r.targetAttempts !== undefined ? Number(r.targetAttempts) : Number(r.targetattempts || 10);
+        const completedAttempts = r.completedAttempts !== undefined ? Number(r.completedAttempts) : Number(r.completedattempts || 0);
 
         let parsedDate = '';
         if (r.date) {
@@ -239,9 +264,9 @@ async function handleAuthSubmit(e) {
           family: r.family || (sType === 'Performance' ? 'Valid' : 'Custom'),
           targetCones: targetCones,
           completedCones: completedCones,
-          missedCones: Number(r.missedCones || r.missedcones || 0),
+          missedCones: r.missedCones !== undefined ? Number(r.missedCones) : Number(r.missedcones || 0),
           falls: Number(r.falls || 0),
-          successRate: Number(r.successRate || r.successrate || (targetCones > 0 ? parseFloat(((completedCones / targetCones) * 100).toFixed(1)) : 0)),
+          successRate: r.successRate !== undefined ? Number(r.successRate) : Number(r.successrate || (targetCones > 0 ? parseFloat(((completedCones / targetCones) * 100).toFixed(1)) : 0)),
           connectedCompletion: r.connectedCompletion || r.connectedcompletion || 'N/A',
           targetAttempts: targetAttempts,
           completedAttempts: completedAttempts,
