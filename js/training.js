@@ -1084,6 +1084,7 @@ async function handleMultiSessionSubmit(e) {
       const lines = [];
 
       lines.push(formattedDate);
+      lines.push('');
       lines.push('Classic:');
 
       let sectionCounter = 1;
@@ -1091,7 +1092,7 @@ async function handleMultiSessionSubmit(e) {
       // 1. Warmup / Session Notes
       const firstNoteItem = sessionItems.find(it => {
         const n = extractItemUserNotes(it);
-        return n && n.trim().length > 0;
+        return n && (n.toLowerCase().includes('warmup') || n.toLowerCase().includes('warm up'));
       });
 
       if (firstNoteItem) {
@@ -1111,7 +1112,7 @@ async function handleMultiSessionSubmit(e) {
         singleTricks.forEach(t => {
           const name = t.trickName || t.trickname || 'Trick';
           const attempts = extractItemAttempts(t);
-          lines.push(`${name} - ${attempts.completed}/${attempts.target}`);
+          lines.push(`   ${name} - ${attempts.completed}/${attempts.target}`);
         });
         sectionCounter++;
       }
@@ -1125,14 +1126,17 @@ async function handleMultiSessionSubmit(e) {
       if (comboTricks.length > 0) {
         lines.push(`${sectionCounter}. Combo`);
         comboTricks.forEach((cb, cIdx) => {
+          const name = cb.trickName || cb.trickname || `Combo ${cIdx + 1}`;
           const attempts = extractItemAttempts(cb);
           const subTricks = extractComboSubTricks(cb);
 
-          lines.push(`Combo ${cIdx + 1} - ${attempts.completed}/${attempts.target}`);
           if (subTricks.length > 0) {
+            lines.push(`   Combo ${cIdx + 1} - ${attempts.completed}/${attempts.target}`);
             subTricks.forEach(stName => {
-              lines.push(`${stName} - complete`);
+              lines.push(`   ${stName} - complete`);
             });
+          } else {
+            lines.push(`   ${name} - ${attempts.completed}/${attempts.target}`);
           }
         });
         sectionCounter++;
@@ -1154,12 +1158,13 @@ async function handleMultiSessionSubmit(e) {
               if (pItem.type === 'combo') {
                 const subList = Array.isArray(pItem.comboTricks) ? pItem.comboTricks.filter(Boolean) : (pItem.name ? pItem.name.split(' → ').filter(Boolean) : []);
                 const subStatus = pItem.comboSubCompleted || {};
+                lines.push(`   Combo ${pIdx + 1}:`);
                 subList.forEach((subName, sIdx) => {
                   const isDone = subStatus[sIdx] === true || pItem.completed === true;
-                  lines.push(`${subName} - ${isDone ? 'complete' : 'incomplete'}`);
+                  lines.push(`      ${subName} - ${isDone ? 'complete' : 'incomplete'}`);
                 });
               } else {
-                lines.push(`${pItem.name || 'Trick'} - ${pItem.completed ? 'complete' : 'incomplete'}`);
+                lines.push(`   ${pItem.name || 'Trick'} - ${pItem.completed ? 'complete' : 'incomplete'}`);
               }
             });
           }
@@ -1168,10 +1173,11 @@ async function handleMultiSessionSubmit(e) {
           const footwork = perfRec.footworkScore !== undefined ? perfRec.footworkScore : (snap && snap.footwork);
 
           if (smoothness !== undefined && smoothness !== null && smoothness !== '' && Number(smoothness) > 0) {
-            lines.push(`Smoothness - ${smoothness}/10`);
+            lines.push('');
+            lines.push(`   Smoothness - ${smoothness}/10`);
           }
           if (footwork !== undefined && footwork !== null && footwork !== '' && Number(footwork) > 0) {
-            lines.push(`Footwork - ${footwork}/10`);
+            lines.push(`   Footwork - ${footwork}/10`);
           }
 
           sectionCounter++;
