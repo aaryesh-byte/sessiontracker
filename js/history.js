@@ -1,191 +1,284 @@
 // Training history functionality.
 
 
-    function renderHistory() {
-      const container = document.getElementById('historyList');
-      if (!container || !appState.currentUser) return;
+function groupSessionRecords(records) {
+  const sessionsMap = {};
 
-      const userRecords = typeof getUserFilteredSessions === 'function' ? getUserFilteredSessions() : appState.sessions;
+  records.forEach(r => {
+    const sId = r.sessionId || r.sessionid || r.date;
+    if (!sId) return;
 
-      if (userRecords.length === 0) {
-        container.innerHTML = `<div class="glass-card empty-state"><div class="empty-icon">📜</div><div class="empty-text">No practice sessions logged yet.</div><button class="btn" style="max-width:200px; margin:0 auto;" onclick="switchTab('log')">Log Training Session</button></div>`;
-        return;
-      }
+    if (!sessionsMap[sId]) {
+      sessionsMap[sId] = {
+        sessionId: sId,
+        date: r.date,
+        skaterName: r.skaterName || r.skatername || '',
+        items: []
+      };
+    }
+    sessionsMap[sId].items.push(r);
+  });
 
-      const typeEl = document.getElementById('histType');
-      const typeFilter = typeEl ? typeEl.value : 'ALL';
+  return Object.values(sessionsMap).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+}
 
-      const monthEl = document.getElementById('histMonth');
-      const monthFilter = monthEl ? monthEl.value : '';
+function renderHistory() {
+  const container = document.getElementById('historyList');
+  if (!container || !appState.currentUser) return;
 
-      const dateEl = document.getElementById('histDate');
-      const dateFilter = dateEl ? dateEl.value : '';
+  const userRecords = typeof getUserFilteredSessions === 'function' ? getUserFilteredSessions() : appState.sessions;
 
-      const filtered = userRecords.filter(s => {
-        const sType = s.sessionType || 'Single';
-        if (typeFilter !== 'ALL' && sType !== typeFilter) return false;
-        if (dateFilter) {
-          if (s.date !== dateFilter) return false;
-        } else if (monthFilter && !String(s.date).startsWith(monthFilter)) {
-          return false;
-        }
-        return true;
-      });
+  if (userRecords.length === 0) {
+    container.innerHTML = `<div class="glass-card empty-state"><div class="empty-icon">📜</div><div class="empty-text">No practice sessions logged yet.</div><button class="btn" style="max-width:200px; margin:0 auto;" onclick="switchTab('log')">Log Training Session</button></div>`;
+    return;
+  }
 
-      if (filtered.length === 0) {
-        container.innerHTML = `<div class="glass-card empty-state"><div class="empty-icon">📜</div><div class="empty-text">No practice sessions logged yet.</div><button class="btn" style="max-width:200px; margin:0 auto;" onclick="switchTab('log')">Log Training Session</button></div>`;
-        return;
-      }
+  const typeEl = document.getElementById('histType');
+  const typeFilter = typeEl ? typeEl.value : 'ALL';
 
-      container.innerHTML = filtered.map(s => {
+  const monthEl = document.getElementById('histMonth');
+  const monthFilter = monthEl ? monthEl.value : '';
+
+  const dateEl = document.getElementById('histDate');
+  const dateFilter = dateEl ? dateEl.value : '';
+
+  const grouped = groupSessionRecords(userRecords);
+
+  const filtered = grouped.filter(group => {
+    if (dateFilter) {
+      if (group.date !== dateFilter) return false;
+    } else if (monthFilter && !String(group.date).startsWith(monthFilter)) {
+      return false;
+    }
+
+    if (typeFilter !== 'ALL') {
+      const hasMatchingType = group.items.some(s => {
         const sType = s.sessionType || s.sessiontype || 'Single';
-        const isRest = sType === 'Rest' || (s.trickName || s.trickname) === 'Rest Day';
-        const isPerformance = sType === 'Performance' || (s.category || '') === 'PERFORMANCE';
-        const isCombo = sType === 'Combo';
-        const success = s.successRate || s.successrate || 0;
-        const target = s.targetCones || s.targetcones || 0;
-        const completed = s.completedCones || s.completedcones || 0;
-        const missed = s.missedCones || s.kickedmissedcones || s.missedcones || 0;
-        const connected = s.connectedCompletion || s.connectedcompletion || 'N/A';
+        if (typeFilter === 'Single') return sType === 'Single';
+        if (typeFilter === 'Combo') return sType === 'Combo';
+        if (typeFilter === 'Performance') return sType === 'Performance' || (s.category || '') === 'PERFORMANCE';
+        return sType === typeFilter;
+      });
+      if (!hasMatchingType) return false;
+    }
 
-        if (isPerformance) {
-          const snapshot = s.performanceSnapshot || { items: [] };
+    return true;
+  });
 
-          let scoreData = { completedCount: 0, totalIndividualTricks: 0, isValid: false, totalScore: s.performanceScore || 0, smoothness: s.smoothnessScore || 0, footwork: s.footworkScore || 0 };
-          if (typeof PERFORMANCE_SCORING_CONFIG !== 'undefined' && PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore) {
-            scoreData = PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore(snapshot);
-          } else {
-            scoreData.completedCount = s.completedCones || 0;
-            scoreData.totalIndividualTricks = s.targetCones || (snapshot.items ? snapshot.items.length : 0);
-            scoreData.isValid = scoreData.completedCount >= 9;
-          }
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="glass-card empty-state"><div class="empty-icon">📜</div><div class="empty-text">No practice sessions logged yet.</div><button class="btn" style="max-width:200px; margin:0 auto;" onclick="switchTab('log')">Log Training Session</button></div>`;
+    return;
+  }
 
-          const completedTricks = scoreData.completedCount;
-          const totalTricks = scoreData.totalIndividualTricks || (snapshot.items ? snapshot.items.length : 0);
-          const isValid = scoreData.isValid;
-          const totalPts = s.performanceScore || scoreData.totalScore || 0;
-          const smoothnessVal = s.smoothnessScore !== undefined && s.smoothnessScore !== null ? s.smoothnessScore : scoreData.smoothness;
-          const footworkVal = s.footworkScore !== undefined && s.footworkScore !== null ? s.footworkScore : scoreData.footwork;
+  container.innerHTML = filtered.map(group => {
+    const items = group.items;
+    const dateStr = group.date;
 
-          return `
-            <div class="history-item" style="border-left:3px solid #fb7185;">
-              <div class="history-header">
-                <div>
-                  <div class="history-title">🎭 ${s.trickName || 'Performance Routine'}</div>
-                  <div style="font-size:0.75rem; color:var(--on-surface-muted); margin-top:2px;">
-                    ${s.date} • <span class="badge badge-perf">Performance</span> 
+    const isRest = items.some(s => (s.sessionType || s.sessiontype) === 'Rest' || (s.trickName || s.trickname) === 'Rest Day');
+
+    if (isRest) {
+      const restRec = items.find(s => (s.sessionType || s.sessiontype) === 'Rest' || (s.trickName || s.trickname) === 'Rest Day') || items[0];
+      return `
+        <div class="history-item" style="border-left:3px solid #f59e0b;">
+          <div class="history-header">
+            <div>
+              <div class="history-title">🟡 Rest &amp; Recovery Day</div>
+              <div style="font-size:0.75rem; color:var(--on-surface-muted); margin-top:2px;">
+                ${dateStr} • <span class="badge badge-rest">Rest Day</span>
+              </div>
+            </div>
+            <div>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="generateDailySummaryFromHistory('${dateStr}')" title="Generate coach summary for ${dateStr}">📋 Summary</button>
+            </div>
+          </div>
+          <div style="font-size:0.8125rem; color:var(--on-surface); font-style:italic; margin-top:6px;">
+            "${restRec.notes || 'Intentional Recovery'}"
+          </div>
+        </div>
+      `;
+    }
+
+    const singles = items.filter(s => (s.sessionType || s.sessiontype || 'Single') === 'Single');
+    const combos = items.filter(s => (s.sessionType || s.sessiontype) === 'Combo');
+    const perfs = items.filter(s => (s.sessionType || s.sessiontype) === 'Performance' || (s.category || '') === 'PERFORMANCE');
+
+    let badgesHtml = '';
+    if (singles.length > 0) badgesHtml += `<span class="badge badge-category">${singles.length} Trick${singles.length > 1 ? 's' : ''}</span> `;
+    if (combos.length > 0) badgesHtml += `<span class="badge badge-combo">${combos.length} Combo${combos.length > 1 ? 's' : ''}</span> `;
+    if (perfs.length > 0) badgesHtml += `<span class="badge badge-perf">${perfs.length} Performance</span> `;
+
+    let globalNotes = items.map(s => s.notes).filter(n => n && !n.startsWith('{')).join(' • ');
+
+    return `
+      <div class="history-item">
+        <div class="history-header">
+          <div>
+            <div class="history-title">🗓️ Training Session — ${dateStr}</div>
+            <div style="font-size:0.75rem; color:var(--on-surface-muted); margin-top:2px;">
+              ${badgesHtml}
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="generateDailySummaryFromHistory('${dateStr}')" title="Generate coach summary for ${dateStr}">📋 Summary</button>
+          </div>
+        </div>
+
+        ${singles.length > 0 ? `
+          <div style="margin-top:10px;">
+            <div class="label-caps" style="color:var(--primary); margin-bottom:6px;">Individual Tricks (${singles.length})</div>
+            ${singles.map(s => {
+              const target = Number(s.targetCones || s.targetcones || 0);
+              const completed = Number(s.completedCones || s.completedcones || 0);
+              const missed = Number(s.missedCones || s.missedcones || 0);
+              const success = s.successRate || s.successrate || (target > 0 ? ((completed / target) * 100).toFixed(1) : 0);
+              const tAttempts = Number(s.targetAttempts || s.targetattempts || 0);
+              const cAttempts = Number(s.completedAttempts || s.completedattempts || 0);
+
+              return `
+                <div style="background:var(--bg-surface); border:1px solid var(--border-razor); border-radius:var(--radius-md); padding:8px 10px; margin-bottom:6px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-weight:700; font-size:0.875rem;">${s.trickName || s.trickname}</span>
+                    <span class="badge badge-family">Fam ${s.family || 'Custom'}</span>
+                  </div>
+                  <div class="history-stats" style="margin-top:4px;">
+                    ${tAttempts > 0 ? `<span style="color:var(--primary); font-weight:700;">🔄 Attempts: ${cAttempts}/${tAttempts}</span>` : ''}
+                    <span>✅ Cones: ${completed}/${target}</span>
+                    <span>⚠️ Missed: ${missed}</span>
+                    <span>🚨 Falls: ${s.falls || 0}</span>
+                    <span>⚡ Rate: ${success}%</span>
+                  </div>
+                  ${s.notes && !s.notes.startsWith('{') ? `<div style="font-size:0.75rem; color:var(--on-surface-muted); font-style:italic; margin-top:4px;">"${s.notes}"</div>` : ''}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        ` : ''}
+
+        ${combos.length > 0 ? `
+          <div style="margin-top:10px;">
+            <div class="label-caps" style="color:var(--primary); margin-bottom:6px;">Trick Combos (${combos.length})</div>
+            ${combos.map(s => {
+              const target = Number(s.targetCones || s.targetcones || 0);
+              const completed = Number(s.completedCones || s.completedcones || 0);
+              const tAttempts = Number(s.targetAttempts || s.targetattempts || 0);
+              const cAttempts = Number(s.completedAttempts || s.completedattempts || 0);
+              const subTricks = extractComboSubTricks(s);
+
+              return `
+                <div style="background:var(--bg-surface); border:1px solid var(--border-razor); border-radius:var(--radius-md); padding:8px 10px; margin-bottom:6px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-weight:700; font-size:0.875rem; color:var(--primary);">🔗 ${s.trickName || s.trickname}</span>
+                    <span class="badge badge-combo">Combo</span>
+                  </div>
+                  <div class="history-stats" style="margin-top:4px;">
+                    ${tAttempts > 0 ? `<span style="color:var(--primary); font-weight:700;">🔄 Attempts: ${cAttempts}/${tAttempts}</span>` : ''}
+                    <span>✅ Cones: ${completed}/${target}</span>
+                    <span>🚨 Falls: ${s.falls || 0}</span>
+                  </div>
+                  ${subTricks.length > 0 ? `
+                    <div style="margin-top:6px; font-size:0.75rem;">
+                      <div class="label-caps" style="font-size:0.6rem;">Combo Component Breakdown</div>
+                      <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:2px;">
+                        ${subTricks.map((st, idx) => `<span class="badge badge-family" style="font-size:0.65rem;">#${idx+1} ${st}</span>`).join('')}
+                      </div>
+                    </div>
+                  ` : ''}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        ` : ''}
+
+        ${perfs.length > 0 ? `
+          <div style="margin-top:10px;">
+            <div class="label-caps" style="color:#fb7185; margin-bottom:6px;">Performance Routine Runs (${perfs.length})</div>
+            ${perfs.map(s => {
+              const snapshot = extractPerformanceSnapshot(s) || s.performanceSnapshot || { items: [] };
+
+              let scoreData = { completedCount: 0, totalIndividualTricks: 0, isValid: false, totalScore: s.performanceScore || 0, smoothness: s.smoothnessScore || 0, footwork: s.footworkScore || 0 };
+              if (typeof PERFORMANCE_SCORING_CONFIG !== 'undefined' && PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore) {
+                scoreData = PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore(snapshot);
+              } else {
+                scoreData.completedCount = s.completedCones || 0;
+                scoreData.totalIndividualTricks = s.targetCones || (snapshot.items ? snapshot.items.length : 0);
+                scoreData.isValid = scoreData.completedCount >= 9;
+              }
+
+              const completedTricks = scoreData.completedCount;
+              const totalTricks = scoreData.totalIndividualTricks || (snapshot.items ? snapshot.items.length : 0);
+              const isValid = scoreData.isValid;
+              const totalPts = s.performanceScore || scoreData.totalScore || 0;
+              const smoothnessVal = s.smoothnessScore !== undefined && s.smoothnessScore !== null ? s.smoothnessScore : scoreData.smoothness;
+              const footworkVal = s.footworkScore !== undefined && s.footworkScore !== null ? s.footworkScore : scoreData.footwork;
+
+              return `
+                <div style="background:var(--bg-surface); border:1px solid rgba(251, 113, 133, 0.3); border-radius:var(--radius-md); padding:10px; margin-bottom:6px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                    <strong style="font-size:0.875rem; color:#fb7185;">🎭 ${s.trickName || 'Performance Routine'}</strong>
                     <span class="badge ${isValid ? 'badge-combo' : 'badge-danger'}">
                       ${completedTricks}/${PERFORMANCE_SCORING_CONFIG.minCompletedTricksRequired || 9} Completed ${isValid ? '✓' : '(Min 9 Req.)'}
                     </span>
                   </div>
-                </div>
-                <div style="display:flex; align-items:center; gap:6px;">
-                  <button type="button" class="btn btn-secondary btn-sm" onclick="generateDailySummaryFromHistory('${s.date}')" title="Generate coach summary for ${s.date}">📋 Summary</button>
-                  <span class="badge badge-combo">${totalPts} pts</span>
-                </div>
-              </div>
-              <div class="history-stats">
-                <span>🎯 Tricks Completed: ${completedTricks} / ${totalTricks}</span>
-                <span>✨ Smoothness: ${smoothnessVal}</span>
-                <span>⚡ Footwork: ${footworkVal}</span>
-              </div>
-              ${snapshot.items && snapshot.items.length > 0 ? `
-                <div class="history-perf-items-container" style="margin-top:10px;">
-                  ${snapshot.items.map((it, itemIdx) => {
-                    const isCombo = it.type === 'combo';
-                    if (isCombo) {
-                      const comboList = Array.isArray(it.comboTricks) ? it.comboTricks.filter(Boolean) : (it.name ? it.name.split(' → ').filter(Boolean) : []);
-                      const subStatus = it.comboSubCompleted || {};
-                      return `
-                        <div class="history-perf-combo-card" style="background:var(--bg-surface); border:1px solid var(--border-razor); border-radius:var(--radius-md); padding:8px 10px; margin-bottom:6px;">
-                          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                            <span style="font-family:var(--font-mono); font-size:0.75rem; font-weight:700; color:var(--on-surface);">
-                              #${itemIdx + 1} [Combo • ${comboList.length} Tricks] ${it.name || 'Combo Sequence'}
-                            </span>
-                            <span class="badge ${it.completed ? 'badge-combo' : 'badge-danger'}" style="font-size:0.6rem; padding:2px 6px;">
-                              ${it.completed ? 'COMBO COMPLETE' : 'PARTIAL / INCOMPLETE'}
-                            </span>
-                          </div>
-                          <div class="history-perf-pills">
-                            ${comboList.map((subName, sIdx) => {
-                              const isSubDone = subStatus[sIdx] === true || (subStatus[sIdx] === undefined && it.completed === true);
-                              return `
-                                <span class="history-perf-pill ${isSubDone ? 'is-done' : 'is-missed'}">
-                                  ${isSubDone ? '✓' : '✗'} ${subName}
-                                </span>
-                              `;
-                            }).join('')}
-                          </div>
-                        </div>
-                      `;
-                    } else {
-                      return `
-                        <div class="history-perf-pills" style="margin-bottom:4px;">
-                          <span class="history-perf-pill ${it.completed ? 'is-done' : 'is-missed'}">
-                            ${it.completed ? '✓' : '✗'} #${itemIdx + 1} ${it.name || 'Trick'}
-                          </span>
-                        </div>
-                      `;
-                    }
-                  }).join('')}
-                </div>
-              ` : ''}
-              ${s.notes ? `<div style="font-size:0.8125rem; color:var(--on-surface); margin-top:8px; font-style:italic; border-top:1px solid var(--border-razor); padding-top:6px;">"${s.notes}"</div>` : ''}
-            </div>
-          `;
-        }
 
-        if (isRest) {
-          return `
-            <div class="history-item" style="border-left:3px solid #f59e0b;">
-              <div class="history-header">
-                <div>
-                  <div class="history-title">🟡 Rest &amp; Recovery Day</div>
-                  <div style="font-size:0.75rem; color:var(--on-surface-muted); margin-top:2px;">
-                    ${s.date} • <span class="badge badge-rest">Rest Day</span>
+                  <div class="history-stats" style="margin-top:4px;">
+                    <span>🎯 Completed: ${completedTricks} / ${totalTricks}</span>
+                    <span>✨ Smoothness: ${smoothnessVal}/10</span>
+                    <span>⚡ Footwork: ${footworkVal}/10</span>
+                    <span style="color:var(--primary); font-weight:700;">🏆 Total: ${totalPts} pts</span>
                   </div>
-                </div>
-              </div>
-              <div style="font-size:0.8125rem; color:var(--on-surface); font-style:italic; margin-top:4px;">
-                "${s.notes || 'Intentional Recovery'}"
-              </div>
-            </div>
-          `;
-        }
 
-        const tAttempts = Number(s.targetAttempts || s.targetattempts || 0);
-        const cAttempts = Number(s.completedAttempts || s.completedattempts || 0);
-        const attRate = tAttempts > 0 ? Math.min(100, Math.round((cAttempts / tAttempts) * 100)) : null;
-
-        return `
-          <div class="history-item">
-            <div class="history-header">
-              <div>
-                <div class="history-title">${s.trickName || s.trickname}</div>
-                <div style="font-size:0.75rem; color:var(--on-surface-muted); margin-top:2px;">
-                  ${s.date} • <span class="badge ${isCombo ? 'badge-combo' : 'badge-category'}">${isCombo ? 'Combo' : s.category}</span> <span class="badge badge-family">Fam ${s.family}</span>
+                  ${snapshot.items && snapshot.items.length > 0 ? `
+                    <div class="history-perf-items-container" style="margin-top:8px;">
+                      ${snapshot.items.map((it, itemIdx) => {
+                        const isCombo = it.type === 'combo';
+                        if (isCombo) {
+                          const comboList = Array.isArray(it.comboTricks) ? it.comboTricks.filter(Boolean) : (it.name ? it.name.split(' → ').filter(Boolean) : []);
+                          const subStatus = it.comboSubCompleted || {};
+                          return `
+                            <div class="history-perf-combo-card" style="background:var(--bg-container); border:1px solid var(--border-razor); border-radius:var(--radius-md); padding:6px 8px; margin-bottom:4px;">
+                              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+                                <span style="font-family:var(--font-mono); font-size:0.7rem; font-weight:700; color:var(--on-surface);">
+                                  #${itemIdx + 1} [Combo • ${comboList.length} Tricks] ${it.name || 'Combo Sequence'}
+                                </span>
+                                <span class="badge ${it.completed ? 'badge-combo' : 'badge-danger'}" style="font-size:0.55rem; padding:1px 4px;">
+                                  ${it.completed ? 'COMBO COMPLETE' : 'PARTIAL / INCOMPLETE'}
+                                </span>
+                              </div>
+                              <div class="history-perf-pills">
+                                ${comboList.map((subName, sIdx) => {
+                                  const isSubDone = subStatus[sIdx] === true || (subStatus[sIdx] === undefined && it.completed === true);
+                                  return `
+                                    <span class="history-perf-pill ${isSubDone ? 'is-done' : 'is-missed'}">
+                                      ${isSubDone ? '✓' : '✗'} ${subName}
+                                    </span>
+                                  `;
+                                }).join('')}
+                              </div>
+                            </div>
+                          `;
+                        } else {
+                          return `
+                            <div class="history-perf-pills" style="margin-bottom:2px;">
+                              <span class="history-perf-pill ${it.completed ? 'is-done' : 'is-missed'}">
+                                ${it.completed ? '✓' : '✗'} #${itemIdx + 1} ${it.name || 'Trick'}
+                              </span>
+                            </div>
+                          `;
+                        }
+                      }).join('')}
+                    </div>
+                  ` : ''}
                 </div>
-              </div>
-              <div style="display:flex; align-items:center; gap:6px;">
-                <button type="button" class="btn btn-secondary btn-sm" onclick="generateDailySummaryFromHistory('${s.date}')" title="Generate coach summary for ${s.date}">📋 Summary</button>
-                <span class="badge" style="background:${success >= 80 ? 'rgba(0, 255, 194, 0.15)' : 'rgba(245, 158, 11, 0.15)'}; color:${success >= 80 ? 'var(--primary)' : '#fbbf24'}; border: 1px solid ${success >= 80 ? 'var(--primary-dim)' : 'rgba(245, 158, 11, 0.3)'}">
-                  ${success}% Success
-                </span>
-              </div>
-            </div>
-            <div class="history-stats">
-              <span>🎯 Target: ${target}</span>
-              <span>✅ Completed: ${completed}</span>
-              <span>⚠️ Missed: ${missed}</span>
-              <span>🚨 Falls: ${s.falls}</span>
-              ${tAttempts > 0 ? `<span style="color:var(--primary); font-weight:700;">🔄 Attempts: ${cAttempts}/${tAttempts} (${attRate}%)</span>` : ''}
-              ${isCombo && connected !== 'N/A' ? `<span style="font-weight:700; color:var(--primary);">🔗 Connected: ${connected}</span>` : ''}
-            </div>
-            ${s.notes ? `<div style="font-size:0.8125rem; color:var(--on-surface); margin-top:8px; font-style:italic; border-top:1px solid var(--border-razor); padding-top:6px;">"${s.notes}"</div>` : ''}
+              `;
+            }).join('')}
           </div>
-        `;
-      }).join('');
-    }
+        ` : ''}
+
+        ${globalNotes ? `<div style="font-size:0.8125rem; color:var(--on-surface); margin-top:8px; font-style:italic; border-top:1px solid var(--border-razor); padding-top:6px;">"${globalNotes}"</div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
 
     function clearHistoryDateFilter() {
       const dateEl = document.getElementById('histDate');
