@@ -26,3 +26,16 @@
 127.0.0.1 - - [30/Aug/2026 07:21:35] "GET /js/combo-calculator.js HTTP/1.1" 200 -
 127.0.0.1 - - [30/Aug/2026 07:21:36] "GET /pages/dashboard.html HTTP/1.1" 200 -
 127.0.0.1 - - [30/Aug/2026 07:21:37] "GET /pages/history.html HTTP/1.1" 200 -
+127.0.0.1 - - [30/Aug/2026 07:51:26] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [30/Aug/2026 07:51:26] "GET /assets/rollsync-logo.png HTTP/1.1" 200 -
+127.0.0.1 - - [30/Aug/2026 07:51:26] "GET /css/global.css HTTP/1.1" 200 -
+127.0.0.1 - - [30/Aug/2026 07:51:26] "GET /data/tricks.js HTTP/1.1" 200 -
+127.0.0.1 - - [30/Aug/2026 07:51:26] "GET /js/config.js HTTP/1.1" 200 -
+127.0.0.1 - - [30/Aug/2026 07:51:26] "GET /js/dashboard.js HTTP/1.1" 200 -
+127.0.0.1 - - [30/Aug/2026 07:51:26] "GET /js/app.js HTTP/1.1" 200 -
+127.0.0.1 - - [30/Aug/2026 07:51:26] "GET /js/training.js HTTP/1.1" 200 -
+127.0.0.1 - - [30/Aug/2026 07:51:26] "GET /js/history.js HTTP/1.1" 200 -
+127.0.0.1 - - [30/Aug/2026 07:51:26] "GET /js/combo-calculator.js HTTP/1.1" 200 -
+127.0.0.1 - - [30/Aug/2026 07:51:26] "GET /js/custom-tricks.js HTTP/1.1" 200 -
+127.0.0.1 - - [30/Aug/2026 07:51:26] "GET /pages/dashboard.html HTTP/1.1" 200 -
+127.0.0.1 - - [30/Aug/2026 07:51:28] "GET /pages/history.html HTTP/1.1" 200 -

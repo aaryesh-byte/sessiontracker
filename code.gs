@@ -432,12 +432,25 @@ function saveSessionRecord(p) {
     const cAttempts = item.completedAttempts !== undefined && item.completedAttempts !== '' ? Number(item.completedAttempts) : 0;
 
     let perfDataString = '';
-    if (item.sessionType === 'Performance' || item.performanceSnapshot) {
+    if (item.sessionType === 'Performance' || item.performanceSnapshot || item.performanceData) {
+      let snapObj = item.performanceSnapshot || null;
+      if (!snapObj && typeof item.performanceData === 'string' && item.performanceData.trim().startsWith('{')) {
+        try { snapObj = JSON.parse(item.performanceData); } catch(e) {}
+      } else if (!snapObj && typeof item.performanceData === 'object') {
+        snapObj = item.performanceData;
+      }
+
+      const pScore = item.performanceScore !== undefined ? Number(item.performanceScore) : (snapObj && snapObj.totalScore ? snapObj.totalScore : 0);
+      const sScore = item.smoothnessScore !== undefined ? Number(item.smoothnessScore) : (snapObj && snapObj.smoothness ? snapObj.smoothness : 0);
+      const fScore = item.footworkScore !== undefined ? Number(item.footworkScore) : (snapObj && snapObj.footwork ? snapObj.footwork : 0);
+      const skaterNotes = item.notes || (snapObj && snapObj.notes) || p.sessionNotes || '';
+
       perfDataString = JSON.stringify({
-        performanceScore: item.performanceScore !== undefined ? Number(item.performanceScore) : 0,
-        smoothnessScore: item.smoothnessScore !== undefined ? Number(item.smoothnessScore) : 0,
-        footworkScore: item.footworkScore !== undefined ? Number(item.footworkScore) : 0,
-        snapshot: item.performanceSnapshot || { items: [] }
+        performanceScore: pScore,
+        smoothnessScore: sScore,
+        footworkScore: fScore,
+        notes: skaterNotes,
+        snapshot: snapObj || { items: [] }
       });
     }
 

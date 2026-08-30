@@ -210,6 +210,7 @@ function renderHistory() {
               const totalPts = s.performanceScore || scoreData.totalScore || 0;
               const smoothnessVal = s.smoothnessScore !== undefined && s.smoothnessScore !== null ? s.smoothnessScore : scoreData.smoothness;
               const footworkVal = s.footworkScore !== undefined && s.footworkScore !== null ? s.footworkScore : scoreData.footwork;
+              const perfNotes = s.notes || (snapshot && snapshot.notes) || '';
 
               return `
                 <div style="background:var(--bg-surface); border:1px solid rgba(251, 113, 133, 0.3); border-radius:var(--radius-md); padding:10px; margin-bottom:6px;">
@@ -268,6 +269,7 @@ function renderHistory() {
                       }).join('')}
                     </div>
                   ` : ''}
+                  ${perfNotes && !perfNotes.startsWith('{') ? `<div style="font-size:0.75rem; color:var(--on-surface-muted); font-style:italic; margin-top:6px;">"${perfNotes}"</div>` : ''}
                 </div>
               `;
             }).join('')}
