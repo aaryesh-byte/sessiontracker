@@ -196,8 +196,16 @@ async function handleAuthSubmit(e) {
         const sType = r.sessionType || r.sessiontype || 'Single';
         if (sType === 'Performance') {
           const sId = r.sessionId || r.sessionid || ('SESS-' + Date.now());
-          if (!perfRowsBySession[sId]) perfRowsBySession[sId] = [];
-          perfRowsBySession[sId].push(r);
+          let meta = {};
+          const rawPerf = r.performanceData || r.performancedata || '';
+          if (rawPerf && typeof rawPerf === 'string' && rawPerf.trim().startsWith('{')) {
+            try { meta = JSON.parse(rawPerf); } catch(e) {}
+          } else if (typeof rawPerf === 'object') {
+            meta = rawPerf;
+          }
+          const runKey = sId + '_' + (meta.runIndex !== undefined ? meta.runIndex : (meta.perfTitle || 'run0'));
+          if (!perfRowsBySession[runKey]) perfRowsBySession[runKey] = [];
+          perfRowsBySession[runKey].push(r);
         } else {
           standardRows.push(r);
         }
@@ -244,11 +252,12 @@ async function handleAuthSubmit(e) {
         };
       });
 
-      const normalizedPerfs = Object.keys(perfRowsBySession).map(sId => {
-        const rows = perfRowsBySession[sId];
+      const normalizedPerfs = Object.keys(perfRowsBySession).map(runKey => {
+        const rows = perfRowsBySession[runKey];
         if (rows.length === 0) return null;
 
         const firstRow = rows[0];
+        const sId = firstRow.sessionId || firstRow.sessionid || ('SESS-' + Date.now());
         let pSnapshot = firstRow.performanceSnapshot || null;
         let pScore = firstRow.performanceScore !== undefined ? Number(firstRow.performanceScore) : (firstRow.performancescore !== undefined ? Number(firstRow.performancescore) : 0);
         let sScore = firstRow.smoothnessScore !== undefined ? Number(firstRow.smoothnessScore) : (firstRow.smoothnessscore !== undefined ? Number(firstRow.smoothnessscore) : 0);
@@ -289,12 +298,13 @@ async function handleAuthSubmit(e) {
             if (fScore === 0 && pSnapshot.footwork !== undefined) fScore = Number(pSnapshot.footwork);
             if (!cleanNotes && pSnapshot.notes) cleanNotes = String(pSnapshot.notes).trim();
 
-            if (typeof PERFORMANCE_SCORING_CONFIG !== 'undefined' && PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore) {
-              const calc = PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore(pSnapshot);
-              if (pScore === 0 || pScore !== calc.totalScore) pScore = calc.totalScore;
-              if (sScore === 0) sScore = calc.smoothness;
-              if (fScore === 0) fScore = calc.footwork;
-            }
+            const scoreCalc = (typeof PERFORMANCE_SCORING_CONFIG !== 'undefined' && PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore) ?
+              PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore(pSnapshot) :
+              { totalIndividualTricks: pSnapshot.items.length, completedCount: pSnapshot.items.filter(i => i.completed).length, totalScore: pScore };
+
+            if (pScore === 0 || pScore !== scoreCalc.totalScore) pScore = scoreCalc.totalScore;
+            if (sScore === 0 && scoreCalc.smoothness !== undefined) sScore = scoreCalc.smoothness;
+            if (fScore === 0 && scoreCalc.footwork !== undefined) fScore = scoreCalc.footwork;
 
             return {
               sessionId: sId,
@@ -304,15 +314,15 @@ async function handleAuthSubmit(e) {
               sessionType: 'Performance',
               trickName: firstRow.trickName || firstRow.trickname || 'Performance Run #1 (2 min)',
               category: 'PERFORMANCE',
-              family: 'Valid',
-              targetCones: pSnapshot.items.length,
-              completedCones: pSnapshot.items.filter(i => i.completed).length,
-              missedCones: pSnapshot.items.filter(i => !i.completed).length,
+              family: scoreCalc.completedCount >= 9 ? 'Valid' : 'Incomplete',
+              targetCones: scoreCalc.totalIndividualTricks,
+              completedCones: scoreCalc.completedCount,
+              missedCones: Math.max(0, scoreCalc.totalIndividualTricks - scoreCalc.completedCount),
               falls: Number(firstRow.falls || 0),
-              successRate: 100,
+              successRate: scoreCalc.totalIndividualTricks > 0 ? parseFloat(((scoreCalc.completedCount / scoreCalc.totalIndividualTricks) * 100).toFixed(1)) : 0,
               connectedCompletion: 'N/A',
-              targetAttempts: pSnapshot.items.length,
-              completedAttempts: pSnapshot.items.filter(i => i.completed).length,
+              targetAttempts: scoreCalc.totalIndividualTricks,
+              completedAttempts: scoreCalc.completedCount,
               performanceScore: pScore,
               smoothnessScore: sScore,
               footworkScore: fScore,

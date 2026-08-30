@@ -520,7 +520,17 @@ function getSkaterMasterPerformance(userId, skaterName) {
     title: '2-Minute Performance Routine',
     smoothness: 0,
     footwork: 0,
-    items: []
+    items: [
+      { id: 'pitem-1', type: 'single', name: 'Butterfly Cross', category: 'OTHERS', family: 'A', completed: false },
+      { id: 'pitem-2', type: 'single', name: 'Butterfly', category: 'OTHERS', family: 'B', completed: false },
+      { id: 'pitem-3', type: 'single', name: 'Back Christie', category: 'SITTING', family: 'C', completed: false },
+      { id: 'pitem-4', type: 'single', name: 'Christie', category: 'SITTING', family: 'C', completed: false },
+      { id: 'pitem-5', type: 'combo', name: 'Toe Seven → Korean Spin', comboTricks: ['Toe Seven', 'Korean Spin'], category: 'SPINNING', family: 'B', completed: false },
+      { id: 'pitem-6', type: 'single', name: 'Heel Wheeling Fwd', category: 'WHEELING', family: 'C', completed: false },
+      { id: 'pitem-7', type: 'single', name: 'Nelson', category: 'OTHERS', family: 'E', completed: false },
+      { id: 'pitem-8', type: 'single', name: 'Crazy', category: 'OTHERS', family: 'E', completed: false },
+      { id: 'pitem-9', type: 'single', name: 'Eagle', category: 'OTHERS', family: 'D', completed: false }
+    ]
   };
 
   if (!perfSheet) return defaultMaster;
@@ -707,9 +717,22 @@ function saveSessionRecord(p) {
   const sessionId = p.sessionId || ('SESS-' + Date.now());
   const userKey = normalizeUserKey(p.userId || p.skaterName || p.username);
 
-  items.forEach(item => {
+  items.forEach((item, pIdx) => {
     if (item.sessionType === 'Performance' || item.performanceSnapshot) {
       let snap = item.performanceSnapshot || { items: [] };
+      if (typeof snap === 'string' && snap.trim().startsWith('{')) {
+        try { snap = JSON.parse(snap); } catch(e) {}
+      }
+      if ((!snap || !snap.items || snap.items.length === 0) && item.performanceData) {
+        if (typeof item.performanceData === 'string' && item.performanceData.trim().startsWith('{')) {
+          try {
+            const parsed = JSON.parse(item.performanceData);
+            if (parsed && parsed.snapshot) snap = parsed.snapshot;
+          } catch(e) {}
+        } else if (typeof item.performanceData === 'object' && item.performanceData.snapshot) {
+          snap = item.performanceData.snapshot;
+        }
+      }
       const runNotes = String(item.notes || item.userNotes || snap.notes || '').trim();
       const smoothnessVal = item.smoothnessScore !== undefined ? Number(item.smoothnessScore) : (snap.smoothness !== undefined ? Number(snap.smoothness) : 0);
       const footworkVal = item.footworkScore !== undefined ? Number(item.footworkScore) : (snap.footwork !== undefined ? Number(snap.footwork) : 0);
@@ -762,6 +785,7 @@ function saveSessionRecord(p) {
           } else {
             const isDone = Boolean(perfItem.completed);
             const singleMeta = JSON.stringify({
+              runIndex: pIdx,
               order: itemIdx,
               type: 'single',
               itemId: perfItem.id || ('pitem-' + itemIdx),

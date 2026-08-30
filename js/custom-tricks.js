@@ -228,14 +228,24 @@
         title: '2-Minute Performance Routine',
         smoothness: 0,
         footwork: 0,
-        items: []
+        items: [
+          { id: 'pitem-1', type: 'single', name: 'Butterfly Cross', category: 'OTHERS', family: 'A', completed: false },
+          { id: 'pitem-2', type: 'single', name: 'Butterfly', category: 'OTHERS', family: 'B', completed: false },
+          { id: 'pitem-3', type: 'single', name: 'Back Christie', category: 'SITTING', family: 'C', completed: false },
+          { id: 'pitem-4', type: 'single', name: 'Christie', category: 'SITTING', family: 'C', completed: false },
+          { id: 'pitem-5', type: 'combo', name: 'Toe Seven → Korean Spin', comboTricks: ['Toe Seven', 'Korean Spin'], category: 'SPINNING', family: 'B', completed: false },
+          { id: 'pitem-6', type: 'single', name: 'Heel Wheeling Fwd', category: 'WHEELING', family: 'C', completed: false },
+          { id: 'pitem-7', type: 'single', name: 'Nelson', category: 'OTHERS', family: 'E', completed: false },
+          { id: 'pitem-8', type: 'single', name: 'Crazy', category: 'OTHERS', family: 'E', completed: false },
+          { id: 'pitem-9', type: 'single', name: 'Eagle', category: 'OTHERS', family: 'D', completed: false }
+        ]
       };
 
       if (!appState.currentUser) return defaultRoutine;
 
       const userKey = String(appState.currentUser.userId || appState.currentUser.username || appState.currentUser.skaterName || '').toLowerCase();
-      if (!appState.masterPerformances[userKey]) {
-        appState.masterPerformances[userKey] = defaultRoutine;
+      if (!appState.masterPerformances[userKey] || !Array.isArray(appState.masterPerformances[userKey].items)) {
+        appState.masterPerformances[userKey] = JSON.parse(JSON.stringify(defaultRoutine));
       }
       return appState.masterPerformances[userKey];
     }
@@ -464,6 +474,20 @@
       renderMasterPerformancePanel();
     }
 
+    function countTotalIndividualTricks(perfObj) {
+      if (!perfObj || !Array.isArray(perfObj.items)) return 0;
+      let count = 0;
+      perfObj.items.forEach(it => {
+        if (it.type === 'combo') {
+          const list = Array.isArray(it.comboTricks) ? it.comboTricks.filter(Boolean) : (it.name ? it.name.split(' → ').filter(Boolean) : []);
+          count += Math.max(1, list.length);
+        } else {
+          count += 1;
+        }
+      });
+      return count;
+    }
+
     function renderMasterPerformancePanel() {
       const container = document.getElementById('masterPerformancePanelContainer');
       if (!container || !appState.currentUser) return;
@@ -471,7 +495,8 @@
       const master = isMasterPerformanceEditing ? tempMasterPerformanceDraft : getMasterPerformance();
       const allTricks = getAllTricks();
       const hasItems = master && master.items && master.items.length > 0;
-      const totalCount = hasItems ? master.items.length : 0;
+      const totalIndividualTricks = countTotalIndividualTricks(master);
+      const totalCount = totalIndividualTricks;
 
       // EMPTY STATE
       if (!hasItems && !isMasterPerformanceEditing) {
@@ -507,8 +532,8 @@
                 <div class="label-caps">Saved 2-Minute Program (Locked / Read-Only)</div>
               </div>
               <div style="display:flex; align-items:center; gap:8px;">
-                <span class="badge ${totalCount >= 9 ? 'badge-combo' : 'badge-warning'}">
-                  ${totalCount} / 9 Configured Tricks ${totalCount >= 9 ? '✓' : ''}
+                <span class="badge ${totalIndividualTricks >= 9 ? 'badge-combo' : 'badge-warning'}">
+                  ${totalIndividualTricks} Individual Tricks ${totalIndividualTricks >= 9 ? '✓' : '(Min 9 Req.)'}
                 </span>
                 <button type="button" class="btn btn-secondary btn-sm" onclick="enterMasterPerformanceEditMode()" style="border-color:#fb7185; color:#fb7185;">
                   ✏️ Edit Performance
