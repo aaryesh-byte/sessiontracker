@@ -432,12 +432,32 @@ function saveSessionRecord(p) {
     const cAttempts = item.completedAttempts !== undefined && item.completedAttempts !== '' ? Number(item.completedAttempts) : 0;
 
     let perfDataString = '';
-    if (item.sessionType === 'Performance' || item.performanceSnapshot) {
+    if (item.sessionType === 'Performance' || item.performanceSnapshot || item.performanceData) {
+      let snap = item.performanceSnapshot;
+      if (!snap && item.performanceData) {
+        if (typeof item.performanceData === 'object') {
+          snap = item.performanceData.snapshot || item.performanceData;
+        } else if (typeof item.performanceData === 'string' && item.performanceData.trim().startsWith('{')) {
+          try {
+            const parsed = JSON.parse(item.performanceData);
+            snap = parsed.snapshot || parsed;
+          } catch(e) {}
+        }
+      }
+      if (!snap || typeof snap !== 'object' || String(snap).toLowerCase() === 'performance') {
+        snap = { items: [] };
+      }
+
+      const runNotes = String(item.notes || item.userNotes || (snap && snap.notes) || '').trim();
+      const smoothnessVal = item.smoothnessScore !== undefined ? Number(item.smoothnessScore) : (snap && snap.smoothness !== undefined ? Number(snap.smoothness) : 0);
+      const footworkVal = item.footworkScore !== undefined ? Number(item.footworkScore) : (snap && snap.footwork !== undefined ? Number(snap.footwork) : 0);
+
       perfDataString = JSON.stringify({
         performanceScore: item.performanceScore !== undefined ? Number(item.performanceScore) : 0,
-        smoothnessScore: item.smoothnessScore !== undefined ? Number(item.smoothnessScore) : 0,
-        footworkScore: item.footworkScore !== undefined ? Number(item.footworkScore) : 0,
-        snapshot: item.performanceSnapshot || { items: [] }
+        smoothnessScore: smoothnessVal,
+        footworkScore: footworkVal,
+        notes: runNotes,
+        snapshot: snap
       });
     }
 

@@ -219,12 +219,13 @@ async function handleAuthSubmit(e) {
           try { pSnapshot = JSON.parse(pSnapshot); } catch(e) {}
         }
 
-        // Align smoothness and footwork between snapshot and session record
+        // Align smoothness, footwork, and notes between snapshot and session record
         if (pSnapshot && typeof pSnapshot === 'object') {
           if (sScore === 0 && pSnapshot.smoothness !== undefined) sScore = Number(pSnapshot.smoothness);
           if (fScore === 0 && pSnapshot.footwork !== undefined) fScore = Number(pSnapshot.footwork);
           if (pSnapshot.smoothness === undefined) pSnapshot.smoothness = sScore;
           if (pSnapshot.footwork === undefined) pSnapshot.footwork = fScore;
+          if (!cleanNotes && pSnapshot.notes) cleanNotes = String(pSnapshot.notes).trim();
 
           if (typeof PERFORMANCE_SCORING_CONFIG !== 'undefined' && PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore) {
             const calc = PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore(pSnapshot);
