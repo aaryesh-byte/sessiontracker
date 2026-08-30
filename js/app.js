@@ -885,6 +885,7 @@ async function switchTab(tabId, el) {
   const pageMap = {
     dashboard: 'dashboard',
     log: 'training',
+    calc: 'combo-calculator',
     history: 'history',
     tricks: 'custom-tricks'
   };
@@ -897,8 +898,8 @@ async function switchTab(tabId, el) {
   document.body.scrollTop = 0;
 
   document.querySelectorAll('.bottom-nav .nav-item').forEach(n => n.classList.remove('active'));
-  // Standard Layout: Dash (0) | Train (1) | History (2) | Custom Tricks (3)
-  const indexMap = { dashboard: 0, log: 1, history: 2, tricks: 3 };
+  // Standard Layout: Dash (0) | Train (1) | Build (2) | History (3) | Custom Tricks (4)
+  const indexMap = { dashboard: 0, log: 1, calc: 2, history: 3, tricks: 4 };
   const navItems = document.querySelectorAll('.bottom-nav .nav-item');
   if (navItems[indexMap[tabId]]) navItems[indexMap[tabId]].classList.add('active');
 
@@ -983,3 +984,85 @@ async function switchTab(tabId, el) {
       );
       return [...PREDEFINED_TRICKS, ...userCustom];
     }
+
+    function extractItemUserNotes(item) {
+      if (!item) return '';
+      if (item.notes && typeof item.notes === 'string') {
+        if (item.notes.startsWith('{')) {
+          try {
+            const parsed = JSON.parse(item.notes);
+            return parsed.userNotes || parsed.notes || '';
+          } catch(e) {}
+        }
+        return item.notes;
+      }
+      return '';
+    }
+
+    function extractItemAttempts(item) {
+      let target = Number(item.targetAttempts || item.targetattempts || 0);
+      let completed = Number(item.completedAttempts || item.completedattempts || 0);
+
+      if (target === 0 && item.notes && typeof item.notes === 'string' && item.notes.startsWith('{')) {
+        try {
+          const parsed = JSON.parse(item.notes);
+          if (parsed.targetAttempts !== undefined) target = Number(parsed.targetAttempts);
+          if (parsed.completedAttempts !== undefined) completed = Number(parsed.completedAttempts);
+        } catch(e) {}
+      }
+
+      if (target === 0) {
+        target = Number(item.targetCones || item.targetcones || 10);
+        completed = Number(item.completedCones || item.completedcones || target);
+      }
+
+      return { target, completed };
+    }
+
+    function extractComboSubTricks(item) {
+      if (item.itemMetadata && Array.isArray(item.itemMetadata.comboSlots) && item.itemMetadata.comboSlots.length > 0) {
+        return item.itemMetadata.comboSlots;
+      }
+      if (item.notes && typeof item.notes === 'string' && item.notes.startsWith('{')) {
+        try {
+          const parsed = JSON.parse(item.notes);
+          if (Array.isArray(parsed.comboSlots) && parsed.comboSlots.length > 0) {
+            return parsed.comboSlots;
+          }
+        } catch(e) {}
+      }
+      const rawName = item.trickName || item.trickname || '';
+      if (rawName.includes(' → ')) {
+        return rawName.split(' → ').map(s => s.trim()).filter(Boolean);
+      }
+      return [];
+    }
+
+    function extractPerformanceSnapshot(perfRec) {
+      if (!perfRec) return null;
+      if (perfRec.performanceSnapshot && typeof perfRec.performanceSnapshot === 'object') {
+        return perfRec.performanceSnapshot;
+      }
+      if (perfRec.notes && typeof perfRec.notes === 'string' && perfRec.notes.startsWith('{')) {
+        try {
+          const parsed = JSON.parse(perfRec.notes);
+          if (parsed.snapshot) return parsed.snapshot;
+        } catch(e) {}
+      }
+      if (perfRec.performanceData || perfRec.performancedata) {
+        const raw = perfRec.performanceData || perfRec.performancedata;
+        if (typeof raw === 'object' && raw.snapshot) return raw.snapshot;
+        if (typeof raw === 'string' && raw.trim().startsWith('{')) {
+          try {
+            const parsed = JSON.parse(raw);
+            if (parsed.snapshot) return parsed.snapshot;
+          } catch(e) {}
+        }
+      }
+      return null;
+    }
+
+    window.extractItemUserNotes = extractItemUserNotes;
+    window.extractItemAttempts = extractItemAttempts;
+    window.extractComboSubTricks = extractComboSubTricks;
+    window.extractPerformanceSnapshot = extractPerformanceSnapshot;
