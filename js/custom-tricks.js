@@ -224,28 +224,17 @@
     let tempMasterPerformanceDraft = null;
 
     function getMasterPerformance() {
-      const defaultRoutine = {
-        title: '2-Minute Performance Routine',
-        smoothness: 0,
-        footwork: 0,
-        items: [
-          { id: 'pitem-1', type: 'single', name: 'Butterfly Cross', category: 'OTHERS', family: 'A', completed: false },
-          { id: 'pitem-2', type: 'single', name: 'Butterfly', category: 'OTHERS', family: 'B', completed: false },
-          { id: 'pitem-3', type: 'single', name: 'Back Christie', category: 'SITTING', family: 'C', completed: false },
-          { id: 'pitem-4', type: 'single', name: 'Christie', category: 'SITTING', family: 'C', completed: false },
-          { id: 'pitem-5', type: 'combo', name: 'Toe Seven → Korean Spin', comboTricks: ['Toe Seven', 'Korean Spin'], category: 'SPINNING', family: 'B', completed: false },
-          { id: 'pitem-6', type: 'single', name: 'Heel Wheeling Fwd', category: 'WHEELING', family: 'C', completed: false },
-          { id: 'pitem-7', type: 'single', name: 'Nelson', category: 'OTHERS', family: 'E', completed: false },
-          { id: 'pitem-8', type: 'single', name: 'Crazy', category: 'OTHERS', family: 'E', completed: false },
-          { id: 'pitem-9', type: 'single', name: 'Eagle', category: 'OTHERS', family: 'D', completed: false }
-        ]
-      };
-
-      if (!appState.currentUser) return defaultRoutine;
-
+      if (!appState.currentUser) {
+        return { title: '2-Minute Performance Routine', items: [], smoothness: 0, footwork: 0 };
+      }
       const userKey = String(appState.currentUser.userId || appState.currentUser.username || appState.currentUser.skaterName || '').toLowerCase();
-      if (!appState.masterPerformances[userKey] || !Array.isArray(appState.masterPerformances[userKey].items)) {
-        appState.masterPerformances[userKey] = JSON.parse(JSON.stringify(defaultRoutine));
+      if (!appState.masterPerformances[userKey]) {
+        appState.masterPerformances[userKey] = {
+          title: '2-Minute Performance Routine',
+          items: [],
+          smoothness: 0,
+          footwork: 0
+        };
       }
       return appState.masterPerformances[userKey];
     }
@@ -286,7 +275,7 @@
     function toggleMasterPerfItemCollapse(idx) {
       if (tempMasterPerformanceDraft && tempMasterPerformanceDraft.items[idx]) {
         tempMasterPerformanceDraft.items[idx].isCollapsed = !tempMasterPerformanceDraft.items[idx].isCollapsed;
-        renderMasterPerformancePanel();
+
       }
     }
 
@@ -296,13 +285,13 @@
       const master = getMasterPerformance();
       tempMasterPerformanceDraft = JSON.parse(JSON.stringify(master));
       isMasterPerformanceEditing = true;
-      renderMasterPerformancePanel();
+
     }
 
     function cancelMasterPerformanceEditMode() {
       tempMasterPerformanceDraft = null;
       isMasterPerformanceEditing = false;
-      renderMasterPerformancePanel();
+
     }
 
     function saveAndUpdateMasterPerformance() {
@@ -310,7 +299,7 @@
       saveMasterPerformance(tempMasterPerformanceDraft);
       tempMasterPerformanceDraft = null;
       isMasterPerformanceEditing = false;
-      renderMasterPerformancePanel();
+
       showToast('Master Performance saved and locked.', 'success');
     }
 
@@ -339,13 +328,13 @@
           completed: true
         });
       }
-      renderMasterPerformancePanel();
+
     }
 
     function removeMasterPerfItem(idx) {
       if (!tempMasterPerformanceDraft || !tempMasterPerformanceDraft.items[idx]) return;
       tempMasterPerformanceDraft.items.splice(idx, 1);
-      renderMasterPerformancePanel();
+
     }
 
     function moveMasterPerfItem(idx, direction) {
@@ -355,7 +344,7 @@
       const temp = tempMasterPerformanceDraft.items[idx];
       tempMasterPerformanceDraft.items[idx] = tempMasterPerformanceDraft.items[targetIdx];
       tempMasterPerformanceDraft.items[targetIdx] = temp;
-      renderMasterPerformancePanel();
+
     }
 
     function onMasterPerfSingleSearch(idx, query) {
@@ -397,7 +386,7 @@
         tempMasterPerformanceDraft.items[idx].family = trickObj.family;
         tempMasterPerformanceDraft.items[idx].basePoints = PERFORMANCE_SCORING_CONFIG.basePointsByFamily[trickObj.family] || 2;
       }
-      renderMasterPerformancePanel();
+
     }
 
     function addSubTrickToMasterCombo(perfItemIdx) {
@@ -405,7 +394,7 @@
       const item = tempMasterPerformanceDraft.items[perfItemIdx];
       if (!item.comboTricks) item.comboTricks = [];
       item.comboTricks.push('');
-      renderMasterPerformancePanel();
+
     }
 
     function removeSubTrickFromMasterCombo(perfItemIdx, subIdx) {
@@ -417,7 +406,7 @@
       }
       item.comboTricks.splice(subIdx, 1);
       item.name = item.comboTricks.filter(Boolean).join(' → ');
-      renderMasterPerformancePanel();
+
     }
 
     function moveSubTrickInMasterCombo(perfItemIdx, subIdx, direction) {
@@ -429,7 +418,7 @@
       item.comboTricks[subIdx] = item.comboTricks[target];
       item.comboTricks[target] = temp;
       item.name = item.comboTricks.filter(Boolean).join(' → ');
-      renderMasterPerformancePanel();
+
     }
 
     function onMasterComboSubTrickSearch(perfItemIdx, subIdx, query) {
@@ -471,21 +460,7 @@
       if (!item.comboTricks) item.comboTricks = [];
       item.comboTricks[subIdx] = trickName;
       item.name = item.comboTricks.filter(Boolean).join(' → ');
-      renderMasterPerformancePanel();
-    }
 
-    function countTotalIndividualTricks(perfObj) {
-      if (!perfObj || !Array.isArray(perfObj.items)) return 0;
-      let count = 0;
-      perfObj.items.forEach(it => {
-        if (it.type === 'combo') {
-          const list = Array.isArray(it.comboTricks) ? it.comboTricks.filter(Boolean) : (it.name ? it.name.split(' → ').filter(Boolean) : []);
-          count += Math.max(1, list.length);
-        } else {
-          count += 1;
-        }
-      });
-      return count;
     }
 
     function renderMasterPerformancePanel() {
@@ -495,8 +470,7 @@
       const master = isMasterPerformanceEditing ? tempMasterPerformanceDraft : getMasterPerformance();
       const allTricks = getAllTricks();
       const hasItems = master && master.items && master.items.length > 0;
-      const totalIndividualTricks = countTotalIndividualTricks(master);
-      const totalCount = totalIndividualTricks;
+      const totalCount = hasItems ? master.items.length : 0;
 
       // EMPTY STATE
       if (!hasItems && !isMasterPerformanceEditing) {
@@ -532,8 +506,8 @@
                 <div class="label-caps">Saved 2-Minute Program (Locked / Read-Only)</div>
               </div>
               <div style="display:flex; align-items:center; gap:8px;">
-                <span class="badge ${totalIndividualTricks >= 9 ? 'badge-combo' : 'badge-warning'}">
-                  ${totalIndividualTricks} Individual Tricks ${totalIndividualTricks >= 9 ? '✓' : '(Min 9 Req.)'}
+                <span class="badge ${totalCount >= 9 ? 'badge-combo' : 'badge-warning'}">
+                  ${totalCount} / 9 Configured Tricks ${totalCount >= 9 ? '✓' : ''}
                 </span>
                 <button type="button" class="btn btn-secondary btn-sm" onclick="enterMasterPerformanceEditMode()" style="border-color:#fb7185; color:#fb7185;">
                   ✏️ Edit Performance
@@ -699,29 +673,14 @@
       `;
     }
 
-    window.enterMasterPerformanceEditMode = enterMasterPerformanceEditMode;
-    window.cancelMasterPerformanceEditMode = cancelMasterPerformanceEditMode;
-    window.saveAndUpdateMasterPerformance = saveAndUpdateMasterPerformance;
-    window.addSubTrickToMasterCombo = addSubTrickToMasterCombo;
+                window.addSubTrickToMasterCombo = addSubTrickToMasterCombo;
     window.removeSubTrickFromMasterCombo = removeSubTrickFromMasterCombo;
     window.moveSubTrickInMasterCombo = moveSubTrickInMasterCombo;
     window.onMasterComboSubTrickChange = onMasterComboSubTrickChange;
     window.onMasterPerfSingleChange = onMasterPerfSingleChange;
     window.onMasterPerfSingleSearch = onMasterPerfSingleSearch;
     window.onMasterComboSubTrickSearch = onMasterComboSubTrickSearch;
-    window.getMasterPerformance = getMasterPerformance;
-    window.saveMasterPerformance = saveMasterPerformance;
-    window.addMasterPerfTrick = addMasterPerfTrick;
-    window.removeMasterPerfItem = removeMasterPerfItem;
-    window.moveMasterPerfItem = moveMasterPerfItem;
-    window.renderMasterPerformancePanel = renderMasterPerformancePanel;
 
-    window.getMasterPerformance = getMasterPerformance;
-    window.saveMasterPerformance = saveMasterPerformance;
-    window.addMasterPerfTrick = addMasterPerfTrick;
-    window.removeMasterPerfItem = removeMasterPerfItem;
-    window.moveMasterPerfItem = moveMasterPerfItem;
-    window.renderMasterPerformancePanel = renderMasterPerformancePanel;
 
     function renderCustomTricksList() {
       const container = document.getElementById('customTricksList');
@@ -739,7 +698,7 @@
         String(t.skaterName || t.skatername).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
       );
 
-      renderMasterPerformancePanel();
+
 
       if (userCustom.length === 0) {
         container.innerHTML = `<div class="empty-state"><div class="empty-icon">💡</div><div class="empty-text">No custom tricks created yet. Use the form above to add personal tricks.</div></div>`;

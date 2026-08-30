@@ -5,9 +5,8 @@ let appState = {
       isAuthenticating: false,
       sessions: [],
       customTricks: [],
-      masterPerformances: {}, // Keyed by username/skaterName
-      sessionPerformance: null, // Temporary session performance snapshot
-      sessionItems: [],
+                  sessionItems: [],
+      calcSlots: [],
       deletingTrickId: null,
       charts: {}
     };
@@ -114,13 +113,10 @@ async function handleAuthSubmit(e) {
           
           // Cloud database is 100% the SINGLE SOURCE OF TRUTH for Master Performance
           const userKey = String(authenticatedUser.userId || authenticatedUser.username || authenticatedUser.skaterName || '').toLowerCase();
-          if (json.data && json.data.masterPerformance && typeof json.data.masterPerformance === 'object' && Array.isArray(json.data.masterPerformance.items) && json.data.masterPerformance.items.length > 0) {
-            appState.masterPerformances[userKey] = json.data.masterPerformance;
+          if (json.data && json.data.masterPerformance && typeof json.data.masterPerformance === 'object') {
+             // removed
           } else {
-            delete appState.masterPerformances[userKey];
-            if (typeof getMasterPerformance === 'function') {
-              appState.masterPerformances[userKey] = getMasterPerformance();
-            }
+
           }
 
           if (appState.authMode === 'register') {
@@ -172,70 +168,98 @@ async function handleAuthSubmit(e) {
       const el = document.getElementById(id);
       if (el) el.textContent = text;
     }
-// Helper to format date strings cleanly
-    function formatNormalizedDate(dateVal) {
-      if (!dateVal) return '';
-      if (typeof dateVal === 'string') return dateVal.includes('T') ? dateVal.split('T')[0] : dateVal.trim();
-      if (dateVal instanceof Date) {
-        const yyyy = dateVal.getFullYear();
-        const mm = String(dateVal.getMonth() + 1).padStart(2, '0');
-        const dd = String(dateVal.getDate()).padStart(2, '0');
-        return `${yyyy}-${mm}-${dd}`;
-      }
-      return String(dateVal).split('T')[0];
-    }
-
 // Canonical data normalizer to eradicate 'undefined' and unparsed JSON across all devices
     function normalizeSessionRecords(rawRecords) {
       if (!Array.isArray(rawRecords)) return [];
-
-      const standardRows = [];
-      const perfRowsBySession = {};
-
-      rawRecords.forEach(r => {
-        const sType = r.sessionType || r.sessiontype || 'Single';
-        if (sType === 'Performance') {
-          const sId = r.sessionId || r.sessionid || ('SESS-' + Date.now());
-          let meta = {};
-          const rawPerf = r.performanceData || r.performancedata || '';
-          if (rawPerf && typeof rawPerf === 'string' && rawPerf.trim().startsWith('{')) {
-            try { meta = JSON.parse(rawPerf); } catch(e) {}
-          } else if (typeof rawPerf === 'object') {
-            meta = rawPerf;
-          }
-          const runKey = sId + '_' + (meta.runIndex !== undefined ? meta.runIndex : (meta.perfTitle || 'run0'));
-          if (!perfRowsBySession[runKey]) perfRowsBySession[runKey] = [];
-          perfRowsBySession[runKey].push(r);
-        } else {
-          standardRows.push(r);
-        }
-      });
-
-      const normalizedStandards = standardRows.map(r => {
+      return rawRecords.map(r => {
         const sType = r.sessionType || r.sessiontype || 'Single';
         const tName = r.trickName || r.trickname || r.trickcombo || (sType === 'Rest' ? 'Rest Day' : 'Training Drill');
+
+        let pScore = r.performanceScore !== undefined ? Number(r.performanceScore) : (r.performancescore !== undefined ? Number(r.performancescore) : 0);
+        let sScore = r.smoothnessScore !== undefined ? Number(r.smoothnessScore) : (r.smoothnessscore !== undefined ? Number(r.smoothnessscore) : 0);
+        let fScore = r.footworkScore !== undefined ? Number(r.footworkScore) : (r.footworkscore !== undefined ? Number(r.footworkscore) : 0);
+        let pSnapshot = r.performanceSnapshot || null;
+
+        // Parse performance data if stored in performancedata or stringified notes
+        const rawPerf = r.performanceData || r.performancedata || '';
+        if (rawPerf) {
+          let pObj = null;
+          if (typeof rawPerf === 'string' && rawPerf.trim().startsWith('{')) {
+            try { pObj = JSON.parse(rawPerf); } catch(e) {}
+          } else if (typeof rawPerf === 'object') {
+            pObj = rawPerf;
+          }
+          if (pObj) {
+            if (pObj.performanceScore !== undefined) pScore = Number(pObj.performanceScore);
+            if (pObj.smoothnessScore !== undefined) sScore = Number(pObj.smoothnessScore);
+            if (pObj.footworkScore !== undefined) fScore = Number(pObj.footworkScore);
+            if (pObj.snapshot) pSnapshot = pObj.snapshot;
+          }
+        }
+
+        // Clean user notes (strip raw JSON strings)
+        let cleanNotes = String(r.notes || '').trim();
+        if (cleanNotes.startsWith('{') && cleanNotes.endsWith('}')) {
+          try {
+            const parsed = JSON.parse(cleanNotes);
+            if (parsed.snapshot && !pSnapshot) {
+              pSnapshot = parsed.snapshot;
+              if (parsed.performanceScore !== undefined) pScore = Number(parsed.performanceScore);
+              if (parsed.smoothnessScore !== undefined) sScore = Number(parsed.smoothnessScore);
+              if (parsed.footworkScore !== undefined) fScore = Number(parsed.footworkScore);
+            }
+            cleanNotes = parsed.userNotes || parsed.notes || '';
+          } catch(e) {}
+        }
+
+        // Ensure pSnapshot itself is parsed if it's a JSON string
+        if (typeof pSnapshot === 'string' && pSnapshot.trim().startsWith('{')) {
+          try { pSnapshot = JSON.parse(pSnapshot); } catch(e) {}
+        }
+
+        // Align smoothness and footwork between snapshot and session record
+        if (pSnapshot && typeof pSnapshot === 'object') {
+          if (sScore === 0 && pSnapshot.smoothness !== undefined) sScore = Number(pSnapshot.smoothness);
+          if (fScore === 0 && pSnapshot.footwork !== undefined) fScore = Number(pSnapshot.footwork);
+          if (pSnapshot.smoothness === undefined) pSnapshot.smoothness = sScore;
+          if (pSnapshot.footwork === undefined) pSnapshot.footwork = fScore;
+
+          if (typeof PERFORMANCE_SCORING_CONFIG !== 'undefined' && PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore) {
+            const calc = PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore(pSnapshot);
+            if (pScore === 0 || pScore !== calc.totalScore) pScore = calc.totalScore;
+            if (sScore === 0) sScore = calc.smoothness;
+            if (fScore === 0) fScore = calc.footwork;
+          }
+        }
+
         const targetCones = r.targetCones !== undefined ? Number(r.targetCones) : Number(r.targetcones || 0);
         const completedCones = r.completedCones !== undefined ? Number(r.completedCones) : Number(r.completedcones || 0);
         const targetAttempts = r.targetAttempts !== undefined ? Number(r.targetAttempts) : Number(r.targetattempts || 10);
         const completedAttempts = r.completedAttempts !== undefined ? Number(r.completedAttempts) : Number(r.completedattempts || 0);
 
-        let cleanNotes = String(r.notes || '').trim();
-        if (cleanNotes.startsWith('{') && cleanNotes.endsWith('}')) {
-          try {
-            const parsed = JSON.parse(cleanNotes);
-            cleanNotes = parsed.userNotes || parsed.notes || '';
-          } catch(e) {}
+        let parsedDate = '';
+        if (r.date) {
+          if (typeof r.date === 'string') {
+            parsedDate = r.date.includes('T') ? r.date.split('T')[0] : r.date.trim();
+          } else if (r.date instanceof Date) {
+            const yyyy = r.date.getFullYear();
+            const mm = String(r.date.getMonth() + 1).padStart(2, '0');
+            const dd = String(r.date.getDate()).padStart(2, '0');
+            parsedDate = `${yyyy}-${mm}-${dd}`;
+          } else {
+            parsedDate = String(r.date).split('T')[0];
+          }
         }
 
         return {
           sessionId: r.sessionId || r.sessionid || ('SESS-' + Date.now()),
           userId: r.userId || r.userid || '',
           skaterName: r.skaterName || r.skatername || '',
-          date: formatNormalizedDate(r.date),
+          date: parsedDate,
           sessionType: sType,
           trickName: tName,
-          category: r.category || 'OTHERS',
-          family: r.family || 'Custom',
+          category: r.category || (sType === 'Performance' ? 'PERFORMANCE' : 'OTHERS'),
+          family: r.family || (sType === 'Performance' ? 'Valid' : 'Custom'),
           targetCones: targetCones,
           completedCones: completedCones,
           missedCones: r.missedCones !== undefined ? Number(r.missedCones) : Number(r.missedcones || 0),
@@ -244,246 +268,13 @@ async function handleAuthSubmit(e) {
           connectedCompletion: r.connectedCompletion || r.connectedcompletion || 'N/A',
           targetAttempts: targetAttempts,
           completedAttempts: completedAttempts,
-          performanceScore: 0,
-          smoothnessScore: 0,
-          footworkScore: 0,
-          performanceSnapshot: null,
-          notes: cleanNotes
-        };
-      });
-
-      const normalizedPerfs = Object.keys(perfRowsBySession).map(runKey => {
-        const rows = perfRowsBySession[runKey];
-        if (rows.length === 0) return null;
-
-        const firstRow = rows[0];
-        const sId = firstRow.sessionId || firstRow.sessionid || ('SESS-' + Date.now());
-        let pSnapshot = firstRow.performanceSnapshot || null;
-        let pScore = firstRow.performanceScore !== undefined ? Number(firstRow.performanceScore) : (firstRow.performancescore !== undefined ? Number(firstRow.performancescore) : 0);
-        let sScore = firstRow.smoothnessScore !== undefined ? Number(firstRow.smoothnessScore) : (firstRow.smoothnessscore !== undefined ? Number(firstRow.smoothnessscore) : 0);
-        let fScore = firstRow.footworkScore !== undefined ? Number(firstRow.footworkScore) : (firstRow.footworkscore !== undefined ? Number(firstRow.footworkscore) : 0);
-        let cleanNotes = String(firstRow.notes || '').trim();
-
-        if (cleanNotes.startsWith('{') && cleanNotes.endsWith('}')) {
-          try {
-            const parsed = JSON.parse(cleanNotes);
-            cleanNotes = parsed.userNotes || parsed.notes || '';
-          } catch(e) {}
-        }
-
-        // If single row has embedded performanceSnapshot object or JSON string
-        if (rows.length === 1 && (pSnapshot || firstRow.performanceData || firstRow.performancedata)) {
-          const rawPerf = firstRow.performanceData || firstRow.performancedata || '';
-          if (rawPerf) {
-            let pObj = null;
-            if (typeof rawPerf === 'string' && rawPerf.trim().startsWith('{')) {
-              try { pObj = JSON.parse(rawPerf); } catch(e) {}
-            } else if (typeof rawPerf === 'object') {
-              pObj = rawPerf;
-            }
-            if (pObj) {
-              if (pObj.performanceScore !== undefined) pScore = Number(pObj.performanceScore);
-              if (pObj.smoothnessScore !== undefined) sScore = Number(pObj.smoothnessScore);
-              if (pObj.footworkScore !== undefined) fScore = Number(pObj.footworkScore);
-              if (pObj.snapshot) pSnapshot = pObj.snapshot;
-            }
-          }
-
-          if (typeof pSnapshot === 'string' && pSnapshot.trim().startsWith('{')) {
-            try { pSnapshot = JSON.parse(pSnapshot); } catch(e) {}
-          }
-
-          if (pSnapshot && typeof pSnapshot === 'object' && Array.isArray(pSnapshot.items) && pSnapshot.items.length > 0) {
-            if (sScore === 0 && pSnapshot.smoothness !== undefined) sScore = Number(pSnapshot.smoothness);
-            if (fScore === 0 && pSnapshot.footwork !== undefined) fScore = Number(pSnapshot.footwork);
-            if (!cleanNotes && pSnapshot.notes) cleanNotes = String(pSnapshot.notes).trim();
-
-            pSnapshot.items = pSnapshot.items.map((it, idx) => {
-              if (it.type === 'combo') {
-                const cList = Array.isArray(it.comboTricks) ? it.comboTricks : (it.name ? it.name.split(' → ') : []);
-                return {
-                  id: it.id || ('pitem-' + idx),
-                  type: 'combo',
-                  name: it.name || it.trickName || 'Combo Sequence',
-                  comboTricks: cList,
-                  category: it.category || 'OTHERS',
-                  family: it.family || 'Custom',
-                  completed: Boolean(it.completed),
-                  comboSubCompleted: it.comboSubCompleted || {}
-                };
-              } else {
-                return {
-                  id: it.id || ('pitem-' + idx),
-                  type: 'single',
-                  name: it.name || it.trickName || 'Trick',
-                  category: it.category || 'OTHERS',
-                  family: it.family || 'Custom',
-                  completed: Boolean(it.completed)
-                };
-              }
-            });
-
-            const scoreCalc = (typeof PERFORMANCE_SCORING_CONFIG !== 'undefined' && PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore) ?
-              PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore(pSnapshot) :
-              { totalIndividualTricks: pSnapshot.items.length, completedCount: pSnapshot.items.filter(i => i.completed).length, totalScore: pScore };
-
-            if (pScore === 0 || pScore !== scoreCalc.totalScore) pScore = scoreCalc.totalScore;
-            if (sScore === 0 && scoreCalc.smoothness !== undefined) sScore = scoreCalc.smoothness;
-            if (fScore === 0 && scoreCalc.footwork !== undefined) fScore = scoreCalc.footwork;
-
-            return {
-              sessionId: sId,
-              userId: firstRow.userId || firstRow.userid || '',
-              skaterName: firstRow.skaterName || firstRow.skatername || '',
-              date: formatNormalizedDate(firstRow.date),
-              sessionType: 'Performance',
-              trickName: firstRow.trickName || firstRow.trickname || 'Performance Run #1 (2 min)',
-              category: 'PERFORMANCE',
-              family: scoreCalc.completedCount >= 9 ? 'Valid' : 'Incomplete',
-              targetCones: scoreCalc.totalIndividualTricks,
-              completedCones: scoreCalc.completedCount,
-              missedCones: Math.max(0, scoreCalc.totalIndividualTricks - scoreCalc.completedCount),
-              falls: Number(firstRow.falls || 0),
-              successRate: scoreCalc.totalIndividualTricks > 0 ? parseFloat(((scoreCalc.completedCount / scoreCalc.totalIndividualTricks) * 100).toFixed(1)) : 0,
-              connectedCompletion: 'N/A',
-              targetAttempts: scoreCalc.totalIndividualTricks,
-              completedAttempts: scoreCalc.completedCount,
-              performanceScore: pScore,
-              smoothnessScore: sScore,
-              footworkScore: fScore,
-              performanceSnapshot: pSnapshot,
-              notes: cleanNotes
-            };
-          }
-        }
-
-        // Reconstruct from structured multi-row performance items
-        const itemsByOrder = {};
-        rows.forEach(r => {
-          let meta = {};
-          const rawPerf = r.performanceData || r.performancedata || '';
-          if (rawPerf && typeof rawPerf === 'string' && rawPerf.trim().startsWith('{')) {
-            try { meta = JSON.parse(rawPerf); } catch(e) {}
-          } else if (typeof rawPerf === 'object') {
-            meta = rawPerf;
-          }
-
-          if (meta.runNotes) cleanNotes = meta.runNotes;
-          if (meta.perfScore !== undefined) pScore = Number(meta.perfScore);
-          if (meta.smoothness !== undefined) sScore = Number(meta.smoothness);
-          if (meta.footwork !== undefined) fScore = Number(meta.footwork);
-          if (r.notes && !cleanNotes) cleanNotes = String(r.notes).trim();
-
-          const orderKey = meta.order !== undefined ? meta.order : Object.keys(itemsByOrder).length;
-          if (!itemsByOrder[orderKey]) {
-            itemsByOrder[orderKey] = {
-              id: meta.itemId || meta.comboId || ('pitem-' + orderKey),
-              type: meta.type || (meta.comboName ? 'combo' : 'single'),
-              name: meta.comboName || meta.trickName || r.trickName || r.trickname,
-              category: meta.category || r.category || 'OTHERS',
-              family: meta.family || r.family || 'Custom',
-              rows: []
-            };
-          }
-          itemsByOrder[orderKey].rows.push({ row: r, meta: meta });
-        });
-
-        const reconstructedItems = Object.keys(itemsByOrder).sort((a, b) => Number(a) - Number(b)).map(orderKey => {
-          const group = itemsByOrder[orderKey];
-          if (group.type === 'combo') {
-            const comboTricks = [];
-            const comboSubCompleted = {};
-            group.rows.sort((a, b) => Number(a.meta.subIndex || 0) - Number(b.meta.subIndex || 0)).forEach((rObj, idx) => {
-              const subName = rObj.meta.trickName || rObj.row.trickName || rObj.row.trickname || 'Trick';
-              comboTricks.push(subName);
-              const isDone = Boolean(rObj.meta.isSubDone !== undefined ? rObj.meta.isSubDone : (Number(rObj.row.completedCones || rObj.row.completedcones || 0) > 0));
-              comboSubCompleted[idx] = isDone;
-            });
-            const allDone = comboTricks.length > 0 && comboTricks.every((_, i) => comboSubCompleted[i] === true);
-            return {
-              id: group.id,
-              type: 'combo',
-              name: group.name,
-              comboTricks: comboTricks,
-              category: group.category,
-              family: group.family,
-              completed: allDone,
-              comboSubCompleted: comboSubCompleted
-            };
-          } else {
-            const rObj = group.rows[0];
-            const singleName = rObj.meta.trickName || rObj.row.trickName || rObj.row.trickname || 'Trick';
-            const isDone = Boolean(rObj.meta.completed !== undefined ? rObj.meta.completed : (Number(rObj.row.completedCones || rObj.row.completedcones || 0) > 0));
-            return {
-              id: group.id,
-              type: 'single',
-              name: singleName,
-              category: group.category,
-              family: group.family,
-              completed: isDone
-            };
-          }
-        });
-
-        let totalIndividual = 0;
-        let completedIndividual = 0;
-        reconstructedItems.forEach(it => {
-          if (it.type === 'combo') {
-            const c = it.comboTricks.length;
-            totalIndividual += c;
-            for (let i = 0; i < c; i++) {
-              if (it.comboSubCompleted && it.comboSubCompleted[i] === true) completedIndividual++;
-            }
-          } else {
-            totalIndividual += 1;
-            if (it.completed) completedIndividual += 1;
-          }
-        });
-
-        const perfId = firstRow.performanceId || (sId + '_' + (firstRow.runIndex !== undefined ? firstRow.runIndex : 'run0'));
-        const reconstructedSnap = {
-          id: perfId,
-          performanceId: perfId,
-          title: firstRow.trickName || firstRow.trickname || 'Performance Run #1 (2 min)',
-          smoothness: sScore,
-          footwork: fScore,
-          notes: cleanNotes,
-          totalTrickCount: totalIndividual,
-          completedCount: completedIndividual,
-          items: reconstructedItems
-        };
-
-        if (typeof PERFORMANCE_SCORING_CONFIG !== 'undefined' && PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore) {
-          const calc = PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore(reconstructedSnap);
-          pScore = calc.totalScore;
-        }
-
-        return {
-          sessionId: sId,
-          userId: firstRow.userId || firstRow.userid || '',
-          skaterName: firstRow.skaterName || firstRow.skatername || '',
-          date: formatNormalizedDate(firstRow.date),
-          sessionType: 'Performance',
-          trickName: firstRow.trickName || firstRow.trickname || 'Performance Run #1 (2 min)',
-          category: 'PERFORMANCE',
-          family: completedIndividual >= 9 ? 'Valid' : 'Incomplete',
-          targetCones: totalIndividual,
-          completedCones: completedIndividual,
-          missedCones: Math.max(0, totalIndividual - completedIndividual),
-          falls: Number(firstRow.falls || 0),
-          successRate: totalIndividual > 0 ? parseFloat(((completedIndividual / totalIndividual) * 100).toFixed(1)) : 0,
-          connectedCompletion: 'N/A',
-          targetAttempts: totalIndividual,
-          completedAttempts: completedIndividual,
           performanceScore: pScore,
           smoothnessScore: sScore,
           footworkScore: fScore,
-          performanceSnapshot: reconstructedSnap,
+          performanceSnapshot: pSnapshot,
           notes: cleanNotes
         };
-      }).filter(Boolean);
-
-      return [...normalizedStandards, ...normalizedPerfs];
+      });
     }
 
     window.normalizeSessionRecords = normalizeSessionRecords;
@@ -1092,6 +883,7 @@ async function switchTab(tabId, el) {
   const pageMap = {
     dashboard: 'dashboard',
     log: 'training',
+    calc: 'combo-calculator',
     history: 'history',
     tricks: 'custom-tricks'
   };
@@ -1104,8 +896,8 @@ async function switchTab(tabId, el) {
   document.body.scrollTop = 0;
 
   document.querySelectorAll('.bottom-nav .nav-item').forEach(n => n.classList.remove('active'));
-  // Standard Layout: Dash (0) | Train (1) | History (2) | Custom Tricks (3)
-  const indexMap = { dashboard: 0, log: 1, history: 2, tricks: 3 };
+  // Standard Layout: Dash (0) | Train (1) | Build (2) | History (3) | Custom Tricks (4)
+  const indexMap = { dashboard: 0, log: 1, calc: 2, history: 3, tricks: 4 };
   const navItems = document.querySelectorAll('.bottom-nav .nav-item');
   if (navItems[indexMap[tabId]]) navItems[indexMap[tabId]].classList.add('active');
 
@@ -1171,6 +963,7 @@ async function switchTab(tabId, el) {
     }
     if (tabId === 'history') renderHistory();
     if (tabId === 'tricks') renderCustomTricksList();
+    if (tabId === 'calc') renderCalcSlots();
 
     // Re-apply theme after injecting page markup.
     const theme = document.documentElement.getAttribute('data-theme') || 'dark';

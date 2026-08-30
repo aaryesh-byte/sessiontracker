@@ -122,7 +122,7 @@
                       return `
                         <div class="history-perf-pills" style="margin-bottom:4px;">
                           <span class="history-perf-pill ${it.completed ? 'is-done' : 'is-missed'}">
-                            ${it.completed ? '✓' : '✗'} #${itemIdx + 1} ${it.name || it.trickName || 'Trick'}
+                            ${it.completed ? '✓' : '✗'} #${itemIdx + 1} ${it.name || 'Trick'}
                           </span>
                         </div>
                       `;

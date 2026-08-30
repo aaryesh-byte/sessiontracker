@@ -118,7 +118,7 @@
     window.updateAttemptProgressBar = updateAttemptProgressBar;
 
     // Performance Session Handlers (Strict Initial Incomplete State)
-    function addPerformanceToSession() {
+    function addPerformanceToSession() { return;
       if (!appState.sessionPerformances) appState.sessionPerformances = [];
       const master = getMasterPerformance();
       const allTricks = getAllTricks();
@@ -135,7 +135,10 @@
           return it;
         });
       } else {
-        clonedItems = [];
+        clonedItems = [
+          { id: 'pitem-1', type: 'single', name: allTricks[0] ? (allTricks[0].name || allTricks[0].trickname) : 'Butterfly', category: 'OTHERS', family: 'B', completed: false },
+          { id: 'pitem-2', type: 'single', name: allTricks[1] ? (allTricks[1].name || allTricks[1].trickname) : 'Nelson', category: 'OTHERS', family: 'E', completed: false }
+        ];
       }
 
       const newSnapshot = {
@@ -597,7 +600,7 @@
       }).join('');
     }
 
-    function renderSessionPerformanceSection() {
+    function renderSessionPerformanceSection() { return;
       const container = document.getElementById('sessionPerformanceContainer');
       if (!container) return;
 
@@ -958,41 +961,29 @@ async function handleMultiSessionSubmit(e) {
         appState.sessionPerformances.forEach((perf, pIdx) => {
           if (!perf.items || perf.items.length === 0) return;
           const perfScore = PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore(perf);
-          const totalTricksInRun = perfScore.totalIndividualTricks || perf.items.length;
-
-          const performanceId = perf.id || perf.performanceId || ('PERF-' + sessionId + '-' + pIdx);
-          const perfSnapshotCopy = JSON.parse(JSON.stringify(perf));
-          perfSnapshotCopy.id = performanceId;
-          perfSnapshotCopy.performanceId = performanceId;
-          perfSnapshotCopy.smoothness = perfScore.smoothness;
-          perfSnapshotCopy.footwork = perfScore.footwork;
-          perfSnapshotCopy.notes = perf.notes || globalNotes || '';
-          perfSnapshotCopy.totalTrickCount = totalTricksInRun;
-          perfSnapshotCopy.completedCount = perfScore.completedCount;
-
-          const perfRecord = {
-            sessionId: sessionId,
-            performanceId: performanceId,
-            date: date,
-            sessionType: 'Performance',
-            skaterName: activeSkater,
-            userId: activeUserId,
-            trickName: `Performance Run #${pIdx + 1} (2 min)`,
-            category: 'PERFORMANCE',
-            family: perfScore.isValid ? 'Valid' : 'Incomplete',
-            targetCones: totalTricksInRun,
-            completedCones: perfScore.completedCount,
-            missedCones: Math.max(0, totalTricksInRun - perfScore.completedCount),
-            falls: 0,
-            successRate: totalTricksInRun > 0 ? parseFloat(((perfScore.completedCount / totalTricksInRun) * 100).toFixed(1)) : 0,
-            connectedCompletion: 'N/A',
-            performanceSnapshot: perfSnapshotCopy,
-            performanceScore: perfScore.totalScore,
-            smoothnessScore: perfScore.smoothness,
-            footworkScore: perfScore.footwork,
-            notes: perf.notes || globalNotes || ''
-          };
-          formattedPayloadItems.push(perfRecord);
+        const totalTricksInRun = perfScore.totalIndividualTricks || perf.items.length;
+        const perfRecord = {
+          sessionId: sessionId,
+          date: date,
+          sessionType: 'Performance',
+          skaterName: activeSkater,
+          userId: activeUserId,
+          trickName: `Performance Run #${pIdx + 1} (2 min)`,
+          category: 'PERFORMANCE',
+          family: perfScore.isValid ? 'Valid' : 'Incomplete',
+          targetCones: totalTricksInRun,
+          completedCones: perfScore.completedCount,
+          missedCones: Math.max(0, totalTricksInRun - perfScore.completedCount),
+          falls: 0,
+          successRate: totalTricksInRun > 0 ? parseFloat(((perfScore.completedCount / totalTricksInRun) * 100).toFixed(1)) : 0,
+          connectedCompletion: 'N/A',
+          performanceSnapshot: JSON.parse(JSON.stringify(perf)),
+          performanceScore: perfScore.totalScore,
+          smoothnessScore: perfScore.smoothness,
+          footworkScore: perfScore.footwork,
+          notes: perf.notes || globalNotes
+        };
+        formattedPayloadItems.push(perfRecord);
         });
       }
 
