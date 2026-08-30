@@ -118,7 +118,7 @@
     window.updateAttemptProgressBar = updateAttemptProgressBar;
 
     // Performance Session Handlers (Strict Initial Incomplete State)
-    function addPerformanceToSession() {
+    function addPerformanceToSession() { return;
       if (!appState.sessionPerformances) appState.sessionPerformances = [];
       const master = getMasterPerformance();
       const allTricks = getAllTricks();
@@ -600,7 +600,7 @@
       }).join('');
     }
 
-    function renderSessionPerformanceSection() {
+    function renderSessionPerformanceSection() { return;
       const container = document.getElementById('sessionPerformanceContainer');
       if (!container) return;
 

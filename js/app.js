@@ -5,9 +5,7 @@ let appState = {
       isAuthenticating: false,
       sessions: [],
       customTricks: [],
-      masterPerformances: {}, // Keyed by username/skaterName
-      sessionPerformance: null, // Temporary session performance snapshot
-      sessionItems: [],
+                  sessionItems: [],
       calcSlots: [],
       deletingTrickId: null,
       charts: {}
@@ -116,9 +114,9 @@ async function handleAuthSubmit(e) {
           // Cloud database is 100% the SINGLE SOURCE OF TRUTH for Master Performance
           const userKey = String(authenticatedUser.userId || authenticatedUser.username || authenticatedUser.skaterName || '').toLowerCase();
           if (json.data && json.data.masterPerformance && typeof json.data.masterPerformance === 'object') {
-            appState.masterPerformances[userKey] = json.data.masterPerformance;
+             // removed
           } else {
-            appState.masterPerformances[userKey] = { title: '2-Minute Performance Routine', items: [], smoothness: 0, footwork: 0 };
+
           }
 
           if (appState.authMode === 'register') {
@@ -176,7 +174,7 @@ async function handleAuthSubmit(e) {
       return rawRecords.map(r => {
         const sType = r.sessionType || r.sessiontype || 'Single';
         const tName = r.trickName || r.trickname || r.trickcombo || (sType === 'Rest' ? 'Rest Day' : 'Training Drill');
-        
+
         let pScore = r.performanceScore !== undefined ? Number(r.performanceScore) : (r.performancescore !== undefined ? Number(r.performancescore) : 0);
         let sScore = r.smoothnessScore !== undefined ? Number(r.smoothnessScore) : (r.smoothnessscore !== undefined ? Number(r.smoothnessscore) : 0);
         let fScore = r.footworkScore !== undefined ? Number(r.footworkScore) : (r.footworkscore !== undefined ? Number(r.footworkscore) : 0);

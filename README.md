@@ -4,7 +4,7 @@ This is a structural refactor of the supplied working HTML application. Existing
 
 ## Structure
 - `index.html` — application shell, authentication, shared header, navigation and page loader.
-- `pages/*.html` — separate HTML modules for Dashboard, Training, History, Custom Tricks and Combo Calculator.
+- `pages/*.html` — separate HTML modules for Dashboard, Training, History, and Custom Tricks.
 - `css/global.css` — existing shared design system/styles.
 - `css/*.css` — reserved page-specific style files.
 - `js/app.js` — shared state, auth, theme, navigation/page loading and shared helpers.
@@ -12,7 +12,6 @@ This is a structural refactor of the supplied working HTML application. Existing
 - `js/training.js` — training session logic.
 - `js/history.js` — history logic.
 - `js/custom-tricks.js` — custom trick logic.
-- `js/combo-calculator.js` — combo calculator logic.
 - `data/tricks.js` — existing trick matrix and family point ranges.
 - `js/config.js` — Apps Script URL.
 

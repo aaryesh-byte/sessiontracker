@@ -275,7 +275,7 @@
     function toggleMasterPerfItemCollapse(idx) {
       if (tempMasterPerformanceDraft && tempMasterPerformanceDraft.items[idx]) {
         tempMasterPerformanceDraft.items[idx].isCollapsed = !tempMasterPerformanceDraft.items[idx].isCollapsed;
-        renderMasterPerformancePanel();
+
       }
     }
 
@@ -285,13 +285,13 @@
       const master = getMasterPerformance();
       tempMasterPerformanceDraft = JSON.parse(JSON.stringify(master));
       isMasterPerformanceEditing = true;
-      renderMasterPerformancePanel();
+
     }
 
     function cancelMasterPerformanceEditMode() {
       tempMasterPerformanceDraft = null;
       isMasterPerformanceEditing = false;
-      renderMasterPerformancePanel();
+
     }
 
     function saveAndUpdateMasterPerformance() {
@@ -299,7 +299,7 @@
       saveMasterPerformance(tempMasterPerformanceDraft);
       tempMasterPerformanceDraft = null;
       isMasterPerformanceEditing = false;
-      renderMasterPerformancePanel();
+
       showToast('Master Performance saved and locked.', 'success');
     }
 
@@ -328,13 +328,13 @@
           completed: true
         });
       }
-      renderMasterPerformancePanel();
+
     }
 
     function removeMasterPerfItem(idx) {
       if (!tempMasterPerformanceDraft || !tempMasterPerformanceDraft.items[idx]) return;
       tempMasterPerformanceDraft.items.splice(idx, 1);
-      renderMasterPerformancePanel();
+
     }
 
     function moveMasterPerfItem(idx, direction) {
@@ -344,7 +344,7 @@
       const temp = tempMasterPerformanceDraft.items[idx];
       tempMasterPerformanceDraft.items[idx] = tempMasterPerformanceDraft.items[targetIdx];
       tempMasterPerformanceDraft.items[targetIdx] = temp;
-      renderMasterPerformancePanel();
+
     }
 
     function onMasterPerfSingleSearch(idx, query) {
@@ -386,7 +386,7 @@
         tempMasterPerformanceDraft.items[idx].family = trickObj.family;
         tempMasterPerformanceDraft.items[idx].basePoints = PERFORMANCE_SCORING_CONFIG.basePointsByFamily[trickObj.family] || 2;
       }
-      renderMasterPerformancePanel();
+
     }
 
     function addSubTrickToMasterCombo(perfItemIdx) {
@@ -394,7 +394,7 @@
       const item = tempMasterPerformanceDraft.items[perfItemIdx];
       if (!item.comboTricks) item.comboTricks = [];
       item.comboTricks.push('');
-      renderMasterPerformancePanel();
+
     }
 
     function removeSubTrickFromMasterCombo(perfItemIdx, subIdx) {
@@ -406,7 +406,7 @@
       }
       item.comboTricks.splice(subIdx, 1);
       item.name = item.comboTricks.filter(Boolean).join(' → ');
-      renderMasterPerformancePanel();
+
     }
 
     function moveSubTrickInMasterCombo(perfItemIdx, subIdx, direction) {
@@ -418,7 +418,7 @@
       item.comboTricks[subIdx] = item.comboTricks[target];
       item.comboTricks[target] = temp;
       item.name = item.comboTricks.filter(Boolean).join(' → ');
-      renderMasterPerformancePanel();
+
     }
 
     function onMasterComboSubTrickSearch(perfItemIdx, subIdx, query) {
@@ -460,7 +460,7 @@
       if (!item.comboTricks) item.comboTricks = [];
       item.comboTricks[subIdx] = trickName;
       item.name = item.comboTricks.filter(Boolean).join(' → ');
-      renderMasterPerformancePanel();
+
     }
 
     function renderMasterPerformancePanel() {
@@ -673,29 +673,14 @@
       `;
     }
 
-    window.enterMasterPerformanceEditMode = enterMasterPerformanceEditMode;
-    window.cancelMasterPerformanceEditMode = cancelMasterPerformanceEditMode;
-    window.saveAndUpdateMasterPerformance = saveAndUpdateMasterPerformance;
-    window.addSubTrickToMasterCombo = addSubTrickToMasterCombo;
+                window.addSubTrickToMasterCombo = addSubTrickToMasterCombo;
     window.removeSubTrickFromMasterCombo = removeSubTrickFromMasterCombo;
     window.moveSubTrickInMasterCombo = moveSubTrickInMasterCombo;
     window.onMasterComboSubTrickChange = onMasterComboSubTrickChange;
     window.onMasterPerfSingleChange = onMasterPerfSingleChange;
     window.onMasterPerfSingleSearch = onMasterPerfSingleSearch;
     window.onMasterComboSubTrickSearch = onMasterComboSubTrickSearch;
-    window.getMasterPerformance = getMasterPerformance;
-    window.saveMasterPerformance = saveMasterPerformance;
-    window.addMasterPerfTrick = addMasterPerfTrick;
-    window.removeMasterPerfItem = removeMasterPerfItem;
-    window.moveMasterPerfItem = moveMasterPerfItem;
-    window.renderMasterPerformancePanel = renderMasterPerformancePanel;
 
-    window.getMasterPerformance = getMasterPerformance;
-    window.saveMasterPerformance = saveMasterPerformance;
-    window.addMasterPerfTrick = addMasterPerfTrick;
-    window.removeMasterPerfItem = removeMasterPerfItem;
-    window.moveMasterPerfItem = moveMasterPerfItem;
-    window.renderMasterPerformancePanel = renderMasterPerformancePanel;
 
     function renderCustomTricksList() {
       const container = document.getElementById('customTricksList');
@@ -713,7 +698,7 @@
         String(t.skaterName || t.skatername).toLowerCase() === String(appState.currentUser.skaterName).toLowerCase()
       );
 
-      renderMasterPerformancePanel();
+
 
       if (userCustom.length === 0) {
         container.innerHTML = `<div class="empty-state"><div class="empty-icon">💡</div><div class="empty-text">No custom tricks created yet. Use the form above to add personal tricks.</div></div>`;

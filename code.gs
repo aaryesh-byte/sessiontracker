@@ -15,8 +15,7 @@ function doGet(e) {
         status: 'success',
         data: {
           sessions: getSkaterSessions(userId, skaterName),
-          customTricks: getSkaterTricks(userId, skaterName),
-          masterPerformance: getSkaterMasterPerformance(userId, skaterName)
+          customTricks: getSkaterTricks(userId, skaterName)
         }
       });
     }
@@ -54,15 +53,9 @@ function doPost(e) {
         status: 'success',
         data: {
           sessions: getSkaterSessions(userId, skaterName),
-          customTricks: getSkaterTricks(userId, skaterName),
-          masterPerformance: getSkaterMasterPerformance(userId, skaterName)
+          customTricks: getSkaterTricks(userId, skaterName)
         }
       });
-    }
-
-    if (action === 'saveMasterPerformance') {
-      const result = saveSkaterMasterPerformance(contents.payload);
-      return createJsonResponse({ status: 'success', data: result });
     }
     
     if (action === 'logSession') {
@@ -112,7 +105,7 @@ function setupDatabaseSheets() {
     userSheet.appendRow(['002', 'rohit', 'password123', 'Rohit', 'Active']);
   }
 
-  // Sheet 2: Training Sessions (18 Standard Canonical Columns)
+  // Sheet 2: Training Sessions (Standard Canonical Columns)
   let sessionSheet = ss.getSheetByName('Training Sessions');
   if (!sessionSheet) {
     sessionSheet = ss.insertSheet('Training Sessions');
@@ -138,13 +131,6 @@ function setupDatabaseSheets() {
   if (!skaterSheet) {
     skaterSheet = ss.insertSheet('Skaters');
     skaterSheet.appendRow(['Skater ID', 'Skater Name', 'User ID']);
-  }
-
-  // Sheet 5: Master Performances
-  let perfSheet = ss.getSheetByName('Master Performances');
-  if (!perfSheet) {
-    perfSheet = ss.insertSheet('Master Performances');
-    perfSheet.appendRow(['User ID', 'Performance Title', 'Config JSON', 'Date Updated']);
   }
 }
 
@@ -180,7 +166,6 @@ function authenticateUser(payload) {
 
   const skaterSessions = getSkaterSessions(resolvedUserId, skaterName);
   const skaterTricks = getSkaterTricks(resolvedUserId, skaterName);
-  const masterPerformance = getSkaterMasterPerformance(resolvedUserId, skaterName);
 
   return {
     status: 'success',
@@ -191,8 +176,7 @@ function authenticateUser(payload) {
     },
     data: {
       sessions: skaterSessions,
-      customTricks: skaterTricks,
-      masterPerformance: masterPerformance
+      customTricks: skaterTricks
     }
   };
 }
@@ -279,17 +263,19 @@ function getSkaterSessions(userId, skaterName) {
 
   const matchKeys = getMatchUserKeys(userId, skaterName);
 
-  return allSessions.filter(s => {
+  const userRows = allSessions.filter(s => {
     const sUser = normalizeUserKey(s.userid || s.skatername);
     return matchKeys.includes(sUser);
-  }).map(s => {
-    // Canonical property mapping to prevent undefined in frontend
+  });
+
+  return userRows.map(s => {
+    const sType = String(s.sessiontype || s.sessionType || 'Single');
     return {
       sessionId: s.sessionid || ('SESS-' + Date.now()),
       userId: s.userid || userId,
       skaterName: s.skatername || skaterName || s.userid,
       date: formatDateIso(s.date),
-      sessionType: s.sessiontype || 'Single',
+      sessionType: sType,
       trickName: s.trickname || s.trickcombo || 'Training Drill',
       category: s.category || 'OTHERS',
       family: s.family || 'Custom',
@@ -332,59 +318,6 @@ function getSkaterTricks(userId, skaterName) {
   }));
 }
 
-function getSkaterMasterPerformance(userId, skaterName) {
-  setupDatabaseSheets();
-  const ss = getSpreadsheet();
-  const perfSheet = ss.getSheetByName('Master Performances');
-  if (!perfSheet) return { title: '2-Minute Performance Routine', items: [], smoothness: 0, footwork: 0 };
-
-  const allPerfs = sheetToObjects(perfSheet);
-  const matchKeys = getMatchUserKeys(userId, skaterName);
-
-  const record = allPerfs.find(p => {
-    const pUser = normalizeUserKey(p.userid || p.skatername);
-    return matchKeys.includes(pUser);
-  });
-
-  if (!record || !record.configjson) {
-    return { title: '2-Minute Performance Routine', items: [], smoothness: 0, footwork: 0 };
-  }
-  
-  try {
-    const parsed = typeof record.configjson === 'string' ? JSON.parse(record.configjson) : record.configjson;
-    return (parsed && typeof parsed === 'object') ? parsed : { title: '2-Minute Performance Routine', items: [], smoothness: 0, footwork: 0 };
-  } catch(e) {
-    return { title: '2-Minute Performance Routine', items: [], smoothness: 0, footwork: 0 };
-  }
-}
-
-function saveSkaterMasterPerformance(p) {
-  setupDatabaseSheets();
-  const ss = getSpreadsheet();
-  const sheet = ss.getSheetByName('Master Performances');
-  const data = sheet.getDataRange().getValues();
-  
-  const userKey = normalizeUserKey(p.userId || p.skaterName || p.username);
-  if (!userKey) return { status: 'error', message: 'No user identified.' };
-
-  const title = (p.masterPerformance && p.masterPerformance.title) || '2-Minute Performance Routine';
-  const configJson = JSON.stringify(p.masterPerformance || { title, items: [] });
-  const dateUpdated = new Date().toISOString();
-
-  for (let i = 1; i < data.length; i++) {
-    const existingKey = normalizeUserKey(data[i][0]);
-    if (existingKey === userKey) {
-      sheet.getRange(i + 1, 2).setValue(title);
-      sheet.getRange(i + 1, 3).setValue(configJson);
-      sheet.getRange(i + 1, 4).setValue(dateUpdated);
-      return { status: 'success', action: 'updated', masterPerformance: p.masterPerformance };
-    }
-  }
-
-  sheet.appendRow([userKey, title, configJson, dateUpdated]);
-  return { status: 'success', action: 'created', masterPerformance: p.masterPerformance };
-}
-
 function getAllData() {
   setupDatabaseSheets();
   const ss = getSpreadsheet();
@@ -423,7 +356,7 @@ function saveSessionRecord(p) {
   const sessionId = p.sessionId || ('SESS-' + Date.now());
   const userKey = normalizeUserKey(p.userId || p.skaterName || p.username);
 
-  items.forEach(item => {
+  items.forEach((item) => {
     const target = Number(item.targetCones) || 0;
     const completed = Number(item.completedCones) || 0;
     const missed = Number(item.missedCones) || 0;
@@ -431,17 +364,6 @@ function saveSessionRecord(p) {
     const tAttempts = item.targetAttempts !== undefined && item.targetAttempts !== '' ? Number(item.targetAttempts) : 10;
     const cAttempts = item.completedAttempts !== undefined && item.completedAttempts !== '' ? Number(item.completedAttempts) : 0;
 
-    let perfDataString = '';
-    if (item.sessionType === 'Performance' || item.performanceSnapshot) {
-      perfDataString = JSON.stringify({
-        performanceScore: item.performanceScore !== undefined ? Number(item.performanceScore) : 0,
-        smoothnessScore: item.smoothnessScore !== undefined ? Number(item.smoothnessScore) : 0,
-        footworkScore: item.footworkScore !== undefined ? Number(item.footworkScore) : 0,
-        snapshot: item.performanceSnapshot || { items: [] }
-      });
-    }
-
-    // Clean plain-text notes only (prevent nested JSON stringification)
     let cleanNotes = String(item.userNotes || item.notes || p.sessionNotes || '').trim();
     if (cleanNotes.startsWith('{') && cleanNotes.endsWith('}')) {
       try {
@@ -466,7 +388,7 @@ function saveSessionRecord(p) {
       item.connectedCompletion || 'N/A',
       tAttempts,
       cAttempts,
-      perfDataString,
+      item.performanceData || '',
       cleanNotes,
       timestamp
     ]);
