@@ -279,33 +279,212 @@ function getSkaterSessions(userId, skaterName) {
 
   const matchKeys = getMatchUserKeys(userId, skaterName);
 
-  return allSessions.filter(s => {
+  const userRows = allSessions.filter(s => {
     const sUser = normalizeUserKey(s.userid || s.skatername);
     return matchKeys.includes(sUser);
-  }).map(s => {
-    // Canonical property mapping to prevent undefined in frontend
-    return {
-      sessionId: s.sessionid || ('SESS-' + Date.now()),
-      userId: s.userid || userId,
-      skaterName: s.skatername || skaterName || s.userid,
-      date: formatDateIso(s.date),
-      sessionType: s.sessiontype || 'Single',
-      trickName: s.trickname || s.trickcombo || 'Training Drill',
-      category: s.category || 'OTHERS',
-      family: s.family || 'Custom',
-      targetCones: Number(s.targetcones || 0),
-      completedCones: Number(s.completedcones || 0),
-      missedCones: Number(s.missedcones || 0),
-      falls: Number(s.falls || 0),
-      successRate: Number(s.successrate || 0),
-      connectedCompletion: s.connectedcompletion || 'N/A',
-      targetAttempts: Number(s.targetattempts || 10),
-      completedAttempts: Number(s.completedattempts || 0),
-      performanceData: s.performancedata || '',
-      notes: s.notes || '',
-      timestamp: s.timestamp || ''
-    };
   });
+
+  const standardRecords = [];
+  const perfRowsBySession = {};
+
+  userRows.forEach(s => {
+    const sType = String(s.sessiontype || s.sessionType || 'Single');
+    if (sType === 'Performance') {
+      const sId = String(s.sessionid || s.sessionId || ('SESS-' + Date.now()));
+      if (!perfRowsBySession[sId]) perfRowsBySession[sId] = [];
+      perfRowsBySession[sId].push(s);
+    } else {
+      standardRecords.push({
+        sessionId: s.sessionid || ('SESS-' + Date.now()),
+        userId: s.userid || userId,
+        skaterName: s.skatername || skaterName || s.userid,
+        date: formatDateIso(s.date),
+        sessionType: sType,
+        trickName: s.trickname || s.trickcombo || 'Training Drill',
+        category: s.category || 'OTHERS',
+        family: s.family || 'Custom',
+        targetCones: Number(s.targetcones || 0),
+        completedCones: Number(s.completedcones || 0),
+        missedCones: Number(s.missedcones || 0),
+        falls: Number(s.falls || 0),
+        successRate: Number(s.successrate || 0),
+        connectedCompletion: s.connectedcompletion || 'N/A',
+        targetAttempts: Number(s.targetattempts || 10),
+        completedAttempts: Number(s.completedattempts || 0),
+        performanceData: s.performancedata || '',
+        notes: s.notes || '',
+        timestamp: s.timestamp || ''
+      });
+    }
+  });
+
+  // Reconstruct performance sessions from individual trick rows
+  const reconstructedPerfRecords = Object.keys(perfRowsBySession).map(sId => {
+    const rows = perfRowsBySession[sId];
+    if (rows.length === 0) return null;
+
+    const firstRow = rows[0];
+    const date = formatDateIso(firstRow.date);
+    let runNotes = '';
+    let perfTitle = 'Performance Run #1 (2 min)';
+    let perfScore = 0;
+    let smoothness = 0;
+    let footwork = 0;
+
+    // Check if single row contains legacy embedded snapshot
+    if (rows.length === 1 && firstRow.performancedata && String(firstRow.performancedata).trim().startsWith('{')) {
+      try {
+        const parsed = JSON.parse(firstRow.performancedata);
+        if (parsed && parsed.snapshot) {
+          return {
+            sessionId: sId,
+            userId: firstRow.userid || userId,
+            skaterName: firstRow.skatername || skaterName || firstRow.userid,
+            date: date,
+            sessionType: 'Performance',
+            trickName: firstRow.trickname || 'Performance Run #1 (2 min)',
+            category: 'PERFORMANCE',
+            family: firstRow.family || 'Valid',
+            targetCones: Number(firstRow.targetcones || 0),
+            completedCones: Number(firstRow.completedcones || 0),
+            missedCones: Number(firstRow.missedcones || 0),
+            falls: Number(firstRow.falls || 0),
+            successRate: Number(firstRow.successrate || 0),
+            connectedCompletion: 'N/A',
+            targetAttempts: 1,
+            completedAttempts: Number(firstRow.completedcones || 0) > 0 ? 1 : 0,
+            performanceScore: Number(parsed.performanceScore || 0),
+            smoothnessScore: Number(parsed.smoothnessScore || 0),
+            footworkScore: Number(parsed.footworkScore || 0),
+            performanceSnapshot: parsed.snapshot,
+            notes: String(firstRow.notes || parsed.notes || '').trim(),
+            timestamp: firstRow.timestamp || ''
+          };
+        }
+      } catch(e) {}
+    }
+
+    // Reconstruct items from structured individual rows
+    const itemsByOrder = {};
+    rows.forEach(r => {
+      let meta = {};
+      if (r.performancedata && String(r.performancedata).trim().startsWith('{')) {
+        try { meta = JSON.parse(r.performancedata); } catch(e) {}
+      }
+
+      if (meta.runNotes) runNotes = meta.runNotes;
+      if (meta.perfTitle) perfTitle = meta.perfTitle;
+      if (meta.perfScore !== undefined) perfScore = Number(meta.perfScore);
+      if (meta.smoothness !== undefined) smoothness = Number(meta.smoothness);
+      if (meta.footwork !== undefined) footwork = Number(meta.footwork);
+      if (r.notes && !runNotes) runNotes = String(r.notes).trim();
+
+      const orderKey = meta.order !== undefined ? meta.order : (Object.keys(itemsByOrder).length);
+
+      if (!itemsByOrder[orderKey]) {
+        itemsByOrder[orderKey] = {
+          id: meta.itemId || ('pitem-' + orderKey),
+          type: meta.type || (meta.comboName ? 'combo' : 'single'),
+          name: meta.comboName || r.trickname,
+          category: r.category || 'OTHERS',
+          family: r.family || 'Custom',
+          rows: []
+        };
+      }
+      itemsByOrder[orderKey].rows.push({ row: r, meta: meta });
+    });
+
+    const reconstructedItems = Object.keys(itemsByOrder).sort((a, b) => Number(a) - Number(b)).map(orderKey => {
+      const group = itemsByOrder[orderKey];
+      if (group.type === 'combo') {
+        const comboTricks = [];
+        const comboSubCompleted = {};
+
+        group.rows.sort((a, b) => Number(a.meta.subIndex || 0) - Number(b.meta.subIndex || 0)).forEach((rObj, idx) => {
+          comboTricks.push(rObj.row.trickname);
+          const isDone = Boolean(rObj.meta.isSubDone !== undefined ? rObj.meta.isSubDone : (Number(rObj.row.completedcones || 0) > 0));
+          comboSubCompleted[idx] = isDone;
+        });
+
+        const allSubDone = comboTricks.length > 0 && comboTricks.every((_, i) => comboSubCompleted[i] === true);
+
+        return {
+          id: group.id,
+          type: 'combo',
+          name: group.name,
+          comboTricks: comboTricks,
+          category: group.category,
+          family: group.family,
+          completed: allSubDone,
+          comboSubCompleted: comboSubCompleted
+        };
+      } else {
+        const rObj = group.rows[0];
+        const isDone = Boolean(rObj.meta.completed !== undefined ? rObj.meta.completed : (Number(rObj.row.completedcones || 0) > 0));
+        return {
+          id: group.id,
+          type: 'single',
+          name: rObj.row.trickname,
+          category: group.category,
+          family: group.family,
+          completed: isDone
+        };
+      }
+    });
+
+    let totalIndividualTricks = 0;
+    let totalCompletedTricks = 0;
+
+    reconstructedItems.forEach(it => {
+      if (it.type === 'combo') {
+        const count = it.comboTricks.length;
+        totalIndividualTricks += count;
+        for (let i = 0; i < count; i++) {
+          if (it.comboSubCompleted && it.comboSubCompleted[i] === true) totalCompletedTricks++;
+        }
+      } else {
+        totalIndividualTricks += 1;
+        if (it.completed) totalCompletedTricks += 1;
+      }
+    });
+
+    const missedCount = Math.max(0, totalIndividualTricks - totalCompletedTricks);
+    const successRate = totalIndividualTricks > 0 ? parseFloat(((totalCompletedTricks / totalIndividualTricks) * 100).toFixed(1)) : 0;
+
+    return {
+      sessionId: sId,
+      userId: firstRow.userid || userId,
+      skaterName: firstRow.skatername || skaterName || firstRow.userid,
+      date: date,
+      sessionType: 'Performance',
+      trickName: perfTitle || 'Performance Run #1 (2 min)',
+      category: 'PERFORMANCE',
+      family: totalCompletedTricks >= 9 ? 'Valid' : 'Incomplete',
+      targetCones: totalIndividualTricks,
+      completedCones: totalCompletedTricks,
+      missedCones: missedCount,
+      falls: 0,
+      successRate: successRate,
+      connectedCompletion: 'N/A',
+      targetAttempts: totalIndividualTricks,
+      completedAttempts: totalCompletedTricks,
+      performanceScore: perfScore,
+      smoothnessScore: smoothness,
+      footworkScore: footwork,
+      performanceSnapshot: {
+        id: sId,
+        title: perfTitle,
+        smoothness: smoothness,
+        footwork: footwork,
+        notes: runNotes,
+        items: reconstructedItems
+      },
+      notes: runNotes,
+      timestamp: firstRow.timestamp || ''
+    };
+  }).filter(Boolean);
+
+  return [...standardRecords, ...reconstructedPerfRecords];
 }
 
 function getSkaterTricks(userId, skaterName) {
@@ -336,53 +515,168 @@ function getSkaterMasterPerformance(userId, skaterName) {
   setupDatabaseSheets();
   const ss = getSpreadsheet();
   const perfSheet = ss.getSheetByName('Master Performances');
-  if (!perfSheet) return { title: '2-Minute Performance Routine', items: [], smoothness: 0, footwork: 0 };
+
+  const defaultMaster = {
+    title: '2-Minute Performance Routine',
+    smoothness: 0,
+    footwork: 0,
+    items: [
+      { id: 'pitem-1', type: 'single', name: 'Butterfly Cross', category: 'OTHERS', family: 'A', completed: false },
+      { id: 'pitem-2', type: 'single', name: 'Butterfly', category: 'OTHERS', family: 'B', completed: false },
+      { id: 'pitem-3', type: 'single', name: 'Back Christie', category: 'SITTING', family: 'C', completed: false },
+      { id: 'pitem-4', type: 'single', name: 'Christie', category: 'SITTING', family: 'C', completed: false },
+      { id: 'pitem-5', type: 'combo', name: 'Toe Seven → Korean Spin', comboTricks: ['Toe Seven', 'Korean Spin'], category: 'SPINNING', family: 'B', completed: false },
+      { id: 'pitem-6', type: 'single', name: 'Heel Wheeling Fwd', category: 'WHEELING', family: 'C', completed: false },
+      { id: 'pitem-7', type: 'single', name: 'Nelson', category: 'OTHERS', family: 'E', completed: false },
+      { id: 'pitem-8', type: 'single', name: 'Crazy', category: 'OTHERS', family: 'E', completed: false },
+      { id: 'pitem-9', type: 'single', name: 'Eagle', category: 'OTHERS', family: 'D', completed: false }
+    ]
+  };
+
+  if (!perfSheet) return defaultMaster;
 
   const allPerfs = sheetToObjects(perfSheet);
   const matchKeys = getMatchUserKeys(userId, skaterName);
 
-  const record = allPerfs.find(p => {
+  const userRows = allPerfs.filter(p => {
     const pUser = normalizeUserKey(p.userid || p.skatername);
     return matchKeys.includes(pUser);
   });
 
-  if (!record || !record.configjson) {
-    return { title: '2-Minute Performance Routine', items: [], smoothness: 0, footwork: 0 };
+  if (userRows.length === 0) return defaultMaster;
+
+  // Handle legacy single-row JSON format
+  if (userRows.length === 1 && userRows[0].configjson) {
+    try {
+      const parsed = typeof userRows[0].configjson === 'string' ? JSON.parse(userRows[0].configjson) : userRows[0].configjson;
+      if (parsed && typeof parsed === 'object' && Array.isArray(parsed.items) && parsed.items.length > 0) {
+        return parsed;
+      }
+    } catch(e) {}
   }
-  
-  try {
-    const parsed = typeof record.configjson === 'string' ? JSON.parse(record.configjson) : record.configjson;
-    return (parsed && typeof parsed === 'object') ? parsed : { title: '2-Minute Performance Routine', items: [], smoothness: 0, footwork: 0 };
-  } catch(e) {
-    return { title: '2-Minute Performance Routine', items: [], smoothness: 0, footwork: 0 };
-  }
+
+  // Reconstruct master performance from structured individual trick rows
+  const firstRow = userRows[0];
+  const title = firstRow.performancetitle || firstRow.title || '2-Minute Performance Routine';
+  const smoothness = Number(firstRow.smoothness || 0);
+  const footwork = Number(firstRow.footwork || 0);
+
+  const itemsByOrder = {};
+  userRows.forEach(r => {
+    const orderKey = r.itemorder !== undefined && r.itemorder !== '' ? Number(r.itemorder) : Object.keys(itemsByOrder).length;
+    if (!itemsByOrder[orderKey]) {
+      itemsByOrder[orderKey] = {
+        id: r.itemid || ('pitem-' + orderKey),
+        type: r.itemtype || (r.comboname ? 'combo' : 'single'),
+        name: r.comboname || r.trickname,
+        category: r.category || 'OTHERS',
+        family: r.family || 'Custom',
+        basePoints: Number(r.basepoints || 2),
+        rows: []
+      };
+    }
+    itemsByOrder[orderKey].rows.push(r);
+  });
+
+  const reconstructedItems = Object.keys(itemsByOrder).sort((a, b) => Number(a) - Number(b)).map(orderKey => {
+    const group = itemsByOrder[orderKey];
+    if (group.type === 'combo') {
+      const comboTricks = [];
+      group.rows.sort((a, b) => Number(a.combosubindex || 0) - Number(b.combosubindex || 0)).forEach(r => {
+        comboTricks.push(r.trickname);
+      });
+      return {
+        id: group.id,
+        type: 'combo',
+        name: group.name,
+        comboTricks: comboTricks,
+        category: group.category,
+        family: group.family,
+        basePoints: group.basePoints,
+        completed: false
+      };
+    } else {
+      const r = group.rows[0];
+      return {
+        id: group.id,
+        type: 'single',
+        name: r.trickname,
+        category: group.category,
+        family: group.family,
+        basePoints: group.basePoints,
+        completed: false
+      };
+    }
+  });
+
+  return {
+    title: title,
+    smoothness: smoothness,
+    footwork: footwork,
+    items: reconstructedItems.length > 0 ? reconstructedItems : defaultMaster.items
+  };
 }
 
 function saveSkaterMasterPerformance(p) {
   setupDatabaseSheets();
   const ss = getSpreadsheet();
-  const sheet = ss.getSheetByName('Master Performances');
-  const data = sheet.getDataRange().getValues();
-  
+  let sheet = ss.getSheetByName('Master Performances');
+  if (!sheet) {
+    sheet = ss.insertSheet('Master Performances');
+    sheet.appendRow(['User ID', 'Performance Title', 'Item Order', 'Item ID', 'Item Type', 'Trick Name', 'Category', 'Family', 'Combo Name', 'Combo Sub Index', 'Base Points', 'Smoothness', 'Footwork', 'Notes', 'Date Updated']);
+  }
+
   const userKey = normalizeUserKey(p.userId || p.skaterName || p.username);
   if (!userKey) return { status: 'error', message: 'No user identified.' };
 
-  const title = (p.masterPerformance && p.masterPerformance.title) || '2-Minute Performance Routine';
-  const configJson = JSON.stringify(p.masterPerformance || { title, items: [] });
+  const mp = p.masterPerformance || {};
+  const title = mp.title || '2-Minute Performance Routine';
+  const smoothness = Number(mp.smoothness || 0);
+  const footwork = Number(mp.footwork || 0);
+  const items = Array.isArray(mp.items) ? mp.items : [];
   const dateUpdated = new Date().toISOString();
 
-  for (let i = 1; i < data.length; i++) {
-    const existingKey = normalizeUserKey(data[i][0]);
-    if (existingKey === userKey) {
-      sheet.getRange(i + 1, 2).setValue(title);
-      sheet.getRange(i + 1, 3).setValue(configJson);
-      sheet.getRange(i + 1, 4).setValue(dateUpdated);
-      return { status: 'success', action: 'updated', masterPerformance: p.masterPerformance };
+  // Delete existing master performance rows for userKey
+  const data = sheet.getDataRange().getValues();
+  for (let i = data.length - 1; i >= 1; i--) {
+    const rowUser = normalizeUserKey(data[i][0]);
+    if (rowUser === userKey) {
+      sheet.deleteRow(i + 1);
     }
   }
 
-  sheet.appendRow([userKey, title, configJson, dateUpdated]);
-  return { status: 'success', action: 'created', masterPerformance: p.masterPerformance };
+  // Save each trick in Master Performance as its own structured row
+  if (items.length > 0) {
+    items.forEach((item, itemIdx) => {
+      if (item.type === 'combo') {
+        const comboList = Array.isArray(item.comboTricks) ? item.comboTricks.filter(Boolean) : (item.name ? item.name.split(' → ').filter(Boolean) : []);
+        comboList.forEach((subName, sIdx) => {
+          sheet.appendRow([
+            userKey, title, itemIdx, item.id || ('pitem-' + itemIdx), 'combo',
+            subName, item.category || 'OTHERS', item.family || 'Custom',
+            item.name || 'Combo Sequence', sIdx, item.basePoints || 3,
+            smoothness, footwork, item.notes || '', dateUpdated
+          ]);
+        });
+      } else {
+        sheet.appendRow([
+          userKey, title, itemIdx, item.id || ('pitem-' + itemIdx), 'single',
+          item.name || 'Training Drill', item.category || 'OTHERS', item.family || 'B',
+          '', 0, item.basePoints || 2,
+          smoothness, footwork, item.notes || '', dateUpdated
+        ]);
+      }
+    });
+  } else {
+    // Fallback single header row
+    sheet.appendRow([
+      userKey, title, 0, 'pitem-0', 'single',
+      'Butterfly', 'OTHERS', 'B', '', 0, 2,
+      smoothness, footwork, '', dateUpdated
+    ]);
+  }
+
+  return { status: 'success', action: 'saved', masterPerformance: mp };
 }
 
 function getAllData() {
@@ -424,72 +718,139 @@ function saveSessionRecord(p) {
   const userKey = normalizeUserKey(p.userId || p.skaterName || p.username);
 
   items.forEach(item => {
-    const target = Number(item.targetCones) || 0;
-    const completed = Number(item.completedCones) || 0;
-    const missed = Number(item.missedCones) || 0;
-    const successRate = target > 0 ? parseFloat(((completed / target) * 100).toFixed(1)) : 0;
-    const tAttempts = item.targetAttempts !== undefined && item.targetAttempts !== '' ? Number(item.targetAttempts) : 10;
-    const cAttempts = item.completedAttempts !== undefined && item.completedAttempts !== '' ? Number(item.completedAttempts) : 0;
+    if (item.sessionType === 'Performance' || item.performanceSnapshot) {
+      let snap = item.performanceSnapshot || { items: [] };
+      const runNotes = String(item.notes || item.userNotes || snap.notes || '').trim();
+      const smoothnessVal = item.smoothnessScore !== undefined ? Number(item.smoothnessScore) : (snap.smoothness !== undefined ? Number(snap.smoothness) : 0);
+      const footworkVal = item.footworkScore !== undefined ? Number(item.footworkScore) : (snap.footwork !== undefined ? Number(snap.footwork) : 0);
+      const perfScoreVal = item.performanceScore !== undefined ? Number(item.performanceScore) : 0;
+      const perfTitleVal = item.trickName || snap.title || 'Performance Run #1 (2 min)';
 
-    let perfDataString = '';
-    if (item.sessionType === 'Performance' || item.performanceSnapshot || item.performanceData) {
-      let snap = item.performanceSnapshot;
-      if (!snap && item.performanceData) {
-        if (typeof item.performanceData === 'object') {
-          snap = item.performanceData.snapshot || item.performanceData;
-        } else if (typeof item.performanceData === 'string' && item.performanceData.trim().startsWith('{')) {
-          try {
-            const parsed = JSON.parse(item.performanceData);
-            snap = parsed.snapshot || parsed;
-          } catch(e) {}
-        }
+      if (snap.items && snap.items.length > 0) {
+        snap.items.forEach((perfItem, itemIdx) => {
+          if (perfItem.type === 'combo') {
+            const comboList = Array.isArray(perfItem.comboTricks) ? perfItem.comboTricks.filter(Boolean) : (perfItem.name ? perfItem.name.split(' → ').filter(Boolean) : []);
+            const comboSubCompleted = perfItem.comboSubCompleted || {};
+
+            comboList.forEach((subName, sIdx) => {
+              const isSubDone = Boolean(comboSubCompleted[sIdx] === true || (comboSubCompleted[sIdx] === undefined && perfItem.completed === true));
+              const subMeta = JSON.stringify({
+                order: itemIdx,
+                type: 'combo',
+                comboName: perfItem.name || 'Combo Sequence',
+                subIndex: sIdx,
+                isSubDone: isSubDone,
+                itemId: perfItem.id || ('pitem-' + itemIdx),
+                smoothness: smoothnessVal,
+                footwork: footworkVal,
+                perfScore: perfScoreVal,
+                perfTitle: perfTitleVal,
+                runNotes: runNotes
+              });
+
+              sheet.appendRow([
+                sessionId,
+                userKey,
+                String(p.date || item.date).split('T')[0],
+                'Performance',
+                subName,
+                perfItem.category || 'OTHERS',
+                perfItem.family || 'Custom',
+                1,
+                isSubDone ? 1 : 0,
+                isSubDone ? 0 : 1,
+                0,
+                isSubDone ? 100 : 0,
+                'Combo: ' + (perfItem.name || 'Combo Sequence'),
+                1,
+                isSubDone ? 1 : 0,
+                subMeta,
+                runNotes,
+                timestamp
+              ]);
+            });
+          } else {
+            const isDone = Boolean(perfItem.completed);
+            const singleMeta = JSON.stringify({
+              order: itemIdx,
+              type: 'single',
+              itemId: perfItem.id || ('pitem-' + itemIdx),
+              completed: isDone,
+              smoothness: smoothnessVal,
+              footwork: footworkVal,
+              perfScore: perfScoreVal,
+              perfTitle: perfTitleVal,
+              runNotes: runNotes
+            });
+
+            sheet.appendRow([
+              sessionId,
+              userKey,
+              String(p.date || item.date).split('T')[0],
+              'Performance',
+              perfItem.name || 'Training Drill',
+              perfItem.category || 'OTHERS',
+              perfItem.family || 'B',
+              1,
+              isDone ? 1 : 0,
+              isDone ? 0 : 1,
+              0,
+              isDone ? 100 : 0,
+              'Single',
+              1,
+              isDone ? 1 : 0,
+              singleMeta,
+              runNotes,
+              timestamp
+            ]);
+          }
+        });
+      } else {
+        sheet.appendRow([
+          sessionId, userKey, String(p.date || item.date).split('T')[0],
+          'Performance', perfTitleVal, 'PERFORMANCE', 'Valid',
+          0, 0, 0, 0, 0, 'N/A', 1, 0,
+          JSON.stringify({ smoothness: smoothnessVal, footwork: footworkVal, perfScore: perfScoreVal, runNotes: runNotes, snapshot: snap }),
+          runNotes, timestamp
+        ]);
       }
-      if (!snap || typeof snap !== 'object' || String(snap).toLowerCase() === 'performance') {
-        snap = { items: [] };
+    } else {
+      const target = Number(item.targetCones) || 0;
+      const completed = Number(item.completedCones) || 0;
+      const missed = Number(item.missedCones) || 0;
+      const successRate = target > 0 ? parseFloat(((completed / target) * 100).toFixed(1)) : 0;
+      const tAttempts = item.targetAttempts !== undefined && item.targetAttempts !== '' ? Number(item.targetAttempts) : 10;
+      const cAttempts = item.completedAttempts !== undefined && item.completedAttempts !== '' ? Number(item.completedAttempts) : 0;
+
+      let cleanNotes = String(item.userNotes || item.notes || p.sessionNotes || '').trim();
+      if (cleanNotes.startsWith('{') && cleanNotes.endsWith('}')) {
+        try {
+          const parsed = JSON.parse(cleanNotes);
+          cleanNotes = parsed.userNotes || parsed.notes || '';
+        } catch(e) {}
       }
 
-      const runNotes = String(item.notes || item.userNotes || (snap && snap.notes) || '').trim();
-      const smoothnessVal = item.smoothnessScore !== undefined ? Number(item.smoothnessScore) : (snap && snap.smoothness !== undefined ? Number(snap.smoothness) : 0);
-      const footworkVal = item.footworkScore !== undefined ? Number(item.footworkScore) : (snap && snap.footwork !== undefined ? Number(snap.footwork) : 0);
-
-      perfDataString = JSON.stringify({
-        performanceScore: item.performanceScore !== undefined ? Number(item.performanceScore) : 0,
-        smoothnessScore: smoothnessVal,
-        footworkScore: footworkVal,
-        notes: runNotes,
-        snapshot: snap
-      });
+      sheet.appendRow([
+        sessionId,
+        userKey,
+        String(p.date || item.date).split('T')[0],
+        item.sessionType || 'Single',
+        item.trickName || 'Training Drill',
+        item.category || 'OTHERS',
+        item.family || 'Custom',
+        target,
+        completed,
+        missed,
+        Number(item.falls) || 0,
+        successRate,
+        item.connectedCompletion || 'N/A',
+        tAttempts,
+        cAttempts,
+        item.performanceData || '',
+        cleanNotes,
+        timestamp
+      ]);
     }
-
-    // Clean plain-text notes only (prevent nested JSON stringification)
-    let cleanNotes = String(item.userNotes || item.notes || p.sessionNotes || '').trim();
-    if (cleanNotes.startsWith('{') && cleanNotes.endsWith('}')) {
-      try {
-        const parsed = JSON.parse(cleanNotes);
-        cleanNotes = parsed.userNotes || parsed.notes || '';
-      } catch(e) {}
-    }
-
-    sheet.appendRow([
-      sessionId,
-      userKey,
-      String(p.date || item.date).split('T')[0],
-      item.sessionType || 'Single',
-      item.trickName || 'Training Drill',
-      item.category || 'OTHERS',
-      item.family || 'Custom',
-      target,
-      completed,
-      missed,
-      Number(item.falls) || 0,
-      successRate,
-      item.connectedCompletion || 'N/A',
-      tAttempts,
-      cAttempts,
-      perfDataString,
-      cleanNotes,
-      timestamp
-    ]);
   });
   
   return { sessionId, savedItemsCount: items.length, status: 'success' };
