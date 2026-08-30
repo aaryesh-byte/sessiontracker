@@ -135,10 +135,7 @@
           return it;
         });
       } else {
-        clonedItems = [
-          { id: 'pitem-1', type: 'single', name: allTricks[0] ? (allTricks[0].name || allTricks[0].trickname) : 'Butterfly', category: 'OTHERS', family: 'B', completed: false },
-          { id: 'pitem-2', type: 'single', name: allTricks[1] ? (allTricks[1].name || allTricks[1].trickname) : 'Nelson', category: 'OTHERS', family: 'E', completed: false }
-        ];
+        clonedItems = [];
       }
 
       const newSnapshot = {

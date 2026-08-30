@@ -8,7 +8,6 @@ let appState = {
       masterPerformances: {}, // Keyed by username/skaterName
       sessionPerformance: null, // Temporary session performance snapshot
       sessionItems: [],
-      calcSlots: [],
       deletingTrickId: null,
       charts: {}
     };
@@ -1052,7 +1051,6 @@ async function switchTab(tabId, el) {
   const pageMap = {
     dashboard: 'dashboard',
     log: 'training',
-    calc: 'combo-calculator',
     history: 'history',
     tricks: 'custom-tricks'
   };
@@ -1065,8 +1063,8 @@ async function switchTab(tabId, el) {
   document.body.scrollTop = 0;
 
   document.querySelectorAll('.bottom-nav .nav-item').forEach(n => n.classList.remove('active'));
-  // Standard Layout: Dash (0) | Train (1) | Build (2) | History (3) | Custom Tricks (4)
-  const indexMap = { dashboard: 0, log: 1, calc: 2, history: 3, tricks: 4 };
+  // Standard Layout: Dash (0) | Train (1) | History (2) | Custom Tricks (3)
+  const indexMap = { dashboard: 0, log: 1, history: 2, tricks: 3 };
   const navItems = document.querySelectorAll('.bottom-nav .nav-item');
   if (navItems[indexMap[tabId]]) navItems[indexMap[tabId]].classList.add('active');
 
@@ -1132,7 +1130,6 @@ async function switchTab(tabId, el) {
     }
     if (tabId === 'history') renderHistory();
     if (tabId === 'tricks') renderCustomTricksList();
-    if (tabId === 'calc') renderCalcSlots();
 
     // Re-apply theme after injecting page markup.
     const theme = document.documentElement.getAttribute('data-theme') || 'dark';
