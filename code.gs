@@ -146,6 +146,18 @@ function setupDatabaseSheets() {
     perfSheet = ss.insertSheet('Master Performances');
     perfSheet.appendRow(['User ID', 'Performance Title', 'Config JSON', 'Date Updated']);
   }
+
+  // Sheet 6: Performance Session Tricks (Dedicated Session-Specific Performance Table)
+  let perfTricksSheet = ss.getSheetByName('Performance Session Tricks');
+  if (!perfTricksSheet) {
+    perfTricksSheet = ss.insertSheet('Performance Session Tricks');
+    perfTricksSheet.appendRow([
+      'Session ID', 'Performance ID', 'User ID', 'Date', 'Performance Title',
+      'Trick ID', 'Trick Name', 'Trick Type', 'Trick Order', 'Combo ID', 'Sub Index',
+      'Completion Status', 'Category', 'Family', 'Modified Trick Name',
+      'Smoothness', 'Footwork', 'Total Tricks', 'Completed Tricks', 'Notes', 'Timestamp'
+    ]);
+  }
 }
 
 function normalizeUserKey(identifier) {
@@ -323,8 +335,143 @@ function getSkaterSessions(userId, skaterName) {
     }
   });
 
-  // Reconstruct performance sessions from individual trick rows
+  // Read Performance Session Tricks dedicated sheet
+  const perfTricksSheet = ss.getSheetByName('Performance Session Tricks');
+  const dedicatedPerfRecordsMap = {};
+  if (perfTricksSheet) {
+    const allPerfTricksRows = sheetToObjects(perfTricksSheet);
+    const userPerfRows = allPerfTricksRows.filter(r => matchKeys.includes(normalizeUserKey(r.userid)));
+
+    const perfRowsById = {};
+    userPerfRows.forEach(r => {
+      const pid = String(r.performanceid || r.sessionid || 'PERF-DEFAULT');
+      if (!perfRowsById[pid]) perfRowsById[pid] = [];
+      perfRowsById[pid].push(r);
+    });
+
+    Object.keys(perfRowsById).forEach(pid => {
+      const rows = perfRowsById[pid];
+      if (rows.length === 0) return;
+      const firstRow = rows[0];
+      const sId = String(firstRow.sessionid || ('SESS-' + Date.now()));
+      const date = formatDateIso(firstRow.date);
+      const perfTitle = String(firstRow.performancetitle || 'Performance Run #1 (2 min)');
+      const smoothness = Number(firstRow.smoothness || 0);
+      const footwork = Number(firstRow.footwork || 0);
+      const runNotes = String(firstRow.notes || '').trim();
+
+      const itemsByOrder = {};
+      rows.forEach(r => {
+        const orderKey = r.trickorder !== undefined && r.trickorder !== '' ? Number(r.trickorder) : Object.keys(itemsByOrder).length;
+        if (!itemsByOrder[orderKey]) {
+          itemsByOrder[orderKey] = {
+            id: r.comboid || r.trickid || ('pitem-' + orderKey),
+            type: String(r.tricktype || 'single').toLowerCase(),
+            name: String(r.modifiedtrickname || r.trickname || 'Trick'),
+            category: String(r.category || 'OTHERS'),
+            family: String(r.family || 'Custom'),
+            rows: []
+          };
+        }
+        itemsByOrder[orderKey].rows.push(r);
+      });
+
+      const reconstructedItems = Object.keys(itemsByOrder).sort((a, b) => Number(a) - Number(b)).map(orderKey => {
+        const group = itemsByOrder[orderKey];
+        if (group.type === 'combo') {
+          const comboTricks = [];
+          const comboSubCompleted = {};
+          group.rows.sort((a, b) => Number(a.subindex || 0) - Number(b.subindex || 0)).forEach((r, idx) => {
+            const subName = String(r.trickname || 'Trick');
+            comboTricks.push(subName);
+            const isSubDone = String(r.completionstatus || '').toLowerCase() === 'completed';
+            comboSubCompleted[idx] = isSubDone;
+          });
+          const allSubDone = comboTricks.length > 0 && comboTricks.every((_, i) => comboSubCompleted[i] === true);
+          return {
+            id: group.id,
+            type: 'combo',
+            name: group.name,
+            comboTricks: comboTricks,
+            category: group.category,
+            family: group.family,
+            completed: allSubDone,
+            comboSubCompleted: comboSubCompleted
+          };
+        } else {
+          const r = group.rows[0];
+          const singleName = String(r.trickname || 'Trick');
+          const isDone = String(r.completionstatus || '').toLowerCase() === 'completed';
+          return {
+            id: group.id,
+            type: 'single',
+            name: singleName,
+            category: group.category,
+            family: group.family,
+            completed: isDone
+          };
+        }
+      });
+
+      let totalIndividual = 0;
+      let completedIndividual = 0;
+      reconstructedItems.forEach(it => {
+        if (it.type === 'combo') {
+          const count = it.comboTricks.length;
+          totalIndividual += count;
+          for (let i = 0; i < count; i++) {
+            if (it.comboSubCompleted && it.comboSubCompleted[i] === true) completedIndividual++;
+          }
+        } else {
+          totalIndividual += 1;
+          if (it.completed) completedIndividual += 1;
+        }
+      });
+
+      const snapshot = {
+        id: pid,
+        performanceId: pid,
+        title: perfTitle,
+        smoothness: smoothness,
+        footwork: footwork,
+        notes: runNotes,
+        totalTrickCount: totalIndividual,
+        completedCount: completedIndividual,
+        items: reconstructedItems
+      };
+
+      dedicatedPerfRecordsMap[pid] = {
+        sessionId: sId,
+        performanceId: pid,
+        userId: firstRow.userid || userId,
+        skaterName: skaterName || firstRow.userid,
+        date: date,
+        sessionType: 'Performance',
+        trickName: perfTitle,
+        category: 'PERFORMANCE',
+        family: completedIndividual >= 9 ? 'Valid' : 'Incomplete',
+        targetCones: totalIndividual,
+        completedCones: completedIndividual,
+        missedCones: Math.max(0, totalIndividual - completedIndividual),
+        falls: 0,
+        successRate: totalIndividual > 0 ? parseFloat(((completedIndividual / totalIndividual) * 100).toFixed(1)) : 0,
+        connectedCompletion: 'N/A',
+        targetAttempts: totalIndividual,
+        completedAttempts: completedIndividual,
+        performanceScore: 0,
+        smoothnessScore: smoothness,
+        footworkScore: footwork,
+        performanceSnapshot: snapshot,
+        notes: runNotes,
+        timestamp: firstRow.timestamp || ''
+      };
+    });
+  }
+
+  // Reconstruct performance sessions from Training Sessions for fallback
   const reconstructedPerfRecords = Object.keys(perfRunsGrouped).map(perfId => {
+    if (dedicatedPerfRecordsMap[perfId]) return dedicatedPerfRecordsMap[perfId];
+
     const rows = perfRunsGrouped[perfId];
     if (rows.length === 0) return null;
 
@@ -495,6 +642,13 @@ function getSkaterSessions(userId, skaterName) {
       timestamp: firstRow.timestamp || ''
     };
   }).filter(Boolean);
+
+  // Include any dedicated perf records that were not present in Training Sessions
+  Object.keys(dedicatedPerfRecordsMap).forEach(pid => {
+    if (!reconstructedPerfRecords.some(r => r.performanceId === pid)) {
+      reconstructedPerfRecords.push(dedicatedPerfRecordsMap[pid]);
+    }
+  });
 
   return [...standardRecords, ...reconstructedPerfRecords];
 }
@@ -723,11 +877,17 @@ function saveSessionRecord(p) {
   setupDatabaseSheets();
   const ss = getSpreadsheet();
   const sheet = ss.getSheetByName('Training Sessions');
+  let perfTricksSheet = ss.getSheetByName('Performance Session Tricks');
+  if (!perfTricksSheet) {
+    setupDatabaseSheets();
+    perfTricksSheet = ss.getSheetByName('Performance Session Tricks');
+  }
   const timestamp = new Date().toISOString();
   
   const items = Array.isArray(p.items) ? p.items : [p];
   const sessionId = p.sessionId || ('SESS-' + Date.now());
   const userKey = normalizeUserKey(p.userId || p.skaterName || p.username);
+  const dateStr = String(p.date || (items[0] && items[0].date) || new Date().toISOString()).split('T')[0];
 
   items.forEach((item, pIdx) => {
     if (item.sessionType === 'Performance' || item.performanceSnapshot) {
@@ -749,34 +909,90 @@ function saveSessionRecord(p) {
       const smoothnessVal = item.smoothnessScore !== undefined ? Number(item.smoothnessScore) : (snap.smoothness !== undefined ? Number(snap.smoothness) : 0);
       const footworkVal = item.footworkScore !== undefined ? Number(item.footworkScore) : (snap.footwork !== undefined ? Number(snap.footwork) : 0);
       const perfScoreVal = item.performanceScore !== undefined ? Number(item.performanceScore) : 0;
-      const perfTitleVal = item.trickName || snap.title || 'Performance Run #1 (2 min)';
+      const perfTitleVal = item.trickName || snap.title || ('Performance Run #' + (pIdx + 1) + ' (2 min)');
+      const performanceId = item.performanceId || snap.performanceId || snap.id || ('PERF-' + sessionId + '-' + pIdx);
 
+      let totalTricksInRun = 0;
+      let completedTricksInRun = 0;
       if (snap.items && snap.items.length > 0) {
+        snap.items.forEach(it => {
+          if (it.type === 'combo') {
+            const cList = Array.isArray(it.comboTricks) ? it.comboTricks.filter(Boolean) : (it.name ? it.name.split(' → ').filter(Boolean) : []);
+            const count = Math.max(1, cList.length);
+            totalTricksInRun += count;
+            const subStatus = it.comboSubCompleted || {};
+            for (let s = 0; s < count; s++) {
+              const isSubDone = Boolean(subStatus[s] === true || (subStatus[s] === undefined && it.completed === true));
+              if (isSubDone) completedTricksInRun++;
+            }
+          } else {
+            totalTricksInRun += 1;
+            if (it.completed) completedTricksInRun += 1;
+          }
+        });
+
         snap.items.forEach((perfItem, itemIdx) => {
           if (perfItem.type === 'combo') {
             const comboList = Array.isArray(perfItem.comboTricks) ? perfItem.comboTricks.filter(Boolean) : (perfItem.name ? perfItem.name.split(' → ').filter(Boolean) : []);
             const comboSubCompleted = perfItem.comboSubCompleted || {};
+            const comboName = perfItem.name || 'Combo Sequence';
 
             comboList.forEach((subName, sIdx) => {
               const isSubDone = Boolean(comboSubCompleted[sIdx] === true || (comboSubCompleted[sIdx] === undefined && perfItem.completed === true));
+
+              if (perfTricksSheet) {
+                perfTricksSheet.appendRow([
+                  sessionId,
+                  performanceId,
+                  userKey,
+                  dateStr,
+                  perfTitleVal,
+                  perfItem.id || ('pitem-' + itemIdx),
+                  subName,
+                  'combo',
+                  itemIdx,
+                  perfItem.id || ('pitem-' + itemIdx),
+                  sIdx,
+                  isSubDone ? 'completed' : 'incomplete',
+                  perfItem.category || 'OTHERS',
+                  perfItem.family || 'Custom',
+                  subName,
+                  smoothnessVal,
+                  footworkVal,
+                  totalTricksInRun,
+                  completedTricksInRun,
+                  runNotes,
+                  timestamp
+                ]);
+              }
+
               const subMeta = JSON.stringify({
+                sessionId: sessionId,
+                performanceId: performanceId,
+                runIndex: pIdx,
+                perfTitle: perfTitleVal,
                 order: itemIdx,
                 type: 'combo',
-                comboName: perfItem.name || 'Combo Sequence',
+                comboId: perfItem.id || ('pitem-' + itemIdx),
+                comboName: comboName,
                 subIndex: sIdx,
+                trickName: subName,
                 isSubDone: isSubDone,
                 itemId: perfItem.id || ('pitem-' + itemIdx),
+                category: perfItem.category || 'OTHERS',
+                family: perfItem.family || 'Custom',
                 smoothness: smoothnessVal,
                 footwork: footworkVal,
                 perfScore: perfScoreVal,
-                perfTitle: perfTitleVal,
+                totalTrickCount: totalTricksInRun,
+                completedCount: completedTricksInRun,
                 runNotes: runNotes
               });
 
               sheet.appendRow([
                 sessionId,
                 userKey,
-                String(p.date || item.date).split('T')[0],
+                dateStr,
                 'Performance',
                 subName,
                 perfItem.category || 'OTHERS',
@@ -786,7 +1002,7 @@ function saveSessionRecord(p) {
                 isSubDone ? 0 : 1,
                 0,
                 isSubDone ? 100 : 0,
-                'Combo: ' + (perfItem.name || 'Combo Sequence'),
+                'Combo: ' + comboName,
                 1,
                 isSubDone ? 1 : 0,
                 subMeta,
@@ -796,25 +1012,60 @@ function saveSessionRecord(p) {
             });
           } else {
             const isDone = Boolean(perfItem.completed);
+            const singleTrickName = perfItem.name || perfItem.trickName || 'Trick';
+
+            if (perfTricksSheet) {
+              perfTricksSheet.appendRow([
+                sessionId,
+                performanceId,
+                userKey,
+                dateStr,
+                perfTitleVal,
+                perfItem.id || ('pitem-' + itemIdx),
+                singleTrickName,
+                'single',
+                itemIdx,
+                '',
+                '',
+                isDone ? 'completed' : 'incomplete',
+                perfItem.category || 'OTHERS',
+                perfItem.family || 'Custom',
+                singleTrickName,
+                smoothnessVal,
+                footworkVal,
+                totalTricksInRun,
+                completedTricksInRun,
+                runNotes,
+                timestamp
+              ]);
+            }
+
             const singleMeta = JSON.stringify({
+              sessionId: sessionId,
+              performanceId: performanceId,
               runIndex: pIdx,
+              perfTitle: perfTitleVal,
               order: itemIdx,
               type: 'single',
               itemId: perfItem.id || ('pitem-' + itemIdx),
+              trickName: singleTrickName,
+              category: perfItem.category || 'OTHERS',
+              family: perfItem.family || 'Custom',
               completed: isDone,
               smoothness: smoothnessVal,
               footwork: footworkVal,
               perfScore: perfScoreVal,
-              perfTitle: perfTitleVal,
+              totalTrickCount: totalTricksInRun,
+              completedCount: completedTricksInRun,
               runNotes: runNotes
             });
 
             sheet.appendRow([
               sessionId,
               userKey,
-              String(p.date || item.date).split('T')[0],
+              dateStr,
               'Performance',
-              perfItem.name || 'Training Drill',
+              singleTrickName,
               perfItem.category || 'OTHERS',
               perfItem.family || 'B',
               1,
@@ -833,10 +1084,10 @@ function saveSessionRecord(p) {
         });
       } else {
         sheet.appendRow([
-          sessionId, userKey, String(p.date || item.date).split('T')[0],
+          sessionId, userKey, dateStr,
           'Performance', perfTitleVal, 'PERFORMANCE', 'Valid',
           0, 0, 0, 0, 0, 'N/A', 1, 0,
-          JSON.stringify({ smoothness: smoothnessVal, footwork: footworkVal, perfScore: perfScoreVal, runNotes: runNotes, snapshot: snap }),
+          JSON.stringify({ sessionId: sessionId, performanceId: performanceId, smoothness: smoothnessVal, footwork: footworkVal, perfScore: perfScoreVal, runNotes: runNotes, snapshot: snap }),
           runNotes, timestamp
         ]);
       }

@@ -298,6 +298,31 @@ async function handleAuthSubmit(e) {
             if (fScore === 0 && pSnapshot.footwork !== undefined) fScore = Number(pSnapshot.footwork);
             if (!cleanNotes && pSnapshot.notes) cleanNotes = String(pSnapshot.notes).trim();
 
+            pSnapshot.items = pSnapshot.items.map((it, idx) => {
+              if (it.type === 'combo') {
+                const cList = Array.isArray(it.comboTricks) ? it.comboTricks : (it.name ? it.name.split(' → ') : []);
+                return {
+                  id: it.id || ('pitem-' + idx),
+                  type: 'combo',
+                  name: it.name || it.trickName || 'Combo Sequence',
+                  comboTricks: cList,
+                  category: it.category || 'OTHERS',
+                  family: it.family || 'Custom',
+                  completed: Boolean(it.completed),
+                  comboSubCompleted: it.comboSubCompleted || {}
+                };
+              } else {
+                return {
+                  id: it.id || ('pitem-' + idx),
+                  type: 'single',
+                  name: it.name || it.trickName || 'Trick',
+                  category: it.category || 'OTHERS',
+                  family: it.family || 'Custom',
+                  completed: Boolean(it.completed)
+                };
+              }
+            });
+
             const scoreCalc = (typeof PERFORMANCE_SCORING_CONFIG !== 'undefined' && PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore) ?
               PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore(pSnapshot) :
               { totalIndividualTricks: pSnapshot.items.length, completedCount: pSnapshot.items.filter(i => i.completed).length, totalScore: pScore };
