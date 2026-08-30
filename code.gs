@@ -285,14 +285,19 @@ function getSkaterSessions(userId, skaterName) {
   });
 
   const standardRecords = [];
-  const perfRowsBySession = {};
+  const perfRunsGrouped = {};
 
   userRows.forEach(s => {
     const sType = String(s.sessiontype || s.sessionType || 'Single');
     if (sType === 'Performance') {
       const sId = String(s.sessionid || s.sessionId || ('SESS-' + Date.now()));
-      if (!perfRowsBySession[sId]) perfRowsBySession[sId] = [];
-      perfRowsBySession[sId].push(s);
+      let meta = {};
+      if (s.performancedata && String(s.performancedata).trim().startsWith('{')) {
+        try { meta = JSON.parse(s.performancedata); } catch(e) {}
+      }
+      const perfId = meta.performanceId || s.performanceid || (sId + '_' + (meta.runIndex !== undefined ? meta.runIndex : (meta.perfTitle || 'run0')));
+      if (!perfRunsGrouped[perfId]) perfRunsGrouped[perfId] = [];
+      perfRunsGrouped[perfId].push(s);
     } else {
       standardRecords.push({
         sessionId: s.sessionid || ('SESS-' + Date.now()),
@@ -319,11 +324,12 @@ function getSkaterSessions(userId, skaterName) {
   });
 
   // Reconstruct performance sessions from individual trick rows
-  const reconstructedPerfRecords = Object.keys(perfRowsBySession).map(sId => {
-    const rows = perfRowsBySession[sId];
+  const reconstructedPerfRecords = Object.keys(perfRunsGrouped).map(perfId => {
+    const rows = perfRunsGrouped[perfId];
     if (rows.length === 0) return null;
 
     const firstRow = rows[0];
+    const sId = String(firstRow.sessionid || firstRow.sessionId || ('SESS-' + Date.now()));
     const date = formatDateIso(firstRow.date);
     let runNotes = '';
     let perfTitle = 'Performance Run #1 (2 min)';
@@ -338,6 +344,7 @@ function getSkaterSessions(userId, skaterName) {
         if (parsed && parsed.snapshot) {
           return {
             sessionId: sId,
+            performanceId: perfId,
             userId: firstRow.userid || userId,
             skaterName: firstRow.skatername || skaterName || firstRow.userid,
             date: date,
@@ -379,15 +386,15 @@ function getSkaterSessions(userId, skaterName) {
       if (meta.footwork !== undefined) footwork = Number(meta.footwork);
       if (r.notes && !runNotes) runNotes = String(r.notes).trim();
 
-      const orderKey = meta.order !== undefined ? meta.order : (Object.keys(itemsByOrder).length);
+      const orderKey = meta.order !== undefined ? meta.order : Object.keys(itemsByOrder).length;
 
       if (!itemsByOrder[orderKey]) {
         itemsByOrder[orderKey] = {
-          id: meta.itemId || ('pitem-' + orderKey),
+          id: meta.itemId || meta.comboId || ('pitem-' + orderKey),
           type: meta.type || (meta.comboName ? 'combo' : 'single'),
-          name: meta.comboName || r.trickname,
-          category: r.category || 'OTHERS',
-          family: r.family || 'Custom',
+          name: meta.comboName || meta.trickName || r.trickname || r.trickName,
+          category: meta.category || r.category || 'OTHERS',
+          family: meta.family || r.family || 'Custom',
           rows: []
         };
       }
@@ -401,8 +408,9 @@ function getSkaterSessions(userId, skaterName) {
         const comboSubCompleted = {};
 
         group.rows.sort((a, b) => Number(a.meta.subIndex || 0) - Number(b.meta.subIndex || 0)).forEach((rObj, idx) => {
-          comboTricks.push(rObj.row.trickname);
-          const isDone = Boolean(rObj.meta.isSubDone !== undefined ? rObj.meta.isSubDone : (Number(rObj.row.completedcones || 0) > 0));
+          const subTrickName = rObj.meta.trickName || rObj.row.trickname || rObj.row.trickName || 'Trick';
+          comboTricks.push(subTrickName);
+          const isDone = Boolean(rObj.meta.isSubDone !== undefined ? rObj.meta.isSubDone : (Number(rObj.row.completedcones || rObj.row.completedCones || 0) > 0));
           comboSubCompleted[idx] = isDone;
         });
 
@@ -420,11 +428,12 @@ function getSkaterSessions(userId, skaterName) {
         };
       } else {
         const rObj = group.rows[0];
-        const isDone = Boolean(rObj.meta.completed !== undefined ? rObj.meta.completed : (Number(rObj.row.completedcones || 0) > 0));
+        const singleTrickName = rObj.meta.trickName || rObj.row.trickname || rObj.row.trickName || 'Trick';
+        const isDone = Boolean(rObj.meta.completed !== undefined ? rObj.meta.completed : (Number(rObj.row.completedcones || rObj.row.completedCones || 0) > 0));
         return {
           id: group.id,
           type: 'single',
-          name: rObj.row.trickname,
+          name: singleTrickName,
           category: group.category,
           family: group.family,
           completed: isDone
@@ -472,11 +481,14 @@ function getSkaterSessions(userId, skaterName) {
       smoothnessScore: smoothness,
       footworkScore: footwork,
       performanceSnapshot: {
-        id: sId,
+        id: perfId,
+        performanceId: perfId,
         title: perfTitle,
         smoothness: smoothness,
         footwork: footwork,
         notes: runNotes,
+        totalTrickCount: totalIndividualTricks,
+        completedCount: totalCompletedTricks,
         items: reconstructedItems
       },
       notes: runNotes,

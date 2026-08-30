@@ -960,13 +960,19 @@ async function handleMultiSessionSubmit(e) {
           const perfScore = PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore(perf);
           const totalTricksInRun = perfScore.totalIndividualTricks || perf.items.length;
 
+          const performanceId = perf.id || perf.performanceId || ('PERF-' + sessionId + '-' + pIdx);
           const perfSnapshotCopy = JSON.parse(JSON.stringify(perf));
+          perfSnapshotCopy.id = performanceId;
+          perfSnapshotCopy.performanceId = performanceId;
           perfSnapshotCopy.smoothness = perfScore.smoothness;
           perfSnapshotCopy.footwork = perfScore.footwork;
           perfSnapshotCopy.notes = perf.notes || globalNotes || '';
+          perfSnapshotCopy.totalTrickCount = totalTricksInRun;
+          perfSnapshotCopy.completedCount = perfScore.completedCount;
 
           const perfRecord = {
             sessionId: sessionId,
+            performanceId: performanceId,
             date: date,
             sessionType: 'Performance',
             skaterName: activeSkater,

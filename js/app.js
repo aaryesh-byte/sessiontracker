@@ -352,11 +352,11 @@ async function handleAuthSubmit(e) {
           const orderKey = meta.order !== undefined ? meta.order : Object.keys(itemsByOrder).length;
           if (!itemsByOrder[orderKey]) {
             itemsByOrder[orderKey] = {
-              id: meta.itemId || ('pitem-' + orderKey),
+              id: meta.itemId || meta.comboId || ('pitem-' + orderKey),
               type: meta.type || (meta.comboName ? 'combo' : 'single'),
-              name: meta.comboName || r.trickName || r.trickname,
-              category: r.category || 'OTHERS',
-              family: r.family || 'Custom',
+              name: meta.comboName || meta.trickName || r.trickName || r.trickname,
+              category: meta.category || r.category || 'OTHERS',
+              family: meta.family || r.family || 'Custom',
               rows: []
             };
           }
@@ -369,7 +369,8 @@ async function handleAuthSubmit(e) {
             const comboTricks = [];
             const comboSubCompleted = {};
             group.rows.sort((a, b) => Number(a.meta.subIndex || 0) - Number(b.meta.subIndex || 0)).forEach((rObj, idx) => {
-              comboTricks.push(rObj.row.trickName || rObj.row.trickname);
+              const subName = rObj.meta.trickName || rObj.row.trickName || rObj.row.trickname || 'Trick';
+              comboTricks.push(subName);
               const isDone = Boolean(rObj.meta.isSubDone !== undefined ? rObj.meta.isSubDone : (Number(rObj.row.completedCones || rObj.row.completedcones || 0) > 0));
               comboSubCompleted[idx] = isDone;
             });
@@ -386,11 +387,12 @@ async function handleAuthSubmit(e) {
             };
           } else {
             const rObj = group.rows[0];
+            const singleName = rObj.meta.trickName || rObj.row.trickName || rObj.row.trickname || 'Trick';
             const isDone = Boolean(rObj.meta.completed !== undefined ? rObj.meta.completed : (Number(rObj.row.completedCones || rObj.row.completedcones || 0) > 0));
             return {
               id: group.id,
               type: 'single',
-              name: rObj.row.trickName || rObj.row.trickname,
+              name: singleName,
               category: group.category,
               family: group.family,
               completed: isDone
@@ -413,12 +415,16 @@ async function handleAuthSubmit(e) {
           }
         });
 
+        const perfId = firstRow.performanceId || (sId + '_' + (firstRow.runIndex !== undefined ? firstRow.runIndex : 'run0'));
         const reconstructedSnap = {
-          id: sId,
+          id: perfId,
+          performanceId: perfId,
           title: firstRow.trickName || firstRow.trickname || 'Performance Run #1 (2 min)',
           smoothness: sScore,
           footwork: fScore,
           notes: cleanNotes,
+          totalTrickCount: totalIndividual,
+          completedCount: completedIndividual,
           items: reconstructedItems
         };
 
