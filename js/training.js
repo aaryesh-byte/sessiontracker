@@ -85,8 +85,17 @@
           item.completedAttempts = item.targetAttempts;
           const compInput = document.getElementById(`itemCompAttempts_${idx}`);
           if (compInput) compInput.value = item.completedAttempts;
+        } else if (!item.userModifiedCompAttempts && item.target && item.completed !== '') {
+          const tCones = Number(item.target) || 0;
+          const cCones = Number(item.completed) || 0;
+          if (tCones > 0) {
+            item.completedAttempts = Math.min(val, Math.round((cCones / tCones) * val));
+            const compInput = document.getElementById(`itemCompAttempts_${idx}`);
+            if (compInput) compInput.value = item.completedAttempts;
+          }
         }
       } else if (field === 'completedAttempts') {
+        item.userModifiedCompAttempts = true;
         const maxTarget = item.targetAttempts || 0;
         if (maxTarget > 0 && val > maxTarget) {
           val = maxTarget;
@@ -814,6 +823,18 @@
         item.missed = item.target - item.completed;
         const el = document.getElementById(`itemMissed_${idx}`);
         if (el) el.value = item.missed;
+
+        if (!item.userModifiedCompAttempts) {
+          const tAtt = Number(item.targetAttempts) || 10;
+          const tCones = Number(item.target) || 0;
+          const cCones = Number(item.completed) || 0;
+          if (tCones > 0) {
+            item.completedAttempts = Math.min(tAtt, Math.round((cCones / tCones) * tAtt));
+            const compEl = document.getElementById(`itemCompAttempts_${idx}`);
+            if (compEl) compEl.value = item.completedAttempts;
+            updateAttemptProgressBar(idx);
+          }
+        }
       }
     }
 
@@ -923,8 +944,19 @@ async function handleMultiSessionSubmit(e) {
           }
         }
 
-        const tAtt = item.targetAttempts !== undefined && item.targetAttempts !== '' ? Number(item.targetAttempts) : 10;
-        const cAtt = item.completedAttempts !== undefined && item.completedAttempts !== '' ? Math.min(tAtt, Number(item.completedAttempts)) : 0;
+        let tAtt = item.targetAttempts !== undefined && item.targetAttempts !== '' ? Number(item.targetAttempts) : 10;
+        if (isCombo && (item.targetAttempts === undefined || item.targetAttempts === '') && item.totalAttempts) {
+          tAtt = Number(item.totalAttempts);
+        }
+        let cAtt = item.completedAttempts !== undefined && item.completedAttempts !== '' ? Number(item.completedAttempts) : undefined;
+        if (isCombo && cAtt === undefined && item.connectedAttempts !== undefined) {
+          cAtt = Number(item.connectedAttempts);
+        }
+        if (cAtt === undefined || (!item.userModifiedCompAttempts && cAtt === 0 && completed > 0)) {
+          cAtt = target > 0 ? Math.min(tAtt, Math.round((completed / target) * tAtt)) : 0;
+        } else {
+          cAtt = Math.min(tAtt, Math.max(0, cAtt));
+        }
 
         let enrichedNotes = item.notes || globalNotes;
         const metaObj = {
@@ -1202,8 +1234,8 @@ async function handleMultiSessionSubmit(e) {
     }
 
     function extractItemAttempts(item) {
-      let target = Number(item.targetAttempts || item.targetattempts || 0);
-      let completed = Number(item.completedAttempts || item.completedattempts || 0);
+      let target = item.targetAttempts !== undefined ? Number(item.targetAttempts) : (item.targetattempts !== undefined ? Number(item.targetattempts) : 0);
+      let completed = item.completedAttempts !== undefined ? Number(item.completedAttempts) : (item.completedattempts !== undefined ? Number(item.completedattempts) : 0);
 
       if (target === 0 && item.notes && typeof item.notes === 'string' && item.notes.startsWith('{')) {
         try {
@@ -1211,11 +1243,6 @@ async function handleMultiSessionSubmit(e) {
           if (parsed.targetAttempts !== undefined) target = Number(parsed.targetAttempts);
           if (parsed.completedAttempts !== undefined) completed = Number(parsed.completedAttempts);
         } catch(e) {}
-      }
-
-      if (target === 0) {
-        target = Number(item.targetCones || item.targetcones || 10);
-        completed = Number(item.completedCones || item.completedcones || target);
       }
 
       return { target, completed };
