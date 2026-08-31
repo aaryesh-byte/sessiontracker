@@ -285,8 +285,8 @@ function getSkaterSessions(userId, skaterName) {
       falls: Number(s.falls || 0),
       successRate: Number(s.successrate || 0),
       connectedCompletion: s.connectedcompletion || 'N/A',
-      targetAttempts: Number(s.targetattempts || 10),
-      completedAttempts: Number(s.completedattempts || 0),
+      targetAttempts: s.targetattempts !== undefined && s.targetattempts !== '' ? Number(s.targetattempts) : (s.targetAttempts !== undefined && s.targetAttempts !== '' ? Number(s.targetAttempts) : 10),
+      completedAttempts: s.completedattempts !== undefined && s.completedattempts !== '' ? Number(s.completedattempts) : (s.completedAttempts !== undefined && s.completedAttempts !== '' ? Number(s.completedAttempts) : 0),
       performanceData: s.performancedata || '',
       notes: s.notes || '',
       timestamp: s.timestamp || ''
@@ -362,7 +362,14 @@ function saveSessionRecord(p) {
     const missed = Number(item.missedCones) || 0;
     const successRate = target > 0 ? parseFloat(((completed / target) * 100).toFixed(1)) : 0;
     const tAttempts = item.targetAttempts !== undefined && item.targetAttempts !== '' ? Number(item.targetAttempts) : 10;
-    const cAttempts = item.completedAttempts !== undefined && item.completedAttempts !== '' ? Number(item.completedAttempts) : 0;
+    let cAttempts = item.completedAttempts !== undefined && item.completedAttempts !== '' ? Number(item.completedAttempts) : undefined;
+    if (cAttempts === undefined) {
+      if (target > 0 && completed > 0) {
+        cAttempts = Math.min(tAttempts, Math.round((completed / target) * tAttempts));
+      } else {
+        cAttempts = 0;
+      }
+    }
 
     let cleanNotes = String(item.userNotes || item.notes || p.sessionNotes || '').trim();
     if (cleanNotes.startsWith('{') && cleanNotes.endsWith('}')) {

@@ -199,6 +199,8 @@ async function handleAuthSubmit(e) {
 
         // Clean user notes (strip raw JSON strings)
         let cleanNotes = String(r.notes || '').trim();
+        let parsedTargetAttempts = undefined;
+        let parsedCompletedAttempts = undefined;
         if (cleanNotes.startsWith('{') && cleanNotes.endsWith('}')) {
           try {
             const parsed = JSON.parse(cleanNotes);
@@ -208,6 +210,8 @@ async function handleAuthSubmit(e) {
               if (parsed.smoothnessScore !== undefined) sScore = Number(parsed.smoothnessScore);
               if (parsed.footworkScore !== undefined) fScore = Number(parsed.footworkScore);
             }
+            if (parsed.targetAttempts !== undefined) parsedTargetAttempts = Number(parsed.targetAttempts);
+            if (parsed.completedAttempts !== undefined) parsedCompletedAttempts = Number(parsed.completedAttempts);
             cleanNotes = parsed.userNotes || parsed.notes || '';
           } catch(e) {}
         }
@@ -234,8 +238,16 @@ async function handleAuthSubmit(e) {
 
         const targetCones = r.targetCones !== undefined ? Number(r.targetCones) : Number(r.targetcones || 0);
         const completedCones = r.completedCones !== undefined ? Number(r.completedCones) : Number(r.completedcones || 0);
-        const targetAttempts = r.targetAttempts !== undefined ? Number(r.targetAttempts) : Number(r.targetattempts || 10);
-        const completedAttempts = r.completedAttempts !== undefined ? Number(r.completedAttempts) : Number(r.completedattempts || 0);
+        let targetAttempts = r.targetAttempts !== undefined ? Number(r.targetAttempts) : (r.targetattempts !== undefined ? Number(r.targetattempts) : (parsedTargetAttempts !== undefined ? parsedTargetAttempts : 10));
+        let completedAttempts = r.completedAttempts !== undefined ? Number(r.completedAttempts) : (r.completedattempts !== undefined ? Number(r.completedattempts) : (parsedCompletedAttempts !== undefined ? parsedCompletedAttempts : undefined));
+
+        if (completedAttempts === undefined) {
+          if (targetCones > 0 && completedCones > 0) {
+            completedAttempts = Math.min(targetAttempts, Math.round((completedCones / targetCones) * targetAttempts));
+          } else {
+            completedAttempts = 0;
+          }
+        }
 
         let parsedDate = '';
         if (r.date) {
@@ -896,10 +908,12 @@ async function switchTab(tabId, el) {
   document.body.scrollTop = 0;
 
   document.querySelectorAll('.bottom-nav .nav-item').forEach(n => n.classList.remove('active'));
-  // Standard Layout: Dash (0) | Train (1) | Build (2) | History (3) | Custom Tricks (4)
-  const indexMap = { dashboard: 0, log: 1, calc: 2, history: 3, tricks: 4 };
+  // Active nav items mapping: Dash (0) | Train (1) | History (2) | Custom Tricks (3)
+  const indexMap = { dashboard: 0, log: 1, history: 2, tricks: 3 };
   const navItems = document.querySelectorAll('.bottom-nav .nav-item');
-  if (navItems[indexMap[tabId]]) navItems[indexMap[tabId]].classList.add('active');
+  if (indexMap[tabId] !== undefined && navItems[indexMap[tabId]]) {
+    navItems[indexMap[tabId]].classList.add('active');
+  }
 
   const container = document.getElementById('pageContainer');
   if (!container) return;

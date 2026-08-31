@@ -2,24 +2,7 @@
 
 
     function initSessionItems() {
-      appState.sessionItems = [
-        {
-          id: Date.now() + Math.random(),
-          type: 'single',
-          isCollapsed: false,
-          trickName: '',
-          category: '',
-          family: '',
-          target: '',
-          completed: '',
-          missed: '',
-          targetAttempts: 10,
-          completedAttempts: 0,
-          falls: 0,
-          notes: '',
-          searchFilter: ''
-        }
-      ];
+      appState.sessionItems = [];
       appState.sessionPerformances = [];
       renderSessionItems();
       renderSessionPerformanceSection();
@@ -85,8 +68,17 @@
           item.completedAttempts = item.targetAttempts;
           const compInput = document.getElementById(`itemCompAttempts_${idx}`);
           if (compInput) compInput.value = item.completedAttempts;
+        } else if (!item.userModifiedCompAttempts && item.target && item.completed !== '') {
+          const tCones = Number(item.target) || 0;
+          const cCones = Number(item.completed) || 0;
+          if (tCones > 0) {
+            item.completedAttempts = Math.min(val, Math.round((cCones / tCones) * val));
+            const compInput = document.getElementById(`itemCompAttempts_${idx}`);
+            if (compInput) compInput.value = item.completedAttempts;
+          }
         }
       } else if (field === 'completedAttempts') {
+        item.userModifiedCompAttempts = true;
         const maxTarget = item.targetAttempts || 0;
         if (maxTarget > 0 && val > maxTarget) {
           val = maxTarget;
@@ -407,8 +399,9 @@
 
       if (!appState.sessionItems || appState.sessionItems.length === 0) {
         container.innerHTML = `
-          <div class="empty-state" style="padding:14px 10px; border:1px dashed var(--border-razor); border-radius:var(--radius-md); margin-bottom:10px;">
-            <div class="empty-text" style="margin-bottom:0; font-size:0.75rem;">No individual drills added.</div>
+          <div class="empty-state" style="padding:16px 12px; border:1px dashed var(--border-razor); border-radius:var(--radius-md); margin-bottom:12px; text-align:center; cursor:pointer;" onclick="addSessionItem('single')">
+            <div class="empty-icon" style="font-size:1.2rem; margin-bottom:4px;">➕</div>
+            <div class="empty-text" style="margin-bottom:0; font-size:0.875rem; font-weight:600; color:var(--primary);">Click here to add a trick or a combo</div>
           </div>
         `;
         return;
@@ -814,12 +807,61 @@
         item.missed = item.target - item.completed;
         const el = document.getElementById(`itemMissed_${idx}`);
         if (el) el.value = item.missed;
+
+        if (!item.userModifiedCompAttempts) {
+          const tAtt = Number(item.targetAttempts) || 10;
+          const tCones = Number(item.target) || 0;
+          const cCones = Number(item.completed) || 0;
+          if (tCones > 0) {
+            item.completedAttempts = Math.min(tAtt, Math.round((cCones / tCones) * tAtt));
+            const compEl = document.getElementById(`itemCompAttempts_${idx}`);
+            if (compEl) compEl.value = item.completedAttempts;
+            updateAttemptProgressBar(idx);
+          }
+        }
       }
     }
 
 
+function promptCloudSyncRetry(errorMessage) {
+  return new Promise((resolve) => {
+    let modal = document.getElementById('cloudSyncRetryModal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'cloudSyncRetryModal';
+      modal.className = 'modal-overlay';
+      modal.style.zIndex = '10000';
+      document.body.appendChild(modal);
+    }
+    modal.innerHTML = `
+      <div class="glass-card" style="max-width:380px; width:100%; text-align:center;">
+        <div style="font-size:2rem; margin-bottom:8px;">⚠️</div>
+        <div class="headline-lg" style="color:var(--error); margin-bottom:8px;">Cloud Sync Failed</div>
+        <div style="font-size:0.88rem; color:var(--on-surface-muted); margin-bottom:16px;">
+          ${errorMessage || 'Unable to connect to RollSync Cloud backend.'}
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="btn btn-secondary" style="flex:1;" id="btnSyncSkip">Save Offline</button>
+          <button type="button" class="btn" style="flex:1;" id="btnSyncRetry">🔄 Retry Sync</button>
+        </div>
+      </div>
+    `;
+    modal.style.display = 'flex';
+    document.getElementById('btnSyncSkip').onclick = () => {
+      modal.style.display = 'none';
+      resolve(false);
+    };
+    document.getElementById('btnSyncRetry').onclick = () => {
+      modal.style.display = 'none';
+      resolve(true);
+    };
+  });
+}
+
 async function handleMultiSessionSubmit(e) {
       if (e) { e.preventDefault(); e.stopPropagation(); }
+
+      const submitBtn = document.querySelector('#multiSessionForm button[type="submit"]');
 
       if (!appState.currentUser || (!appState.currentUser.skaterName && !appState.currentUser.username)) {
         showToast('Error: No active skater profile found. Please sign in.', 'error');
@@ -894,138 +936,173 @@ async function handleMultiSessionSubmit(e) {
         }
       }
 
-      const formattedPayloadItems = [];
+      // Lock submit button and show loading indicator
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.dataset.origText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '⏳ Saving &amp; Syncing...';
+      }
 
-      // Format individual trick and combo items
-      validDrillItems.forEach(item => {
-        const target = Number(item.target || 0);
-        const completed = Number(item.completed || 0);
-        const missed = item.missed !== '' && item.missed !== undefined ? Number(item.missed) : Math.max(0, target - completed);
-        const isCombo = item.type === 'combo';
-        
-        let connRate = 'N/A';
-        let comboName = item.trickName;
-        let comboCat = item.category || 'OTHERS';
-        let comboFam = item.family || 'Custom';
+      try {
+        const formattedPayloadItems = [];
 
-        if (isCombo) {
-          const tot = item.totalAttempts !== '' && item.totalAttempts !== undefined ? Math.max(1, Number(item.totalAttempts)) : 1;
-          const conn = item.connectedAttempts !== '' && item.connectedAttempts !== undefined ? Number(item.connectedAttempts) : 0;
-          connRate = ((conn / tot) * 100).toFixed(1) + '%';
+        // Format individual trick and combo items
+        validDrillItems.forEach(item => {
+          const target = Number(item.target || 0);
+          const completed = Number(item.completed || 0);
+          const missed = item.missed !== '' && item.missed !== undefined ? Number(item.missed) : Math.max(0, target - completed);
+          const isCombo = item.type === 'combo';
 
-          if (item.slots && item.slots.length > 0) {
-            const validSlots = item.slots.filter(s => s.selectedTrick);
-            comboName = validSlots.map(s => s.selectedTrick).join(' → ');
-            if (validSlots[0]) {
-              comboCat = validSlots[0].category || 'OTHERS';
-              comboFam = validSlots[0].family || 'Custom';
+          let connRate = 'N/A';
+          let comboName = item.trickName;
+          let comboCat = item.category || 'OTHERS';
+          let comboFam = item.family || 'Custom';
+
+          if (isCombo) {
+            const tot = item.totalAttempts !== '' && item.totalAttempts !== undefined ? Math.max(1, Number(item.totalAttempts)) : 1;
+            const conn = item.connectedAttempts !== '' && item.connectedAttempts !== undefined ? Number(item.connectedAttempts) : 0;
+            connRate = ((conn / tot) * 100).toFixed(1) + '%';
+
+            if (item.slots && item.slots.length > 0) {
+              const validSlots = item.slots.filter(s => s.selectedTrick);
+              comboName = validSlots.map(s => s.selectedTrick).join(' → ');
+              if (validSlots[0]) {
+                comboCat = validSlots[0].category || 'OTHERS';
+                comboFam = validSlots[0].family || 'Custom';
+              }
+            }
+          }
+
+          let tAtt = item.targetAttempts !== undefined && item.targetAttempts !== '' ? Number(item.targetAttempts) : 10;
+          if (isCombo && (item.targetAttempts === undefined || item.targetAttempts === '') && item.totalAttempts) {
+            tAtt = Number(item.totalAttempts);
+          }
+          let cAtt = item.completedAttempts !== undefined && item.completedAttempts !== '' ? Number(item.completedAttempts) : undefined;
+          if (isCombo && cAtt === undefined && item.connectedAttempts !== undefined) {
+            cAtt = Number(item.connectedAttempts);
+          }
+          if (cAtt === undefined || (!item.userModifiedCompAttempts && cAtt === 0 && completed > 0)) {
+            cAtt = target > 0 ? Math.min(tAtt, Math.round((completed / target) * tAtt)) : 0;
+          } else {
+            cAtt = Math.min(tAtt, Math.max(0, cAtt));
+          }
+
+          let enrichedNotes = item.notes || globalNotes;
+          const metaObj = {
+            userNotes: item.notes || '',
+            targetAttempts: tAtt,
+            completedAttempts: cAtt,
+            comboSlots: isCombo && item.slots ? item.slots.map(s => s.selectedTrick).filter(Boolean) : []
+          };
+
+          formattedPayloadItems.push({
+            sessionId: sessionId,
+            date: date,
+            sessionType: isCombo ? 'Combo' : 'Single',
+            skaterName: activeSkater,
+            userId: activeUserId,
+            trickName: comboName || (isCombo ? 'Combo Sequence' : item.trickName),
+            category: comboCat,
+            family: comboFam,
+            targetCones: target,
+            completedCones: completed,
+            missedCones: missed,
+            targetAttempts: tAtt,
+            completedAttempts: cAtt,
+            falls: item.falls !== '' && item.falls !== undefined ? Number(item.falls) : 0,
+            successRate: target > 0 ? parseFloat(((completed / target) * 100).toFixed(1)) : 0,
+            connectedCompletion: connRate,
+            notes: JSON.stringify(metaObj),
+            itemMetadata: metaObj
+          });
+        });
+
+        // Format all session Performance snapshots included in this training log
+        if (appState.sessionPerformances && appState.sessionPerformances.length > 0) {
+          appState.sessionPerformances.forEach((perf, pIdx) => {
+            if (!perf.items || perf.items.length === 0) return;
+            const perfScore = PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore(perf);
+            const totalTricksInRun = perfScore.totalIndividualTricks || perf.items.length;
+            const perfRecord = {
+              sessionId: sessionId,
+              date: date,
+              sessionType: 'Performance',
+              skaterName: activeSkater,
+              userId: activeUserId,
+              trickName: `Performance Run #${pIdx + 1} (2 min)`,
+              category: 'PERFORMANCE',
+              family: perfScore.isValid ? 'Valid' : 'Incomplete',
+              targetCones: totalTricksInRun,
+              completedCones: perfScore.completedCount,
+              missedCones: Math.max(0, totalTricksInRun - perfScore.completedCount),
+              falls: 0,
+              successRate: totalTricksInRun > 0 ? parseFloat(((perfScore.completedCount / totalTricksInRun) * 100).toFixed(1)) : 0,
+              connectedCompletion: 'N/A',
+              performanceSnapshot: JSON.parse(JSON.stringify(perf)),
+              performanceScore: perfScore.totalScore,
+              smoothnessScore: perfScore.smoothness,
+              footworkScore: perfScore.footwork,
+              notes: perf.notes || globalNotes
+            };
+            formattedPayloadItems.push(perfRecord);
+          });
+        }
+
+        const normalizedItems = normalizeSessionRecords(formattedPayloadItems);
+        normalizedItems.forEach(rec => appState.sessions.unshift(rec));
+
+        if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== "YOUR_APPS_SCRIPT_WEB_APP_URL") {
+          let syncSuccess = false;
+          let keepRetrying = true;
+
+          while (!syncSuccess && keepRetrying) {
+            try {
+              const res = await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({
+                  action: 'logSession',
+                  payload: {
+                    sessionId: sessionId,
+                    date: date,
+                    skaterName: activeSkater,
+                    userId: activeUserId,
+                    username: appState.currentUser.username,
+                    sessionNotes: globalNotes,
+                    items: formattedPayloadItems
+                  }
+                })
+              });
+              const resJson = await res.json();
+              if (resJson.status === 'success') {
+                syncSuccess = true;
+              } else {
+                throw new Error(resJson.message || 'Server returned error status');
+              }
+            } catch(err) {
+              console.error('API Error saving session:', err);
+              keepRetrying = await promptCloudSyncRetry(err.message || 'Cloud connection failed.');
+              if (!keepRetrying) {
+                showToast('Warning: Session saved locally but cloud sync failed.', 'warning');
+              }
             }
           }
         }
 
-        const tAtt = item.targetAttempts !== undefined && item.targetAttempts !== '' ? Number(item.targetAttempts) : 10;
-        const cAtt = item.completedAttempts !== undefined && item.completedAttempts !== '' ? Math.min(tAtt, Number(item.completedAttempts)) : 0;
+        showToast(`Training session saved with ${formattedPayloadItems.length} practice item(s)!`, 'success');
+        if (notesEl) notesEl.value = '';
 
-        let enrichedNotes = item.notes || globalNotes;
-        const metaObj = {
-          userNotes: item.notes || '',
-          targetAttempts: tAtt,
-          completedAttempts: cAtt,
-          comboSlots: isCombo && item.slots ? item.slots.map(s => s.selectedTrick).filter(Boolean) : []
-        };
-
-        formattedPayloadItems.push({
-          sessionId: sessionId,
-          date: date,
-          sessionType: isCombo ? 'Combo' : 'Single',
-          skaterName: activeSkater,
-          userId: activeUserId,
-          trickName: comboName || (isCombo ? 'Combo Sequence' : item.trickName),
-          category: comboCat,
-          family: comboFam,
-          targetCones: target,
-          completedCones: completed,
-          missedCones: missed,
-          targetAttempts: tAtt,
-          completedAttempts: cAtt,
-          falls: item.falls !== '' && item.falls !== undefined ? Number(item.falls) : 0,
-          successRate: target > 0 ? parseFloat(((completed / target) * 100).toFixed(1)) : 0,
-          connectedCompletion: connRate,
-          notes: JSON.stringify(metaObj),
-          itemMetadata: metaObj
-        });
-      });
-
-      // Format all session Performance snapshots included in this training log
-      if (appState.sessionPerformances && appState.sessionPerformances.length > 0) {
-        appState.sessionPerformances.forEach((perf, pIdx) => {
-          if (!perf.items || perf.items.length === 0) return;
-          const perfScore = PERFORMANCE_SCORING_CONFIG.calculatePerformanceScore(perf);
-        const totalTricksInRun = perfScore.totalIndividualTricks || perf.items.length;
-        const perfRecord = {
-          sessionId: sessionId,
-          date: date,
-          sessionType: 'Performance',
-          skaterName: activeSkater,
-          userId: activeUserId,
-          trickName: `Performance Run #${pIdx + 1} (2 min)`,
-          category: 'PERFORMANCE',
-          family: perfScore.isValid ? 'Valid' : 'Incomplete',
-          targetCones: totalTricksInRun,
-          completedCones: perfScore.completedCount,
-          missedCones: Math.max(0, totalTricksInRun - perfScore.completedCount),
-          falls: 0,
-          successRate: totalTricksInRun > 0 ? parseFloat(((perfScore.completedCount / totalTricksInRun) * 100).toFixed(1)) : 0,
-          connectedCompletion: 'N/A',
-          performanceSnapshot: JSON.parse(JSON.stringify(perf)),
-          performanceScore: perfScore.totalScore,
-          smoothnessScore: perfScore.smoothness,
-          footworkScore: perfScore.footwork,
-          notes: perf.notes || globalNotes
-        };
-        formattedPayloadItems.push(perfRecord);
-        });
-      }
-
-      const normalizedItems = normalizeSessionRecords(formattedPayloadItems);
-      normalizedItems.forEach(rec => appState.sessions.unshift(rec));
-
-      if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== "YOUR_APPS_SCRIPT_WEB_APP_URL") {
-        try {
-          const res = await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({
-              action: 'logSession',
-              payload: {
-                sessionId: sessionId,
-                date: date,
-                skaterName: activeSkater,
-                userId: activeUserId,
-                username: appState.currentUser.username,
-                sessionNotes: globalNotes,
-                items: formattedPayloadItems
-              }
-            })
-          });
-          const resJson = await res.json();
-          if (resJson.status !== 'success') {
-            console.warn('Backend save notice:', resJson);
-          }
-        } catch(err) {
-          console.error('API Error saving session:', err);
-          showToast('Warning: Session saved locally but cloud sync failed.', 'warning');
+        const summaryStats = calculateSessionSummary(formattedPayloadItems, date);
+        const savedItemsSnapshot = JSON.parse(JSON.stringify(formattedPayloadItems));
+        initSessionItems();
+        populateProgressTrickFilter();
+        showSessionSummaryModal(summaryStats, savedItemsSnapshot, date);
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = submitBtn.dataset.origText || 'Finish &amp; Log Session';
         }
       }
-
-      showToast(`Training session saved with ${formattedPayloadItems.length} practice item(s)!`, 'success');
-      if (notesEl) notesEl.value = '';
-      
-      const summaryStats = calculateSessionSummary(formattedPayloadItems, date);
-      const savedItemsSnapshot = JSON.parse(JSON.stringify(formattedPayloadItems));
-      initSessionItems();
-      populateProgressTrickFilter();
-      showSessionSummaryModal(summaryStats, savedItemsSnapshot, date);
     }
 
     function calculateSessionSummary(items, date) {
@@ -1202,8 +1279,8 @@ async function handleMultiSessionSubmit(e) {
     }
 
     function extractItemAttempts(item) {
-      let target = Number(item.targetAttempts || item.targetattempts || 0);
-      let completed = Number(item.completedAttempts || item.completedattempts || 0);
+      let target = item.targetAttempts !== undefined ? Number(item.targetAttempts) : (item.targetattempts !== undefined ? Number(item.targetattempts) : 0);
+      let completed = item.completedAttempts !== undefined ? Number(item.completedAttempts) : (item.completedattempts !== undefined ? Number(item.completedattempts) : 0);
 
       if (target === 0 && item.notes && typeof item.notes === 'string' && item.notes.startsWith('{')) {
         try {
@@ -1211,11 +1288,6 @@ async function handleMultiSessionSubmit(e) {
           if (parsed.targetAttempts !== undefined) target = Number(parsed.targetAttempts);
           if (parsed.completedAttempts !== undefined) completed = Number(parsed.completedAttempts);
         } catch(e) {}
-      }
-
-      if (target === 0) {
-        target = Number(item.targetCones || item.targetcones || 10);
-        completed = Number(item.completedCones || item.completedcones || target);
       }
 
       return { target, completed };
@@ -1264,8 +1336,20 @@ async function handleMultiSessionSubmit(e) {
 
       window._lastSavedSessionData = { items: savedItems, date: dateStr };
 
+      const itemsListHtml = (savedItems || []).map(it => {
+        const cat = String(it.category || '').toUpperCase();
+        const unitLabel = cat === 'SPINNING' ? 'spins' : 'cones';
+        const tCones = it.targetCones !== undefined ? it.targetCones : (it.targetcones || 0);
+        const cAtt = it.completedAttempts !== undefined ? it.completedAttempts : (it.completedattempts || 0);
+        const tAtt = it.targetAttempts !== undefined ? it.targetAttempts : (it.targetattempts || 10);
+        const name = it.trickName || it.trickname || 'Trick';
+        return `<div style="font-size:0.85rem; padding:6px 0; border-bottom:1px solid var(--border-razor); text-align:left; color:var(--on-surface);">
+          <span style="font-weight:700;">${name}</span> — Max: ${tCones} ${unitLabel} | Completed: ${cAtt}/${tAtt} attempts
+        </div>`;
+      }).join('');
+
       modal.innerHTML = `
-        <div class="glass-card" style="max-width:420px; width:100%; text-align:center;">
+        <div class="glass-card" style="max-width:440px; width:100%; text-align:center; max-height:90vh; overflow-y:auto;">
           <div style="font-size:2.2rem; margin-bottom:4px;">🏁</div>
           <div class="headline-lg" style="color:var(--primary); margin-bottom:4px;">SESSION COMPLETE ✓</div>
           <div class="label-caps">${summary.date}</div>
@@ -1283,6 +1367,11 @@ async function handleMultiSessionSubmit(e) {
               <div class="metric-label">Success</div>
               <div class="metric-value" style="font-size:1.25rem;">${summary.overallSuccess}%</div>
             </div>
+          </div>
+
+          <div style="background:var(--bg-container); border:1px solid var(--border-razor); border-radius:var(--radius-md); padding:12px; margin-bottom:12px; text-align:left;">
+            <div class="label-caps" style="color:var(--primary); margin-bottom:6px;">📝 Practiced Component Details</div>
+            ${itemsListHtml}
           </div>
 
           <div style="background:var(--bg-container); border:1px solid var(--border-razor); border-radius:var(--radius-md); padding:12px; margin-bottom:16px; text-align:left;">
