@@ -51,7 +51,8 @@ let calSelectedDate = null;
           // 100% Cloud-Authoritative cross-device Master Performance sync
           const userKey = String(appState.currentUser.userId || activeSkater || activeUsername || '').toLowerCase();
           if (json.data.masterPerformance && typeof json.data.masterPerformance === 'object') {
-
+            if (!appState.masterPerformances) appState.masterPerformances = {};
+            appState.masterPerformances[userKey] = json.data.masterPerformance;
           }
 
           populateProgressTrickFilter();
