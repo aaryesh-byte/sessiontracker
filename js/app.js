@@ -908,10 +908,12 @@ async function switchTab(tabId, el) {
   document.body.scrollTop = 0;
 
   document.querySelectorAll('.bottom-nav .nav-item').forEach(n => n.classList.remove('active'));
-  // Standard Layout: Dash (0) | Train (1) | Build (2) | History (3) | Custom Tricks (4)
-  const indexMap = { dashboard: 0, log: 1, calc: 2, history: 3, tricks: 4 };
+  // Active nav items mapping: Dash (0) | Train (1) | History (2) | Custom Tricks (3)
+  const indexMap = { dashboard: 0, log: 1, history: 2, tricks: 3 };
   const navItems = document.querySelectorAll('.bottom-nav .nav-item');
-  if (navItems[indexMap[tabId]]) navItems[indexMap[tabId]].classList.add('active');
+  if (indexMap[tabId] !== undefined && navItems[indexMap[tabId]]) {
+    navItems[indexMap[tabId]].classList.add('active');
+  }
 
   const container = document.getElementById('pageContainer');
   if (!container) return;
