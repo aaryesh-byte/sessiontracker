@@ -1156,6 +1156,26 @@ async function handleMultiSessionSubmit(e) {
       return isoDateStr;
     }
 
+    function deduplicateSessionItems(items) {
+      if (!Array.isArray(items)) return [];
+      const seen = new Set();
+      return items.filter(it => {
+        const key = [
+          it.sessionId || it.sessionid || '',
+          it.trickName || it.trickname || '',
+          it.category || '',
+          it.targetCones !== undefined ? it.targetCones : (it.targetcones !== undefined ? it.targetcones : (it.target || '')),
+          it.completedCones !== undefined ? it.completedCones : (it.completedcones !== undefined ? it.completedcones : (it.completed || '')),
+          it.targetAttempts !== undefined ? it.targetAttempts : (it.targetattempts !== undefined ? it.targetattempts : ''),
+          it.completedAttempts !== undefined ? it.completedAttempts : (it.completedattempts !== undefined ? it.completedattempts : ''),
+          it.notes || ''
+        ].join('|');
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
     function generateCoachSummaryText(sessionItems, dateStr) {
       const formattedDate = formatSummaryDate(dateStr);
       const lines = [];
@@ -1164,10 +1184,11 @@ async function handleMultiSessionSubmit(e) {
       lines.push('');
       lines.push('Classic:');
 
+      const cleanItems = deduplicateSessionItems(sessionItems);
       let sectionCounter = 1;
 
       // 1. Warmup / Session Notes
-      const firstNoteItem = sessionItems.find(it => {
+      const firstNoteItem = cleanItems.find(it => {
         const n = extractItemUserNotes(it);
         return n && (n.toLowerCase().includes('warmup') || n.toLowerCase().includes('warm up'));
       });
@@ -1179,7 +1200,7 @@ async function handleMultiSessionSubmit(e) {
       }
 
       // 2. Individual Tricks
-      const singleTricks = sessionItems.filter(it => {
+      const singleTricks = cleanItems.filter(it => {
         const st = it.sessionType || it.sessiontype || 'Single';
         return st === 'Single';
       });
@@ -1189,13 +1210,14 @@ async function handleMultiSessionSubmit(e) {
         singleTricks.forEach(t => {
           const name = t.trickName || t.trickname || 'Trick';
           const attempts = extractItemAttempts(t);
-          lines.push(`   ${name} - ${attempts.completed}/${attempts.target}`);
+          const cones = extractItemCones(t);
+          lines.push(`   ${name} - Attempts: ${attempts.completed}/${attempts.target} | ${cones.unitLabel.charAt(0).toUpperCase() + cones.unitLabel.slice(1)}: ${cones.completed}/${cones.target}`);
         });
         sectionCounter++;
       }
 
       // 3. Combos
-      const comboTricks = sessionItems.filter(it => {
+      const comboTricks = cleanItems.filter(it => {
         const st = it.sessionType || it.sessiontype;
         return st === 'Combo';
       });
@@ -1205,22 +1227,21 @@ async function handleMultiSessionSubmit(e) {
         comboTricks.forEach((cb, cIdx) => {
           const name = cb.trickName || cb.trickname || `Combo ${cIdx + 1}`;
           const attempts = extractItemAttempts(cb);
+          const cones = extractItemCones(cb);
           const subTricks = extractComboSubTricks(cb);
 
+          lines.push(`   Combo ${cIdx + 1} (${name}) - Attempts: ${attempts.completed}/${attempts.target} | ${cones.unitLabel.charAt(0).toUpperCase() + cones.unitLabel.slice(1)}: ${cones.completed}/${cones.target}`);
           if (subTricks.length > 0) {
-            lines.push(`   Combo ${cIdx + 1} - ${attempts.completed}/${attempts.target}`);
             subTricks.forEach(stName => {
-              lines.push(`   ${stName} - complete`);
+              lines.push(`      ${stName} - complete`);
             });
-          } else {
-            lines.push(`   ${name} - ${attempts.completed}/${attempts.target}`);
           }
         });
         sectionCounter++;
       }
 
       // 4. Performance
-      const perfSessions = sessionItems.filter(it => {
+      const perfSessions = cleanItems.filter(it => {
         const st = it.sessionType || it.sessiontype;
         return st === 'Performance' || (it.category || '') === 'PERFORMANCE';
       });
@@ -1278,17 +1299,28 @@ async function handleMultiSessionSubmit(e) {
       return '';
     }
 
+    function extractItemCones(item) {
+      let target = item.targetCones !== undefined ? Number(item.targetCones) : (item.targetcones !== undefined ? Number(item.targetcones) : (item.target !== undefined ? Number(item.target) : 0));
+      let completed = item.completedCones !== undefined ? Number(item.completedCones) : (item.completedcones !== undefined ? Number(item.completedcones) : (item.completed !== undefined ? Number(item.completed) : 0));
+      const cat = String(item.category || '').toUpperCase();
+      const unitLabel = cat === 'SPINNING' ? 'spins' : 'cones';
+      return { target, completed, unitLabel };
+    }
+
     function extractItemAttempts(item) {
       let target = item.targetAttempts !== undefined ? Number(item.targetAttempts) : (item.targetattempts !== undefined ? Number(item.targetattempts) : 0);
       let completed = item.completedAttempts !== undefined ? Number(item.completedAttempts) : (item.completedattempts !== undefined ? Number(item.completedattempts) : 0);
 
-      if (target === 0 && item.notes && typeof item.notes === 'string' && item.notes.startsWith('{')) {
+      if ((target === 0 || isNaN(target)) && item.notes && typeof item.notes === 'string' && item.notes.startsWith('{')) {
         try {
           const parsed = JSON.parse(item.notes);
           if (parsed.targetAttempts !== undefined) target = Number(parsed.targetAttempts);
           if (parsed.completedAttempts !== undefined) completed = Number(parsed.completedAttempts);
         } catch(e) {}
       }
+
+      if (target === 0 || isNaN(target)) target = 10;
+      if (isNaN(completed)) completed = 0;
 
       return { target, completed };
     }
