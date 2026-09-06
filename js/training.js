@@ -1368,13 +1368,38 @@ async function handleMultiSessionSubmit(e) {
 
       window._lastSavedSessionData = { items: savedItems, date: dateStr };
 
+      const allTricks = typeof getAllTricks === 'function' ? getAllTricks() : PREDEFINED_TRICKS;
+
       const itemsListHtml = (savedItems || []).map(it => {
+        const sType = it.sessionType || it.sessiontype || 'Single';
+        const isCombo = sType === 'Combo';
+        const name = it.trickName || it.trickname || 'Trick';
+        const cAtt = it.completedAttempts !== undefined ? it.completedAttempts : (it.completedattempts || 0);
+        const tAtt = it.targetAttempts !== undefined ? it.targetAttempts : (it.targetattempts || 10);
+
+        if (isCombo) {
+          const subTricks = extractComboSubTricks(it);
+          const tCones = it.targetCones !== undefined ? it.targetCones : (it.targetcones || 0);
+          const subTricksHtml = subTricks.map(subName => {
+            const found = allTricks.find(t => (t.name || t.trickname) === subName);
+            const subCat = found ? String(found.category || '').toUpperCase() : '';
+            const unitLabel = subCat === 'SPINNING' ? 'spins' : 'cones';
+            return `<div style="font-size:0.78rem; color:var(--on-surface-muted); margin-left:12px; margin-top:2px;">
+              • ${subName}: ${tCones} ${unitLabel}
+            </div>`;
+          }).join('');
+
+          return `<div style="font-size:0.85rem; padding:6px 0; border-bottom:1px solid var(--border-razor); text-align:left; color:var(--on-surface);">
+            <div style="font-weight:700; color:var(--primary);">🔗 ${name}</div>
+            <div style="font-size:0.8rem; color:var(--on-surface); margin-top:2px;">Completed: ${cAtt}/${tAtt} attempts</div>
+            ${subTricksHtml}
+          </div>`;
+        }
+
         const cat = String(it.category || '').toUpperCase();
         const unitLabel = cat === 'SPINNING' ? 'spins' : 'cones';
         const tCones = it.targetCones !== undefined ? it.targetCones : (it.targetcones || 0);
-        const cAtt = it.completedAttempts !== undefined ? it.completedAttempts : (it.completedattempts || 0);
-        const tAtt = it.targetAttempts !== undefined ? it.targetAttempts : (it.targetattempts || 10);
-        const name = it.trickName || it.trickname || 'Trick';
+
         return `<div style="font-size:0.85rem; padding:6px 0; border-bottom:1px solid var(--border-razor); text-align:left; color:var(--on-surface);">
           <span style="font-weight:700;">${name}</span> — Max: ${tCones} ${unitLabel} | Completed: ${cAtt}/${tAtt} attempts
         </div>`;
