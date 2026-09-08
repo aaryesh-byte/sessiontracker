@@ -169,13 +169,44 @@
           const cAttempts = Number(s.completedAttempts || s.completedattempts || 0);
           const attRate = tAttempts > 0 ? Math.min(100, Math.round((cAttempts / tAttempts) * 100)) : null;
 
+          if (isCombo) {
+            const subTricks = typeof extractComboSubTricks === 'function' ? extractComboSubTricks(s) : [];
+            const subTricksPills = subTricks.map(subName => `
+              <span class="history-perf-pill is-done" style="font-size:0.7rem; padding:3px 8px;">
+                🔗 ${subName}
+              </span>
+            `).join('');
+
+            return `
+              <div class="history-item" style="margin-bottom:8px; border-left:3px solid var(--primary);">
+                <div class="history-header">
+                  <div>
+                    <div class="history-title" style="color:var(--primary);">🔗 ${s.trickName || s.trickname}</div>
+                    <div style="font-size:0.75rem; color:var(--on-surface-muted); margin-top:2px;">
+                      <span class="badge badge-combo">Combo Sequence</span> <span class="badge badge-family">Fam ${s.family || 'Custom'}</span>
+                    </div>
+                  </div>
+                  <span class="badge" style="background:${success >= 80 ? 'rgba(0, 255, 194, 0.15)' : 'rgba(245, 158, 11, 0.15)'}; color:${success >= 80 ? 'var(--primary)' : '#fbbf24'}; border: 1px solid ${success >= 80 ? 'var(--primary-dim)' : 'rgba(245, 158, 11, 0.3)'}">
+                    ${success}% Accuracy
+                  </span>
+                </div>
+                <div class="history-stats">
+                  ${tAttempts > 0 ? `<span style="color:var(--primary); font-weight:700;">🔄 Attempts Completed: ${cAttempts} / ${tAttempts} (${attRate}%)</span>` : ''}
+                  <span>🚨 Falls: ${s.falls || 0}</span>
+                </div>
+                ${subTricks.length > 0 ? `<div class="history-perf-pills" style="margin-top:8px;">${subTricksPills}</div>` : ''}
+                ${s.notes ? `<div style="font-size:0.8125rem; color:var(--on-surface); margin-top:8px; font-style:italic; border-top:1px solid var(--border-razor); padding-top:6px;">"${s.notes}"</div>` : ''}
+              </div>
+            `;
+          }
+
           return `
             <div class="history-item" style="margin-bottom:8px;">
               <div class="history-header">
                 <div>
                   <div class="history-title">${s.trickName || s.trickname}</div>
                   <div style="font-size:0.75rem; color:var(--on-surface-muted); margin-top:2px;">
-                    <span class="badge ${isCombo ? 'badge-combo' : 'badge-category'}">${isCombo ? 'Combo' : s.category}</span> <span class="badge badge-family">Fam ${s.family}</span>
+                    <span class="badge badge-category">${s.category}</span> <span class="badge badge-family">Fam ${s.family}</span>
                   </div>
                 </div>
                 <span class="badge" style="background:${success >= 80 ? 'rgba(0, 255, 194, 0.15)' : 'rgba(245, 158, 11, 0.15)'}; color:${success >= 80 ? 'var(--primary)' : '#fbbf24'}; border: 1px solid ${success >= 80 ? 'var(--primary-dim)' : 'rgba(245, 158, 11, 0.3)'}">
@@ -188,7 +219,6 @@
                 <span>⚠️ Missed: ${missed}</span>
                 <span>🚨 Falls: ${s.falls}</span>
                 ${tAttempts > 0 ? `<span style="color:var(--primary); font-weight:700;">🔄 Attempts: ${cAttempts}/${tAttempts} (${attRate}%)</span>` : ''}
-                ${isCombo && connected !== 'N/A' ? `<span style="font-weight:700; color:var(--primary);">🔗 Connected: ${connected}</span>` : ''}
               </div>
               ${s.notes ? `<div style="font-size:0.8125rem; color:var(--on-surface); margin-top:8px; font-style:italic; border-top:1px solid var(--border-razor); padding-top:6px;">"${s.notes}"</div>` : ''}
             </div>

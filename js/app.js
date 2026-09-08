@@ -263,6 +263,12 @@ async function handleAuthSubmit(e) {
           }
         }
 
+        let calculatedSuccessRate = 0;
+        if (r.successRate !== undefined) calculatedSuccessRate = Number(r.successRate);
+        else if (r.successrate !== undefined) calculatedSuccessRate = Number(r.successrate);
+        else if (sType === 'Combo' || targetCones === 0) calculatedSuccessRate = targetAttempts > 0 ? parseFloat(((completedAttempts / targetAttempts) * 100).toFixed(1)) : 0;
+        else calculatedSuccessRate = targetCones > 0 ? parseFloat(((completedCones / targetCones) * 100).toFixed(1)) : 0;
+
         return {
           sessionId: r.sessionId || r.sessionid || ('SESS-' + Date.now()),
           userId: r.userId || r.userid || '',
@@ -276,7 +282,7 @@ async function handleAuthSubmit(e) {
           completedCones: completedCones,
           missedCones: r.missedCones !== undefined ? Number(r.missedCones) : Number(r.missedcones || 0),
           falls: Number(r.falls || 0),
-          successRate: r.successRate !== undefined ? Number(r.successRate) : Number(r.successrate || (targetCones > 0 ? parseFloat(((completedCones / targetCones) * 100).toFixed(1)) : 0)),
+          successRate: calculatedSuccessRate,
           connectedCompletion: r.connectedCompletion || r.connectedcompletion || 'N/A',
           targetAttempts: targetAttempts,
           completedAttempts: completedAttempts,

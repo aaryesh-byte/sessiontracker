@@ -44,9 +44,6 @@
             { categoryFilter: 'ALL', familyFilter: 'ALL', searchFilter: '', selectedTrick: '', category: '', family: '' },
             { categoryFilter: 'ALL', familyFilter: 'ALL', searchFilter: '', selectedTrick: '', category: '', family: '' }
           ],
-          target: '',
-          completed: '',
-          missed: '',
           targetAttempts: 10,
           completedAttempts: 0,
           falls: 0,
@@ -377,6 +374,16 @@
       select.value = slot.selectedTrick || '';
     }
 
+    function updateComboItemName(item) {
+      if (!item || item.type !== 'combo' || !Array.isArray(item.slots)) return;
+      const selected = item.slots.map(s => s.selectedTrick).filter(Boolean);
+      item.trickName = selected.length > 0 ? selected.join(' → ') : 'Combo Sequence';
+      if (item.slots[0] && item.slots[0].selectedTrick) {
+        item.category = item.slots[0].category || 'OTHERS';
+        item.family = item.slots[0].family || 'Custom';
+      }
+    }
+
     function onComboSlotTrickChange(itemIdx, slotIdx, trickName) {
       const item = appState.sessionItems[itemIdx];
       if (!item || !item.slots || !item.slots[slotIdx]) return;
@@ -389,6 +396,7 @@
       } else {
         item.slots[slotIdx].selectedTrick = trickName;
       }
+      updateComboItemName(item);
       renderSessionItems();
     }
 
@@ -534,20 +542,22 @@
                   </div>
                 `}
 
-                <div class="row-3">
-                  <div class="form-group">
-                    <label>Target Cones</label>
-                    <input type="number" min="1" placeholder="Target cones" value="${item.target !== undefined && item.target !== '' ? item.target : ''}" oninput="appState.sessionItems[${idx}].target = this.value === '' ? '' : parseInt(this.value, 10); autoCalcItemMissed(${idx});">
+                ${!isCombo ? `
+                  <div class="row-3">
+                    <div class="form-group">
+                      <label>Target Cones</label>
+                      <input type="number" min="1" placeholder="Target cones" value="${item.target !== undefined && item.target !== '' ? item.target : ''}" oninput="appState.sessionItems[${idx}].target = this.value === '' ? '' : parseInt(this.value, 10); autoCalcItemMissed(${idx});">
+                    </div>
+                    <div class="form-group">
+                      <label>Completed</label>
+                      <input type="number" min="0" placeholder="Completed" value="${item.completed !== undefined && item.completed !== '' ? item.completed : ''}" oninput="appState.sessionItems[${idx}].completed = this.value === '' ? '' : parseInt(this.value, 10); autoCalcItemMissed(${idx});">
+                    </div>
+                    <div class="form-group">
+                      <label>Kicked/Missed</label>
+                      <input type="number" id="itemMissed_${idx}" min="0" placeholder="Missed" value="${item.missed !== undefined && item.missed !== '' ? item.missed : ''}" oninput="appState.sessionItems[${idx}].missed = this.value === '' ? '' : parseInt(this.value, 10);">
+                    </div>
                   </div>
-                  <div class="form-group">
-                    <label>Completed</label>
-                    <input type="number" min="0" placeholder="Completed" value="${item.completed !== undefined && item.completed !== '' ? item.completed : ''}" oninput="appState.sessionItems[${idx}].completed = this.value === '' ? '' : parseInt(this.value, 10); autoCalcItemMissed(${idx});">
-                  </div>
-                  <div class="form-group">
-                    <label>Kicked/Missed</label>
-                    <input type="number" id="itemMissed_${idx}" min="0" placeholder="Missed" value="${item.missed !== undefined && item.missed !== '' ? item.missed : ''}" oninput="appState.sessionItems[${idx}].missed = this.value === '' ? '' : parseInt(this.value, 10);">
-                  </div>
-                </div>
+                ` : ''}
 
                 <!-- Attempt Tracking with Dynamic Progress Bar -->
                 <div class="attempt-tracker-box">
@@ -918,21 +928,26 @@ async function handleMultiSessionSubmit(e) {
         const isCombo = item.type === 'combo';
 
         if (isCombo) {
-          const validSlots = (item.slots || []).filter(s => s.selectedTrick && s.selectedTrick.trim() !== '');
+          const validSlots = (item.slots || []).filter(s => s && s.selectedTrick && s.selectedTrick.trim() !== '');
           if (validSlots.length < 2) {
             showToast(`Please select at least 2 tricks for Combo #${i + 1}.`, 'warning');
             return;
           }
-        }
+          const tAtt = Number(item.targetAttempts) || 0;
+          if (tAtt <= 0) {
+            showToast(`Please enter a valid target attempt count (> 0) for Combo #${i + 1}.`, 'warning');
+            return;
+          }
+        } else {
+          if (item.target === '' || item.target === undefined || isNaN(Number(item.target)) || Number(item.target) <= 0) {
+            showToast(`Please enter a valid target cone count (> 0) for Item #${i + 1}.`, 'warning');
+            return;
+          }
 
-        if (item.target === '' || item.target === undefined || isNaN(Number(item.target)) || Number(item.target) <= 0) {
-          showToast(`Please enter a valid target cone count (> 0) for Item #${i + 1}.`, 'warning');
-          return;
-        }
-
-        if (item.completed === '' || item.completed === undefined || isNaN(Number(item.completed)) || Number(item.completed) < 0) {
-          showToast(`Please enter a valid completed cone count for Item #${i + 1}.`, 'warning');
-          return;
+          if (item.completed === '' || item.completed === undefined || isNaN(Number(item.completed)) || Number(item.completed) < 0) {
+            showToast(`Please enter a valid completed cone count for Item #${i + 1}.`, 'warning');
+            return;
+          }
         }
       }
 
@@ -948,52 +963,50 @@ async function handleMultiSessionSubmit(e) {
 
         // Format individual trick and combo items
         validDrillItems.forEach(item => {
-          const target = Number(item.target || 0);
-          const completed = Number(item.completed || 0);
-          const missed = item.missed !== '' && item.missed !== undefined ? Number(item.missed) : Math.max(0, target - completed);
           const isCombo = item.type === 'combo';
+          let target = isCombo ? 0 : Number(item.target || 0);
+          let completed = isCombo ? 0 : Number(item.completed || 0);
+          let missed = isCombo ? 0 : (item.missed !== '' && item.missed !== undefined ? Number(item.missed) : Math.max(0, target - completed));
 
           let connRate = 'N/A';
           let comboName = item.trickName;
           let comboCat = item.category || 'OTHERS';
           let comboFam = item.family || 'Custom';
 
+          let tAtt = item.targetAttempts !== undefined && item.targetAttempts !== '' ? Number(item.targetAttempts) : 10;
+          let cAtt = item.completedAttempts !== undefined && item.completedAttempts !== '' ? Number(item.completedAttempts) : 0;
+
           if (isCombo) {
-            const tot = item.totalAttempts !== '' && item.totalAttempts !== undefined ? Math.max(1, Number(item.totalAttempts)) : 1;
-            const conn = item.connectedAttempts !== '' && item.connectedAttempts !== undefined ? Number(item.connectedAttempts) : 0;
-            connRate = ((conn / tot) * 100).toFixed(1) + '%';
+            connRate = tAtt > 0 ? ((cAtt / tAtt) * 100).toFixed(1) + '%' : '0.0%';
 
             if (item.slots && item.slots.length > 0) {
-              const validSlots = item.slots.filter(s => s.selectedTrick);
+              const validSlots = item.slots.filter(s => s && s.selectedTrick);
               comboName = validSlots.map(s => s.selectedTrick).join(' → ');
               if (validSlots[0]) {
                 comboCat = validSlots[0].category || 'OTHERS';
                 comboFam = validSlots[0].family || 'Custom';
               }
             }
-          }
-
-          let tAtt = item.targetAttempts !== undefined && item.targetAttempts !== '' ? Number(item.targetAttempts) : 10;
-          if (isCombo && (item.targetAttempts === undefined || item.targetAttempts === '') && item.totalAttempts) {
-            tAtt = Number(item.totalAttempts);
-          }
-          let cAtt = item.completedAttempts !== undefined && item.completedAttempts !== '' ? Number(item.completedAttempts) : undefined;
-          if (isCombo && cAtt === undefined && item.connectedAttempts !== undefined) {
-            cAtt = Number(item.connectedAttempts);
-          }
-          if (cAtt === undefined || (!item.userModifiedCompAttempts && cAtt === 0 && completed > 0)) {
-            cAtt = target > 0 ? Math.min(tAtt, Math.round((completed / target) * tAtt)) : 0;
           } else {
-            cAtt = Math.min(tAtt, Math.max(0, cAtt));
+            if (cAtt === 0 && completed > 0 && !item.userModifiedCompAttempts) {
+              cAtt = target > 0 ? Math.min(tAtt, Math.round((completed / target) * tAtt)) : 0;
+            }
           }
 
-          let enrichedNotes = item.notes || globalNotes;
+          cAtt = Math.min(tAtt, Math.max(0, cAtt));
+
+          const comboSlotsList = isCombo ? (item.slots ? item.slots.map(s => s.selectedTrick).filter(Boolean) : (comboName ? comboName.split(' → ').map(s => s.trim()).filter(Boolean) : [])) : [];
+
           const metaObj = {
             userNotes: item.notes || '',
             targetAttempts: tAtt,
             completedAttempts: cAtt,
-            comboSlots: isCombo && item.slots ? item.slots.map(s => s.selectedTrick).filter(Boolean) : []
+            comboSlots: comboSlotsList
           };
+
+          const itemSuccessRate = isCombo
+            ? (tAtt > 0 ? parseFloat(((cAtt / tAtt) * 100).toFixed(1)) : 0)
+            : (target > 0 ? parseFloat(((completed / target) * 100).toFixed(1)) : 0);
 
           formattedPayloadItems.push({
             sessionId: sessionId,
@@ -1010,8 +1023,8 @@ async function handleMultiSessionSubmit(e) {
             targetAttempts: tAtt,
             completedAttempts: cAtt,
             falls: item.falls !== '' && item.falls !== undefined ? Number(item.falls) : 0,
-            successRate: target > 0 ? parseFloat(((completed / target) * 100).toFixed(1)) : 0,
-            connectedCompletion: connRate,
+            successRate: itemSuccessRate,
+            connectedCompletion: isCombo ? connRate : 'N/A',
             notes: JSON.stringify(metaObj),
             itemMetadata: metaObj
           });
@@ -1178,6 +1191,7 @@ async function handleMultiSessionSubmit(e) {
 
     function generateCoachSummaryText(sessionItems, dateStr) {
       const formattedDate = formatSummaryDate(dateStr);
+      const allTricks = typeof getAllTricks === 'function' ? getAllTricks() : PREDEFINED_TRICKS;
       const lines = [];
 
       lines.push(formattedDate);
@@ -1227,13 +1241,15 @@ async function handleMultiSessionSubmit(e) {
         comboTricks.forEach((cb, cIdx) => {
           const name = cb.trickName || cb.trickname || `Combo ${cIdx + 1}`;
           const attempts = extractItemAttempts(cb);
-          const cones = extractItemCones(cb);
           const subTricks = extractComboSubTricks(cb);
 
-          lines.push(`   Combo ${cIdx + 1} (${name}) - Attempts: ${attempts.completed}/${attempts.target} | ${cones.unitLabel.charAt(0).toUpperCase() + cones.unitLabel.slice(1)}: ${cones.completed}/${cones.target}`);
+          lines.push(`   Combo ${cIdx + 1} (${name}) - Attempts: ${attempts.completed}/${attempts.target}`);
           if (subTricks.length > 0) {
             subTricks.forEach(stName => {
-              lines.push(`      ${stName} - complete`);
+              const found = allTricks.find(t => (t.name || t.trickname) === stName);
+              const subCat = found ? String(found.category || '').toUpperCase() : '';
+              const unitLabel = subCat === 'SPINNING' ? 'spins' : 'cones';
+              lines.push(`      ${stName}`);
             });
           }
         });
@@ -1379,13 +1395,12 @@ async function handleMultiSessionSubmit(e) {
 
         if (isCombo) {
           const subTricks = extractComboSubTricks(it);
-          const tCones = it.targetCones !== undefined ? it.targetCones : (it.targetcones || 0);
           const subTricksHtml = subTricks.map(subName => {
             const found = allTricks.find(t => (t.name || t.trickname) === subName);
             const subCat = found ? String(found.category || '').toUpperCase() : '';
             const unitLabel = subCat === 'SPINNING' ? 'spins' : 'cones';
             return `<div style="font-size:0.78rem; color:var(--on-surface-muted); margin-left:12px; margin-top:2px;">
-              • ${subName}: ${tCones} ${unitLabel}
+              • ${subName} (${unitLabel})
             </div>`;
           }).join('');
 
