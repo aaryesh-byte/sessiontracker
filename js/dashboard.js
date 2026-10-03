@@ -527,8 +527,22 @@ let calSelectedDate = null;
         const sType = s.sessionType || s.sessiontype;
         if (sType === 'Rest' || (s.trickName || s.trickname) === 'Rest Day') return;
 
-        const target = Number(s.targetCones || s.targetcones || 0);
-        const completed = Number(s.completedCones || s.completedcones || 0);
+        const targetCones = Number(s.targetCones || s.targetcones || 0);
+        const completedCones = Number(s.completedCones || s.completedcones || 0);
+        const targetAtt = Number(s.targetAttempts || s.targetattempts || 0);
+        const completedAtt = Number(s.completedAttempts || s.completedattempts || 0);
+
+        let target = 0;
+        let completed = 0;
+
+        if (sType === 'Combo' || targetCones <= 0) {
+          target = targetAtt;
+          completed = completedAtt;
+        } else {
+          target = targetCones;
+          completed = completedCones;
+        }
+
         if (target <= 0) return;
 
         if (!grouped[s.date]) grouped[s.date] = { target: 0, completed: 0 };

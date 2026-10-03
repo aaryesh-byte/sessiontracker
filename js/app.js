@@ -263,11 +263,32 @@ async function handleAuthSubmit(e) {
           }
         }
 
+        // Smart Success Rate Parsing across devices & Google Sheets formats
+        let rawRate = r.successRate !== undefined ? r.successRate : (r.successrate !== undefined ? r.successrate : (r['Success Rate'] || r['success_rate']));
+        let parsedRate = null;
+
+        if (rawRate !== undefined && rawRate !== null && rawRate !== '') {
+          if (typeof rawRate === 'string') {
+            const cleaned = rawRate.replace('%', '').trim();
+            const num = parseFloat(cleaned);
+            if (!isNaN(num)) {
+              parsedRate = (num > 0 && num <= 1) ? parseFloat((num * 100).toFixed(1)) : num;
+            }
+          } else if (typeof rawRate === 'number' && !isNaN(rawRate)) {
+            parsedRate = (rawRate > 0 && rawRate <= 1) ? parseFloat((rawRate * 100).toFixed(1)) : rawRate;
+          }
+        }
+
         let calculatedSuccessRate = 0;
-        if (r.successRate !== undefined) calculatedSuccessRate = Number(r.successRate);
-        else if (r.successrate !== undefined) calculatedSuccessRate = Number(r.successrate);
-        else if (sType === 'Combo' || targetCones === 0) calculatedSuccessRate = targetAttempts > 0 ? parseFloat(((completedAttempts / targetAttempts) * 100).toFixed(1)) : 0;
-        else calculatedSuccessRate = targetCones > 0 ? parseFloat(((completedCones / targetCones) * 100).toFixed(1)) : 0;
+        const isCombo = sType === 'Combo';
+
+        if (isCombo || targetCones === 0) {
+          const attRate = targetAttempts > 0 ? parseFloat(((completedAttempts / targetAttempts) * 100).toFixed(1)) : 0;
+          calculatedSuccessRate = (parsedRate !== null && parsedRate > 0) ? parsedRate : attRate;
+        } else {
+          const coneRate = targetCones > 0 ? parseFloat(((completedCones / targetCones) * 100).toFixed(1)) : 0;
+          calculatedSuccessRate = (parsedRate !== null && parsedRate > 0) ? parsedRate : coneRate;
+        }
 
         return {
           sessionId: r.sessionId || r.sessionid || ('SESS-' + Date.now()),
