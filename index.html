@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
-  <title>RollSync — Freestyle Slalom Protocol</title>
+  <title>RollSync — Inline Freestyle Protocol</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -79,6 +79,7 @@
       <div class="auth-brand-wrap">
         <img src="assets/rollsync-logo.png" class="brand-logo-img auth-logo-img" alt="RollSync Logo" onerror="this.style.display='none'; document.getElementById('authTextFallback').style.display='block';">
         <div id="authTextFallback" class="auth-logo" style="display:none;">ROLLSYNC</div>
+        <div class="auth-motto">LOG ONCE. UNDERSTAND ANYWHERE.</div>
       </div>
 
       <h2 id="authHeadingText" class="auth-card-heading">Sign In</h2>
@@ -116,24 +117,57 @@
 
   <!-- TOP HEADER BAR -->
   <header>
-    <div class="brand">
+    <div class="brand" onclick="switchTab('dashboard')" style="cursor:pointer;">
       <img src="assets/rollsync-logo.png" alt="RollSync" class="brand-logo-img header-logo-img">
+      <div class="brand-info">
+        <span class="brand-tagline">LOG ONCE. UNDERSTAND ANYWHERE.</span>
+      </div>
     </div>
+
+    <!-- DESKTOP CENTER NAVIGATION -->
+    <nav class="desktop-nav">
+      <a class="desktop-nav-item active" id="deskNav-dashboard" onclick="switchTab('dashboard')">
+        <span>📊</span> Dashboard
+      </a>
+      <a class="desktop-nav-item" id="deskNav-log" onclick="switchTab('log')">
+        <span>⏱️</span> Train
+      </a>
+      <a class="desktop-nav-item" id="deskNav-history" onclick="switchTab('history')">
+        <span>📜</span> History
+      </a>
+      <a class="desktop-nav-item" id="deskNav-tricks" onclick="switchTab('tricks')">
+        <span>🛹</span> Custom Tricks
+      </a>
+    </nav>
+
+    <!-- RIGHT USER CONTROLS -->
     <div class="user-pill">
-      <div class="live-badge">
+      <div class="cloud-sync-badge" id="cloudSyncHeaderBadge">
         <span class="live-dot"></span>
         <span id="headerSkaterName">Skater: -</span>
       </div>
-      <button class="theme-toggle-btn" onclick="toggleTheme()">
-        <span id="themeBtnIcon">🌙</span>
-      </button>
-      <button class="btn-logout" onclick="logout()">Logout</button>
+      <button type="button" class="btn-quick-train" onclick="switchTab('log')">⚡ Quick Train</button>
+
+      <div style="position:relative;">
+        <button type="button" class="btn-hamburger" onclick="toggleHeaderMenu(event)" title="Account Options">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <div class="header-dropdown-menu" id="headerDropdownMenu">
+          <button type="button" class="dropdown-item" onclick="toggleTheme(); toggleHeaderMenu(event);">
+            <span id="themeMenuIcon">☀️</span> Toggle Theme
+          </button>
+          <div class="dropdown-divider"></div>
+          <button type="button" class="dropdown-item dropdown-item-danger" onclick="logout(); toggleHeaderMenu(event);">
+            🚪 Sign Out
+          </button>
+        </div>
+      </div>
     </div>
   </header>
 
-
-
- <!-- MAIN CONTENT: individual HTML modules are loaded here -->
+  <!-- MAIN CONTENT: individual HTML modules are loaded here -->
   <main class="main-viewport" id="pageContainer"></main>
 
   <!-- MULTI-COLUMN SITEMAP FOOTER -->
@@ -144,6 +178,7 @@
           <img src="assets/rollsync-logo.png" alt="RollSync" class="brand-logo-img footer-logo-img">
         </div>
         <p class="footer-tagline">
+          LOG ONCE. UNDERSTAND ANYWHERE.<br>
           Precision telemetry, matrix difficulty estimation, and session tracking engineered for competitive inline freestyle slalom athletes.
         </p>
         <div class="footer-protocol-tag">
@@ -153,62 +188,63 @@
       </div>
 
       <div class="footer-links-grid">
-            <div>
-              <div class="footer-col-title">Product</div>
-              <ul class="footer-nav-list">
-                <li><a href="javascript:void(0)" onclick="switchTab('dashboard')">Analytics Dash</a></li>
-                <li><a href="javascript:void(0)" onclick="switchTab('log')">Training Log</a></li>
-                <li><a href="javascript:void(0)" onclick="switchTab('history')">Session History</a></li>
-                <li><a href="javascript:void(0)" onclick="switchTab('tricks')">Custom Tricks</a></li>
-              </ul>
-            </div>
-            <div>
-              <div class="footer-col-title">Resources</div>
-              <ul class="footer-nav-list">
-                <li><a href="javascript:void(0)" onclick="openMatrixImageModal()">Matrix 2026 Rules</a></li>
-                <li><a href="javascript:void(0)" onclick="openWorldSkateRulesModal()">World Skate Standard</a></li>
-                <li><a href="javascript:void(0)" onclick="openWorldSkateRulesModal('grading')">Scoring Guide</a></li>
-              </ul>
-            </div>
-            <div>
-              <div class="footer-col-title">Legal</div>
-              <ul class="footer-nav-list">
-                <li><a href="javascript:void(0)">Privacy Protocol</a></li>
-                <li><a href="javascript:void(0)">Terms of Service</a></li>
-                <li><a href="javascript:void(0)">System Security</a></li>
-              </ul>
-            </div>
-          </div>
+        <div>
+          <div class="footer-col-title">Product</div>
+          <ul class="footer-nav-list">
+            <li><a href="javascript:void(0)" onclick="switchTab('dashboard')">Analytics Dash</a></li>
+            <li><a href="javascript:void(0)" onclick="switchTab('log')">Training Log</a></li>
+            <li><a href="javascript:void(0)" onclick="switchTab('history')">Session History</a></li>
+            <li><a href="javascript:void(0)" onclick="switchTab('tricks')">Custom Tricks</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-col-title">Resources</div>
+          <ul class="footer-nav-list">
+            <li><a href="javascript:void(0)" onclick="openMatrixImageModal()">Matrix 2026 Rules</a></li>
+            <li><a href="javascript:void(0)" onclick="openWorldSkateRulesModal()">World Skate Standard</a></li>
+            <li><a href="javascript:void(0)" onclick="openWorldSkateRulesModal('grading')">Scoring Guide</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-col-title">Legal</div>
+          <ul class="footer-nav-list">
+            <li><a href="javascript:void(0)">Privacy Protocol</a></li>
+            <li><a href="javascript:void(0)">Terms of Service</a></li>
+            <li><a href="javascript:void(0)">System Security</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
 
     <div class="footer-bottom-bar">
       <div class="footer-copy-text">
         © 2026 RollSync. All rights reserved. Built for competitive freestyle slalom.
       </div>
       <div class="footer-status-pill">
-        <span class="label-caps" style="color:var(--primary);">System Online • v2.6</span>
+        <span class="label-caps" style="color:var(--primary);">System Online • LOG ONCE. UNDERSTAND ANYWHERE.</span>
       </div>
     </div>
   </footer>
 
-  <!-- LIQUID GLASS FLOATING BOTTOM NAVIGATION BAR -->
+  <!-- FLOATING BOTTOM NAVIGATION BAR (MOBILE / TABLET) -->
   <nav class="bottom-nav">
-      <a class="nav-item active" onclick="switchTab('dashboard', this)">
-        <span class="nav-icon">📊</span>
-        <span>Dash</span>
-      </a>
-      <a class="nav-item" onclick="switchTab('log', this)">
-        <span class="nav-icon">⏱️</span>
-        <span>Train</span>
-      </a>
-      <a class="nav-item" onclick="switchTab('history', this)">
-        <span class="nav-icon">📜</span>
-        <span>History</span>
-      </a>
-      <a class="nav-item" onclick="switchTab('tricks', this)">
-        <span class="nav-icon">🛹</span>
-        <span>Custom Tricks</span>
-      </a>
-    </nav>
+    <a class="nav-item active" onclick="switchTab('dashboard', this)">
+      <span class="nav-icon">📊</span>
+      <span>Dash</span>
+    </a>
+    <a class="nav-item" onclick="switchTab('log', this)">
+      <span class="nav-icon">⏱️</span>
+      <span>Train</span>
+    </a>
+    <a class="nav-item" onclick="switchTab('history', this)">
+      <span class="nav-icon">📜</span>
+      <span>History</span>
+    </a>
+    <a class="nav-item" onclick="switchTab('tricks', this)">
+      <span class="nav-icon">🛹</span>
+      <span>Custom Tricks</span>
+    </a>
+  </nav>
 
   <script src="data/tricks.js"></script>
   <script src="js/app.js"></script>
