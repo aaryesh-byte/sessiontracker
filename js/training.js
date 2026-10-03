@@ -41,8 +41,8 @@
           isCollapsed: false,
           trickName: '',
           slots: [
-            { categoryFilter: 'ALL', familyFilter: 'ALL', searchFilter: '', selectedTrick: '', category: '', family: '' },
-            { categoryFilter: 'ALL', familyFilter: 'ALL', searchFilter: '', selectedTrick: '', category: '', family: '' }
+            { categoryFilter: 'ALL', familyFilter: 'ALL', searchFilter: '', selectedTrick: '', cones: '', category: '', family: '' },
+            { categoryFilter: 'ALL', familyFilter: 'ALL', searchFilter: '', selectedTrick: '', cones: '', category: '', family: '' }
           ],
           targetAttempts: 10,
           completedAttempts: 0,
@@ -321,8 +321,14 @@
     function addComboSlot(itemIdx) {
       const item = appState.sessionItems[itemIdx];
       if (!item || !item.slots) return;
-      item.slots.push({ categoryFilter: 'ALL', familyFilter: 'ALL', searchFilter: '', selectedTrick: '', category: 'OTHERS', family: 'E' });
+      item.slots.push({ categoryFilter: 'ALL', familyFilter: 'ALL', searchFilter: '', selectedTrick: '', cones: '', category: 'OTHERS', family: 'E' });
       renderSessionItems();
+    }
+
+    function onComboSlotConesChange(itemIdx, slotIdx, value) {
+      const item = appState.sessionItems[itemIdx];
+      if (!item || !item.slots || !item.slots[slotIdx]) return;
+      item.slots[slotIdx].cones = value === '' ? '' : parseInt(value, 10);
     }
 
     function removeComboSlot(itemIdx, slotIdx) {
@@ -520,7 +526,7 @@
                               </select>
                             </div>
                           </div>
-                          <div class="form-group" style="margin-bottom:0;">
+                          <div class="form-group" style="margin-bottom:6px;">
                             <div class="search-bar-wrap" style="margin-bottom:4px;">
                               <span class="search-icon" style="font-size:0.75rem;">🔍</span>
                               <input type="text" class="search-input" style="padding:6px 6px 6px 28px; font-size:0.75rem;" placeholder="Search trick in position..." value="${slot.searchFilter || ''}" oninput="onComboSlotSearchInput(${idx}, ${sIdx}, this.value)">
@@ -533,6 +539,10 @@
                             return `<option value="${name}" ${name === slot.selectedTrick ? 'selected' : ''}>${name} (${t.category} - Fam ${t.family})</option>`;
                           }).join('')}
                         </select>
+                          </div>
+                          <div class="form-group" style="margin-bottom:0;">
+                            <label style="font-size:0.75rem;">Cones / Spins Count</label>
+                            <input type="number" min="0" style="font-size:0.75rem; padding:6px 8px;" placeholder="Cones/spins completed" value="${slot.cones !== undefined && slot.cones !== '' ? slot.cones : ''}" oninput="onComboSlotConesChange(${idx}, ${sIdx}, this.value)">
                           </div>
                         </div>
                       `;
@@ -995,7 +1005,12 @@ async function handleMultiSessionSubmit(e) {
 
           cAtt = Math.min(tAtt, Math.max(0, cAtt));
 
-          const comboSlotsList = isCombo ? (item.slots ? item.slots.map(s => s.selectedTrick).filter(Boolean) : (comboName ? comboName.split(' → ').map(s => s.trim()).filter(Boolean) : [])) : [];
+          const comboSlotsList = isCombo ? (item.slots ? item.slots.filter(s => s && s.selectedTrick).map(s => ({
+            name: s.selectedTrick,
+            cones: s.cones !== undefined && s.cones !== '' ? Number(s.cones) : 0,
+            category: s.category || '',
+            family: s.family || ''
+          })) : (comboName ? comboName.split(' → ').map(s => ({ name: s.trim(), cones: 0 })) : [])) : [];
 
           const metaObj = {
             userNotes: item.notes || '',
@@ -1245,11 +1260,17 @@ async function handleMultiSessionSubmit(e) {
 
           lines.push(`   Combo ${cIdx + 1} (${name}) - Attempts: ${attempts.completed}/${attempts.target}`);
           if (subTricks.length > 0) {
-            subTricks.forEach(stName => {
+            subTricks.forEach(sub => {
+              const stName = typeof sub === 'object' ? (sub.name || sub.selectedTrick || '') : sub;
+              const conesVal = typeof sub === 'object' && sub.cones !== undefined && sub.cones !== '' ? Number(sub.cones) : null;
               const found = allTricks.find(t => (t.name || t.trickname) === stName);
-              const subCat = found ? String(found.category || '').toUpperCase() : '';
+              const subCat = found ? String(found.category || '').toUpperCase() : (typeof sub === 'object' ? String(sub.category || '').toUpperCase() : '');
               const unitLabel = subCat === 'SPINNING' ? 'spins' : 'cones';
-              lines.push(`      ${stName}`);
+              if (conesVal !== null && !isNaN(conesVal)) {
+                lines.push(`      ${stName} - ${conesVal} ${unitLabel}`);
+              } else {
+                lines.push(`      ${stName}`);
+              }
             });
           }
         });
@@ -1355,7 +1376,7 @@ async function handleMultiSessionSubmit(e) {
       }
       const rawName = item.trickName || item.trickname || '';
       if (rawName.includes(' → ')) {
-        return rawName.split(' → ').map(s => s.trim()).filter(Boolean);
+        return rawName.split(' → ').map(s => ({ name: s.trim(), cones: 0 }));
       }
       return [];
     }
@@ -1395,12 +1416,15 @@ async function handleMultiSessionSubmit(e) {
 
         if (isCombo) {
           const subTricks = extractComboSubTricks(it);
-          const subTricksHtml = subTricks.map(subName => {
+          const subTricksHtml = subTricks.map(sub => {
+            const subName = typeof sub === 'object' ? (sub.name || sub.selectedTrick || '') : sub;
+            const conesVal = typeof sub === 'object' && sub.cones !== undefined && sub.cones !== '' ? Number(sub.cones) : null;
             const found = allTricks.find(t => (t.name || t.trickname) === subName);
-            const subCat = found ? String(found.category || '').toUpperCase() : '';
+            const subCat = found ? String(found.category || '').toUpperCase() : (typeof sub === 'object' ? String(sub.category || '').toUpperCase() : '');
             const unitLabel = subCat === 'SPINNING' ? 'spins' : 'cones';
+            const conesText = (conesVal !== null && !isNaN(conesVal)) ? `${conesVal} ${unitLabel}` : unitLabel;
             return `<div style="font-size:0.78rem; color:var(--on-surface-muted); margin-left:12px; margin-top:2px;">
-              • ${subName} (${unitLabel})
+              • ${subName} (${conesText})
             </div>`;
           }).join('');
 
@@ -1621,6 +1645,7 @@ async function handleMultiSessionSubmit(e) {
       showToast(`Loaded combo: ${comboSequenceStr}`, 'success');
     }
 
+    window.onComboSlotConesChange = onComboSlotConesChange;
     window.getUserPastCombos = getUserPastCombos;
     window.applySuggestedCombo = applySuggestedCombo;
 async function handleRestDaySubmit(e) {

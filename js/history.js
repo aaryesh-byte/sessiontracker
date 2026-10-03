@@ -171,11 +171,20 @@
 
           if (isCombo) {
             const subTricks = typeof extractComboSubTricks === 'function' ? extractComboSubTricks(s) : [];
-            const subTricksPills = subTricks.map(subName => `
-              <span class="history-perf-pill is-done" style="font-size:0.7rem; padding:3px 8px;">
-                🔗 ${subName}
-              </span>
-            `).join('');
+            const allTricks = typeof getAllTricks === 'function' ? getAllTricks() : PREDEFINED_TRICKS;
+            const subTricksPills = subTricks.map(sub => {
+              const subName = typeof sub === 'object' ? (sub.name || sub.selectedTrick || '') : sub;
+              const conesVal = typeof sub === 'object' && sub.cones !== undefined && sub.cones !== '' ? Number(sub.cones) : null;
+              const found = allTricks.find(t => (t.name || t.trickname) === subName);
+              const subCat = found ? String(found.category || '').toUpperCase() : (typeof sub === 'object' ? String(sub.category || '').toUpperCase() : '');
+              const unitLabel = subCat === 'SPINNING' ? 'spins' : 'cones';
+              const displayCones = (conesVal !== null && !isNaN(conesVal)) ? `: ${conesVal} ${unitLabel}` : '';
+              return `
+                <span class="history-perf-pill is-done" style="font-size:0.7rem; padding:3px 8px;">
+                  🔗 ${subName}${displayCones}
+                </span>
+              `;
+            }).join('');
 
             return `
               <div class="history-item" style="margin-bottom:8px; border-left:3px solid var(--primary);">
