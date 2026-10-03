@@ -942,6 +942,13 @@ async function switchTab(tabId, el) {
     navItems[indexMap[tabId]].classList.add('active');
   }
 
+  // Update desktop navigation highlight
+  document.querySelectorAll('.desktop-nav .desktop-nav-item').forEach(n => n.classList.remove('active'));
+  const deskNavEl = document.getElementById(`deskNav-${tabId}`);
+  if (deskNavEl) {
+    deskNavEl.classList.add('active');
+  }
+
   const container = document.getElementById('pageContainer');
   if (!container) return;
 
