@@ -148,18 +148,21 @@
       </div>
       <button type="button" class="btn-quick-train" onclick="switchTab('log')">⚡ Quick Train</button>
 
-      <div style="position:relative;">
-        <button type="button" class="btn-hamburger" onclick="toggleHeaderMenu(event)" title="Account Options">
+      <div style="position:relative;" id="headerUserMenuWrap">
+        <button type="button" class="btn-hamburger" id="btnHeaderHamburger" onclick="toggleHeaderDropdown(event)" title="Account Options" aria-label="Account Options">
           <span></span>
           <span></span>
           <span></span>
         </button>
         <div class="header-dropdown-menu" id="headerDropdownMenu">
-          <button type="button" class="dropdown-item" onclick="toggleTheme(); toggleHeaderMenu(event);">
+          <button type="button" class="dropdown-item" onclick="handleMenuAction('profile')">
+            <span>👤</span> Profile
+          </button>
+          <button type="button" class="dropdown-item" onclick="handleMenuAction('theme')">
             <span id="themeMenuIcon">☀️</span> Toggle Theme
           </button>
           <div class="dropdown-divider"></div>
-          <button type="button" class="dropdown-item dropdown-item-danger" onclick="logout(); toggleHeaderMenu(event);">
+          <button type="button" class="dropdown-item dropdown-item-danger" onclick="handleMenuAction('logout')">
             🚪 Sign Out
           </button>
         </div>

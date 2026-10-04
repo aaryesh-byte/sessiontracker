@@ -75,7 +75,7 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   min-height: 100vh;
-  padding-bottom: 90px;
+  padding-bottom: 110px;
 }
 
 /* TYPOGRAPHY HELPERS */
@@ -557,6 +557,7 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   box-shadow: var(--card-shadow);
 }
 
@@ -599,6 +600,7 @@ input, select, textarea {
   width: 100%;
   max-width: 100%;
   padding: 12px 14px;
+  min-height: 48px;
   border: 1px solid var(--border-razor);
   border-radius: var(--radius-md);
   font-family: var(--font-body);
@@ -607,6 +609,7 @@ input, select, textarea {
   color: var(--on-surface);
   outline: none;
   transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
 input:focus, select:focus, textarea:focus {
@@ -792,14 +795,30 @@ input:focus, select:focus, textarea:focus {
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 10px;
   margin-bottom: 18px;
   width: 100%;
 }
 
-@media (min-width: 768px) {
+.metrics-grid .metric-card:last-child:nth-child(odd) {
+  grid-column: span 2;
+}
+
+@media (min-width: 600px) and (max-width: 900px) {
+  .metrics-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .metrics-grid .metric-card:last-child:nth-child(odd) {
+    grid-column: span 1;
+  }
+}
+
+@media (min-width: 901px) {
   .metrics-grid {
     grid-template-columns: repeat(5, 1fr);
+  }
+  .metrics-grid .metric-card:last-child:nth-child(odd) {
+    grid-column: span 1;
   }
 }
 
@@ -978,7 +997,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .cal-cell {
-  min-height: 48px;
+  min-height: 52px;
   border-radius: var(--radius-md);
   background: var(--bg-container);
   border: 1px solid var(--border-razor);
@@ -994,6 +1013,7 @@ input:focus, select:focus, textarea:focus {
   position: relative;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   user-select: none;
+  padding: 4px 2px;
 }
 
 .cal-cell:hover:not(.empty) {
@@ -1653,13 +1673,20 @@ input:focus, select:focus, textarea:focus {
 
 #toastContainer {
   position: fixed;
-  top: 72px;
-  right: 20px;
-  left: 20px;
-  max-width: 380px;
-  margin: 0 auto;
-  z-index: 100000;
+  top: 14px;
+  right: 14px;
+  max-width: 340px;
+  z-index: 1000000;
   pointer-events: none;
+}
+
+@media (max-width: 480px) {
+  #toastContainer {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
 }
 
 .toast {
@@ -1988,16 +2015,21 @@ input:focus, select:focus, textarea:focus {
   }
 }
 
-@media (max-width: 768px) {
-  .desktop-nav {
+@media (max-width: 1024px) {
+  .brand-tagline {
     display: none !important;
   }
-
   .btn-quick-train {
     display: none !important;
   }
+  .desktop-nav-item {
+    padding: 6px 10px !important;
+    font-size: 0.7rem !important;
+  }
+}
 
-  .brand-tagline {
+@media (max-width: 768px) {
+  .desktop-nav {
     display: none !important;
   }
 }
@@ -2021,7 +2053,15 @@ input:focus, select:focus, textarea:focus {
   }
 
   .welcome-hud-banner {
-    padding: 14px 16px !important;
+    padding: 16px 18px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  .welcome-hud-banner .btn-sync-action {
+    width: 100% !important;
+    justify-content: center !important;
   }
 
   .welcome-hud-title {

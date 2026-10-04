@@ -822,45 +822,15 @@ async function handleAuthSubmit(e) {
       // Clean up standalone header buttons
       document.querySelectorAll('.theme-toggle-btn, .btn-logout, #themeToggleBtn, #logoutBtn, #btnHeaderProfileIcon, #btnOpenProfileModal').forEach(el => el.remove());
 
-      // Mount the single Top-Right Hamburger Menu
+      // Ensure outside click closes header dropdown
       const userPill = document.querySelector('.user-pill');
       if (userPill) {
-        userPill.style.position = 'relative';
-
-        if (!document.getElementById('btnHeaderHamburger')) {
-          const btnHamburger = document.createElement('button');
-          btnHamburger.id = 'btnHeaderHamburger';
-          btnHamburger.className = 'btn-hamburger';
-          btnHamburger.type = 'button';
-          btnHamburger.title = 'Menu';
-          btnHamburger.innerHTML = `<span></span><span></span><span></span>`;
-          btnHamburger.onclick = toggleHeaderDropdown;
-
-          const dropdown = document.createElement('div');
-          dropdown.id = 'headerDropdownMenu';
-          dropdown.className = 'header-dropdown-menu';
-          dropdown.innerHTML = `
-            <button type="button" class="dropdown-item" onclick="handleMenuAction('profile')">
-              <span>👤</span><span>Profile</span>
-            </button>
-            <button type="button" class="dropdown-item" onclick="handleMenuAction('theme')">
-              <span>🌓</span><span>Change Theme</span>
-            </button>
-            <div class="dropdown-divider"></div>
-            <button type="button" class="dropdown-item dropdown-item-danger" onclick="handleMenuAction('logout')">
-              <span>🚪</span><span>Logout</span>
-            </button>
-          `;
-
-          userPill.appendChild(btnHamburger);
-          userPill.appendChild(dropdown);
-
-          document.addEventListener('click', (e) => {
-            if (!userPill.contains(e.target)) {
-              dropdown.classList.remove('active');
-            }
-          });
-        }
+        document.addEventListener('click', (e) => {
+          if (!userPill.contains(e.target)) {
+            const menu = document.getElementById('headerDropdownMenu');
+            if (menu) menu.classList.remove('active');
+          }
+        });
       }
 
       const logSkater = document.getElementById('logSkater');
