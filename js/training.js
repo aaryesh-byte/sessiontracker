@@ -497,7 +497,7 @@
                       const hasSlotMatch = sFiltered.some(t => (t.name || t.trickname) === slot.selectedTrick);
 
                       return `
-                        <div style="padding:10px; background:var(--bg-surface); border:1px solid var(--border-razor); border-radius:var(--radius-md); margin-bottom:8px;">
+                        <div class="combo-position-card">
                           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                             <span style="font-family:var(--font-mono); font-size:0.75rem; font-weight:700;">Position #${sIdx + 1}: ${slot.selectedTrick || 'Unselected'}</span>
                             ${item.slots.length > 2 ? `<button type="button" onclick="removeComboSlot(${idx}, ${sIdx})" style="background:none; border:none; color:#f87171; cursor:pointer; font-size:0.75rem;">✕ Remove Slot</button>` : ''}

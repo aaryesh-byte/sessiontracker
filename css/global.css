@@ -1393,6 +1393,53 @@ input:focus, select:focus, textarea:focus {
   transform: translateY(-1px);
 }
 
+/* COMBO TRICK INDIVIDUAL VISUAL DISTINCTION */
+.combo-position-card {
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-razor);
+  border-left: 3px solid var(--primary);
+  border-radius: var(--radius-md);
+  margin-bottom: 10px;
+  transition: all 0.2s ease;
+}
+
+.combo-position-card:nth-child(even) {
+  background: rgba(0, 255, 194, 0.03);
+  border-left-color: #38bdf8;
+}
+
+.session-combo-edit-box {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-razor);
+  border-radius: var(--radius-md);
+  padding: 10px;
+  margin-top: 8px;
+}
+
+.session-combo-subtrick-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-razor);
+  border-left: 3px solid var(--primary);
+  border-radius: var(--radius-sm);
+  margin-bottom: 6px;
+  transition: all 0.2s ease;
+}
+
+.session-combo-subtrick-row:nth-child(even) {
+  background: rgba(0, 255, 194, 0.03);
+  border-left-color: #38bdf8;
+}
+
+.session-combo-subtrick-row.is-sub-done {
+  border-left-color: #10b981;
+  background: rgba(16, 185, 129, 0.08);
+}
+
 /* HISTORY CARDS & FEED */
 .history-day-card {
   background: var(--bg-surface);
@@ -2035,6 +2082,11 @@ input:focus, select:focus, textarea:focus {
 }
 
 @media (max-width: 600px) {
+  html, body {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+  }
+
   header {
     padding: 10px 14px !important;
   }
@@ -2044,7 +2096,8 @@ input:focus, select:focus, textarea:focus {
   }
 
   .main-viewport {
-    padding: 12px 10px !important;
+    padding: 12px 10px 95px 10px !important;
+    overflow-x: hidden !important;
   }
 
   .glass-card {
@@ -2086,8 +2139,36 @@ input:focus, select:focus, textarea:focus {
     font-size: 0.8125rem !important;
   }
 
+  /* Form Elements & Date Filters */
+  input[type="text"],
+  input[type="number"],
+  input[type="password"],
+  input[type="date"],
+  input[type="month"],
+  select,
+  textarea {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .streak-banner {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .pb-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
   .metrics-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
     gap: 8px !important;
+  }
+
+  .metrics-grid > .metric-card:last-child {
+    grid-column: span 2 !important;
   }
 
   .metric-card {
@@ -2111,8 +2192,42 @@ input:focus, select:focus, textarea:focus {
     height: 170px !important;
   }
 
+  /* Weekly Summary & Rest Day Form Cards */
+  .weekly-summary-trigger-card {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding: 14px !important;
+  }
+
+  .weekly-summary-trigger-card > div {
+    width: 100% !important;
+  }
+
+  .rest-day-form {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  /* Editorial Profile Modal on Mobile */
+  .profile-editorial-wrap {
+    width: 95% !important;
+    max-height: 88vh !important;
+    padding: 16px !important;
+    overflow-y: auto !important;
+  }
+
+  .profile-editorial-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .mag-col-4, .mag-col-6, .mag-col-8, .mag-col-12 {
+    grid-column: span 1 !important;
+  }
+
   .app-footer {
-    padding: 24px 14px 85px 14px !important;
+    padding: 24px 14px 95px 14px !important;
   }
 
   .footer-container {

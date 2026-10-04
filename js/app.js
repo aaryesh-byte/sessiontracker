@@ -370,7 +370,7 @@ async function handleAuthSubmit(e) {
       let highestConeSingleAttempt = 0;
       let bestSuccessRate = 0;
 
-      trainingSessions.forEach(s => {
+      trainingRecords.forEach(s => {
         const cones = Number(s.completedCones || s.completedcones || 0);
         const rate = parseFloat(s.successRate || s.successrate || 0);
         const isCombo = (s.sessionType || s.sessiontype) === 'Combo';
