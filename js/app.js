@@ -370,7 +370,7 @@ async function handleAuthSubmit(e) {
       let highestConeSingleAttempt = 0;
       let bestSuccessRate = 0;
 
-      trainingSessions.forEach(s => {
+      trainingRecords.forEach(s => {
         const cones = Number(s.completedCones || s.completedcones || 0);
         const rate = parseFloat(s.successRate || s.successrate || 0);
         const isCombo = (s.sessionType || s.sessiontype) === 'Combo';
@@ -822,45 +822,15 @@ async function handleAuthSubmit(e) {
       // Clean up standalone header buttons
       document.querySelectorAll('.theme-toggle-btn, .btn-logout, #themeToggleBtn, #logoutBtn, #btnHeaderProfileIcon, #btnOpenProfileModal').forEach(el => el.remove());
 
-      // Mount the single Top-Right Hamburger Menu
+      // Ensure outside click closes header dropdown
       const userPill = document.querySelector('.user-pill');
       if (userPill) {
-        userPill.style.position = 'relative';
-
-        if (!document.getElementById('btnHeaderHamburger')) {
-          const btnHamburger = document.createElement('button');
-          btnHamburger.id = 'btnHeaderHamburger';
-          btnHamburger.className = 'btn-hamburger';
-          btnHamburger.type = 'button';
-          btnHamburger.title = 'Menu';
-          btnHamburger.innerHTML = `<span></span><span></span><span></span>`;
-          btnHamburger.onclick = toggleHeaderDropdown;
-
-          const dropdown = document.createElement('div');
-          dropdown.id = 'headerDropdownMenu';
-          dropdown.className = 'header-dropdown-menu';
-          dropdown.innerHTML = `
-            <button type="button" class="dropdown-item" onclick="handleMenuAction('profile')">
-              <span>👤</span><span>Profile</span>
-            </button>
-            <button type="button" class="dropdown-item" onclick="handleMenuAction('theme')">
-              <span>🌓</span><span>Change Theme</span>
-            </button>
-            <div class="dropdown-divider"></div>
-            <button type="button" class="dropdown-item dropdown-item-danger" onclick="handleMenuAction('logout')">
-              <span>🚪</span><span>Logout</span>
-            </button>
-          `;
-
-          userPill.appendChild(btnHamburger);
-          userPill.appendChild(dropdown);
-
-          document.addEventListener('click', (e) => {
-            if (!userPill.contains(e.target)) {
-              dropdown.classList.remove('active');
-            }
-          });
-        }
+        document.addEventListener('click', (e) => {
+          if (!userPill.contains(e.target)) {
+            const menu = document.getElementById('headerDropdownMenu');
+            if (menu) menu.classList.remove('active');
+          }
+        });
       }
 
       const logSkater = document.getElementById('logSkater');
@@ -940,6 +910,13 @@ async function switchTab(tabId, el) {
   const navItems = document.querySelectorAll('.bottom-nav .nav-item');
   if (indexMap[tabId] !== undefined && navItems[indexMap[tabId]]) {
     navItems[indexMap[tabId]].classList.add('active');
+  }
+
+  // Update desktop navigation highlight
+  document.querySelectorAll('.desktop-nav .desktop-nav-item').forEach(n => n.classList.remove('active'));
+  const deskNavEl = document.getElementById(`deskNav-${tabId}`);
+  if (deskNavEl) {
+    deskNavEl.classList.add('active');
   }
 
   const container = document.getElementById('pageContainer');

@@ -1,196 +1,197 @@
 <div id="tab-dashboard" class="tab-content active">
-      
-      <div class="glass-card" style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px;">
-        <div>
-          <h2 class="headline-lg">Performance Analytics</h2>
-          <div class="label-caps" style="margin-top:2px;">Real-Time Protocol Metrics</div>
-        </div>
-        <button type="button" id="btnSyncDashboard" class="btn-sync-action" onclick="syncUserDataFromSheets()">
-          <span class="sync-icon">🔄</span>
-          <span id="btnSyncDashboardLabel">Sync Data</span>
-        </button>
-      </div>
 
-      <!-- Streak Widget -->
-      <div class="streak-banner">
-        <div class="streak-card active-streak">
-          <div class="streak-icon">🔥</div>
-          <div>
-            <div class="streak-info-title">Current Training Streak</div>
-            <div id="streakCurrentVal" class="streak-info-value">0 Days</div>
-          </div>
-        </div>
-        <div class="streak-card">
-          <div class="streak-icon">⚡</div>
-          <div>
-            <div class="streak-info-title">Longest Training Streak</div>
-            <div id="streakLongestVal" class="streak-info-value">0 Days</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Training Calendar Card -->
-      <div class="cal-container">
-        <div class="cal-header">
-          <div class="cal-title-wrap">
-            <span class="cal-month-title" id="calMonthTitle">Training Calendar</span>
-            <div class="label-caps" style="margin-top:2px;">Activity &amp; Recovery Tracker</div>
-          </div>
-          <div class="cal-nav-btn-group">
-            <button type="button" class="cal-nav-btn" onclick="navCalendar(-1)" title="Previous Month">‹</button>
-            <button type="button" class="cal-nav-btn" onclick="navCalendar(1)" title="Next Month">›</button>
-          </div>
-        </div>
-
-        <div class="cal-grid-days">
-          <div class="cal-day-label">Mon</div>
-          <div class="cal-day-label">Tue</div>
-          <div class="cal-day-label">Wed</div>
-          <div class="cal-day-label">Thu</div>
-          <div class="cal-day-label">Fri</div>
-          <div class="cal-day-label">Sat</div>
-          <div class="cal-day-label">Sun</div>
-        </div>
-        <div id="calendarGridCells" class="cal-grid-cells"></div>
-
-        <div class="cal-legend">
-          <div class="cal-legend-item">
-            <span class="cal-fire-green">🔥</span>
-            <span>Training Day</span>
-          </div>
-          <div class="cal-legend-item">
-            <span class="cal-fire-yellow">🔥</span>
-            <span>Rest Day</span>
-          </div>
-        </div>
-
-        <div id="calendarDaySummary" class="cal-day-summary" style="display:none;"></div>
-      </div>
-
-      <!-- Personal Bests Card -->
-      <div class="glass-card">
-        <div class="card-title">🏆 Personal Bests</div>
-        <div class="pb-grid">
-          <div>
-            <div class="label-caps" style="margin-bottom:8px;">Top Trick Bests</div>
-            <div id="pbTricksList" class="pb-list"></div>
-          </div>
-          <div>
-            <div class="label-caps" style="margin-bottom:8px;">Top Combo Bests</div>
-            <div id="pbCombosList" class="pb-list"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Filters Card -->
-      <div class="glass-card">
-        <div class="card-title">Dashboard Filters</div>
-        
-        <div class="row-2">
-          <div class="form-group">
-            <label>Time Range Filter</label>
-            <select id="progTimeRange" onchange="onTimeRangeFilterChange()">
-              <option value="THIS_MONTH">This Month</option>
-              <option value="TODAY">Today</option>
-              <option value="THIS_WEEK">This Week</option>
-              <option value="SPECIFIC_MONTH">Select Specific Month</option>
-              <option value="CUSTOM_RANGE">Custom Date Range</option>
-              <option value="ALL_TIME">All Time</option>
-            </select>
-          </div>
-
-          <div class="form-group" id="groupSpecificMonth">
-            <label>Specific Month</label>
-            <input type="month" id="progMonth" onchange="renderAnalytics()">
-          </div>
-        </div>
-
-        <div class="row-2" id="groupCustomRange" style="display:none;">
-          <div class="form-group">
-            <label>Start Date</label>
-            <input type="date" id="progStartDate" onchange="renderAnalytics()">
-          </div>
-          <div class="form-group">
-            <label>End Date</label>
-            <input type="date" id="progEndDate" onchange="renderAnalytics()">
-          </div>
-        </div>
-
-        <div class="row-2">
-          <div class="form-group">
-            <label>Practice Item / Combo Filter</label>
-            <div class="search-bar-wrap">
-              <span class="search-icon">🔍</span>
-              <input type="text" class="search-input" id="progTrickSearch" placeholder="Search item..." oninput="populateProgressTrickFilter()">
-            </div>
-            <select id="progTrick" onchange="renderAnalytics()">
-              <option value="ALL">All Items & Combos</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Category Filter</label>
-            <select id="progCategory" onchange="renderAnalytics()">
-              <option value="ALL">All Categories</option>
-              <option value="SITTING">Sitting</option>
-              <option value="WHEELING">Wheeling</option>
-              <option value="SPINNING">Spinning</option>
-              <option value="JUMPING">Jumping</option>
-              <option value="OTHERS">Others</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <!-- Dashboard Metrics -->
-      <div id="dashboardMetricsContainer">
-        <div class="metrics-grid">
-          <div class="metric-card">
-            <div class="metric-label">Sessions</div>
-            <div id="mSessions" class="metric-value">0</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-label">Avg Cone %</div>
-            <div id="mSuccess" class="metric-value">0%</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-label">Completed</div>
-            <div id="mCompleted" class="metric-value">0</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-label">Impacts/Falls</div>
-            <div id="mFalls" class="metric-value">0</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-label">Connected %</div>
-            <div id="mConnected" class="metric-value">0%</div>
-          </div>
-        </div>
-
-        <!-- Graph 1: Success Rate Over Time -->
-        <div class="glass-card">
-          <div class="card-title">Cone Success Rate % Over Time</div>
-          <div class="chart-container"><canvas id="chartSuccessRate"></canvas></div>
-        </div>
-
-        <!-- Graph 2: Target vs Completed Cones -->
-        <div class="glass-card">
-          <div class="card-title">Target vs Completed Cones</div>
-          <div class="chart-container"><canvas id="chartCones"></canvas></div>
-        </div>
-
-        <!-- Graph 3: Individual Trick & Combo Progress -->
-        <div class="glass-card">
-          <div class="card-title">Progress by Practice Item / Combo</div>
-          <div class="chart-container"><canvas id="chartTricks"></canvas></div>
-        </div>
-
-        <!-- Graph 4: Falls Over Time -->
-        <div class="glass-card">
-          <div class="card-title">Falls Count Over Time</div>
-          <div class="chart-container"><canvas id="chartFalls"></canvas></div>
-        </div>
-
-      </div>
-
+  <!-- ATHLETE WELCOME HUD BANNER -->
+  <div class="welcome-hud-banner">
+    <div>
+      <h2 class="welcome-hud-title">Athlete Analytics HUD</h2>
+      <div class="welcome-hud-sub">LOG ONCE. UNDERSTAND ANYWHERE.</div>
     </div>
+    <button type="button" id="btnSyncDashboard" class="btn-sync-action" onclick="syncUserDataFromSheets()">
+      <span class="sync-icon">🔄</span>
+      <span id="btnSyncDashboardLabel">Sync Data</span>
+    </button>
+  </div>
+
+  <!-- STREAK BANNER -->
+  <div class="streak-banner">
+    <div class="streak-card active-streak">
+      <div class="streak-icon">🔥</div>
+      <div>
+        <div class="streak-info-title">Current Training Streak</div>
+        <div id="streakCurrentVal" class="streak-info-value">0 Days</div>
+      </div>
+    </div>
+    <div class="streak-card">
+      <div class="streak-icon">⚡</div>
+      <div>
+        <div class="streak-info-title">Longest Training Streak</div>
+        <div id="streakLongestVal" class="streak-info-value">0 Days</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CORE KPI METRICS MATRIX GRID -->
+  <div id="dashboardMetricsContainer">
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">Sessions</div>
+        <div id="mSessions" class="metric-value">0</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Avg Cone %</div>
+        <div id="mSuccess" class="metric-value">0%</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Completed</div>
+        <div id="mCompleted" class="metric-value">0</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Impacts/Falls</div>
+        <div id="mFalls" class="metric-value">0</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Connected %</div>
+        <div id="mConnected" class="metric-value">0%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRAINING CALENDAR CARD -->
+  <div class="cal-container">
+    <div class="cal-header">
+      <div class="cal-title-wrap">
+        <span class="cal-month-title" id="calMonthTitle">Training Calendar</span>
+        <div class="label-caps" style="margin-top:2px;">Activity &amp; Recovery Tracker</div>
+      </div>
+      <div class="cal-nav-btn-group">
+        <button type="button" class="cal-nav-btn" onclick="navCalendar(-1)" title="Previous Month">‹</button>
+        <button type="button" class="cal-nav-btn" onclick="navCalendar(1)" title="Next Month">›</button>
+      </div>
+    </div>
+
+    <div class="cal-grid-days">
+      <div class="cal-day-label">Mon</div>
+      <div class="cal-day-label">Tue</div>
+      <div class="cal-day-label">Wed</div>
+      <div class="cal-day-label">Thu</div>
+      <div class="cal-day-label">Fri</div>
+      <div class="cal-day-label">Sat</div>
+      <div class="cal-day-label">Sun</div>
+    </div>
+    <div id="calendarGridCells" class="cal-grid-cells"></div>
+
+    <div class="cal-legend">
+      <div class="cal-legend-item">
+        <span class="cal-fire-green">🔥</span>
+        <span>Training Day</span>
+      </div>
+      <div class="cal-legend-item">
+        <span class="cal-fire-yellow">🔥</span>
+        <span>Rest Day</span>
+      </div>
+    </div>
+
+    <div id="calendarDaySummary" class="cal-day-summary" style="display:none;"></div>
+  </div>
+
+  <!-- PERSONAL BESTS CARD -->
+  <div class="glass-card">
+    <div class="card-title">🏆 Personal Bests Records</div>
+    <div class="pb-grid">
+      <div>
+        <div class="label-caps" style="margin-bottom:8px;">Top Trick Bests</div>
+        <div id="pbTricksList" class="pb-list"></div>
+      </div>
+      <div>
+        <div class="label-caps" style="margin-bottom:8px;">Top Combo Bests</div>
+        <div id="pbCombosList" class="pb-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD FILTERS CARD -->
+  <div class="glass-card">
+    <div class="card-title">Dashboard Telemetry Filters</div>
+
+    <div class="row-2">
+      <div class="form-group">
+        <label>Time Range Filter</label>
+        <select id="progTimeRange" onchange="onTimeRangeFilterChange()">
+          <option value="THIS_MONTH">This Month</option>
+          <option value="TODAY">Today</option>
+          <option value="THIS_WEEK">This Week</option>
+          <option value="SPECIFIC_MONTH">Select Specific Month</option>
+          <option value="CUSTOM_RANGE">Custom Date Range</option>
+          <option value="ALL_TIME">All Time</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="groupSpecificMonth">
+        <label>Specific Month</label>
+        <input type="month" id="progMonth" onchange="renderAnalytics()">
+      </div>
+    </div>
+
+    <div class="row-2" id="groupCustomRange" style="display:none;">
+      <div class="form-group">
+        <label>Start Date</label>
+        <input type="date" id="progStartDate" onchange="renderAnalytics()">
+      </div>
+      <div class="form-group">
+        <label>End Date</label>
+        <input type="date" id="progEndDate" onchange="renderAnalytics()">
+      </div>
+    </div>
+
+    <div class="row-2">
+      <div class="form-group">
+        <label>Practice Item / Combo Filter</label>
+        <div class="search-bar-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" id="progTrickSearch" placeholder="Search item..." oninput="populateProgressTrickFilter()">
+        </div>
+        <select id="progTrick" onchange="renderAnalytics()">
+          <option value="ALL">All Items &amp; Combos</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Category Filter</label>
+        <select id="progCategory" onchange="renderAnalytics()">
+          <option value="ALL">All Categories</option>
+          <option value="SITTING">Sitting</option>
+          <option value="WHEELING">Wheeling</option>
+          <option value="SPINNING">Spinning</option>
+          <option value="JUMPING">Jumping</option>
+          <option value="OTHERS">Others</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- VISUAL ANALYTICS CHARTS GRID -->
+  <!-- Graph 1: Success Rate Over Time -->
+  <div class="glass-card">
+    <div class="card-title">Cone Success Rate % Over Time</div>
+    <div class="chart-container"><canvas id="chartSuccessRate"></canvas></div>
+  </div>
+
+  <!-- Graph 2: Target vs Completed Cones -->
+  <div class="glass-card">
+    <div class="card-title">Target vs Completed Cones</div>
+    <div class="chart-container"><canvas id="chartCones"></canvas></div>
+  </div>
+
+  <!-- Graph 3: Individual Trick & Combo Progress -->
+  <div class="glass-card">
+    <div class="card-title">Progress by Practice Item / Combo</div>
+    <div class="chart-container"><canvas id="chartTricks"></canvas></div>
+  </div>
+
+  <!-- Graph 4: Falls Over Time -->
+  <div class="glass-card">
+    <div class="card-title">Falls / Impacts Count Over Time</div>
+    <div class="chart-container"><canvas id="chartFalls"></canvas></div>
+  </div>
+
+</div>
